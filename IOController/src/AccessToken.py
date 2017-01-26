@@ -4,6 +4,10 @@ import requests
 from purl import URL
 
 class AccessToken(object):
+    
+    RESOURCE_DXLIQUIDAPI    = 'http://DXLiquidIntel'
+    RESOURCE_GRAPHAPI       = 'https://graph.microsoft.com'
+    
     def __init__(self, tenant, clientId, clientSecret, endpointBase = 'https://login.microsoftonline.com/'):
         self.tenant = tenant
         self.clientId = clientId

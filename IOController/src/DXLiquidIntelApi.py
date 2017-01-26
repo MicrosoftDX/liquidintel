@@ -2,12 +2,12 @@
 # Module for encapsulating the DXLiquidIntel API 
 #
 
-import AccessToken
+from AccessToken import AccessToken
 import requests
 from purl import URL
 
 class DXLiquidIntelApi(object):
-    def __init__(self, tenant, apiEndPoint, accessToken, tokenResource = 'http://DXLiquidIntel'):
+    def __init__(self, tenant, apiEndPoint, accessToken, tokenResource = AccessToken.RESOURCE_DXLIQUIDAPI):
         self.tenant = tenant
         self.apiEndPoint = apiEndPoint
         self._token = accessToken
@@ -20,7 +20,7 @@ class DXLiquidIntelApi(object):
             userReq = requests.get(getUserUri.as_string(), headers={'Authorization':accessToken})
             if userReq.ok:
                 try:
-                    emailName = userReq.json()['emailname']
+                    emailName = userReq.json()['EmailName']
                     return '{0}@{1}'.format(emailName, self.tenant)
                 except:
                     return None

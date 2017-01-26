@@ -3,12 +3,12 @@
 #
 
 import urllib
-import AccessToken
+from AccessToken import AccessToken
 import requests
 from purl import URL
 
 class GroupMembership(object):
-    def __init__(self, groups, accessToken, apiEndPoint = 'https://graph.microsoft.com/v1.0/', tokenResource = 'https://graph.microsoft.com'):
+    def __init__(self, groups, accessToken, apiEndPoint = 'https://graph.microsoft.com/v1.0/', tokenResource = AccessToken.RESOURCE_GRAPHAPI):
         self.apiEndPoint = apiEndPoint
         self._token = accessToken
         self._tokenResource = tokenResource
@@ -28,8 +28,8 @@ class GroupMembership(object):
     def isUserMember(self, user):
         if not user:
             return False
-        userMemberUri = URL(self.apiEndPoint).add_path_segment('users').add_path_segment(user).add_path_segment(checkMemberGroups)
-        userMemberReq = requests.post(userMemberUri.as_string(), json={'groupIds':self._groupIds}, headers={'Authorization': self._token.get(self._tokenResource)})
+        userMemberUri = URL(self.apiEndPoint).add_path_segment('users').add_path_segment(user).add_path_segment('checkMemberGroups')
+        userMemberReq = requests.post(userMemberUri.as_string(), json={'groupIds':self._groupIds}, headers={'Authorization': self._token.getToken(self._tokenResource)})
         if userMemberReq.ok:
             memberGroups = userMemberReq.json()['value']
             return memberGroups.count() > 0
