@@ -2,14 +2,14 @@
 # Module for encapsulating reading of pcProx card
 #
 import sys
+from ctypes import *
 
 class PCProx(object):
     if sys.platform != 'win32':
-        from ctypes import *
 
         def __init__(self):
-            self._hid = CDLL('hidapi/libhidapi-hidraw.so')
-            self._pcProx = CDLL('pcProxAPI/libpcProxAPI.so')
+            self._hid = CDLL('../bin/libhidapi-hidraw.so')
+            self._pcProx = CDLL('../bin/libpcProxAPI.so')
             self._pcProx._Z10usbConnectv()
             self._buffer = (c_ubyte * 40)()
 

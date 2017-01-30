@@ -1,5 +1,6 @@
 
-import datetime, json
+import sys, datetime, json
+sys.path.append('../bin')
 from iothub_client import *
 
 class IOTHub(object):
