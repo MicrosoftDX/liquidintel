@@ -3,7 +3,7 @@
 # Main module for reading card & controlling IO 
 #
 
-import sys, argparse, time, datetime, logging
+import sys, argparse, time, datetime, logging, logging.config
 from IOControllerConfig import IOControllerConfig
 from pcProx import PCProx
 from DXLiquidIntelApi import DXLiquidIntelApi
@@ -17,26 +17,32 @@ from IotHubLogHandler import IotHubLogHandler
 
 argsparser = argparse.ArgumentParser()
 argsparser.add_argument('-c', '--config', default='./IOController.cfg')
-argsparser.add_argument('-l', '--loglevel', default='INFO')
+argsparser.add_argument('-l', '--logConfig')
+argsparser.add_argument('-L', '--loglevel', default='INFO')
 args = argsparser.parse_args()
 
+# Configure logging - either from a config file or manually
 log = logging.getLogger()
-log.setLevel(getattr(logging, args.loglevel.upper()))
-# We need a stderr logger
-lh = logging.StreamHandler()
-lh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-log.addHandler(lh)
-# And our handler to send stuff out to IoT hubs
-iotLogHandler = IotHubLogHandler(level=logging.WARNING)
-iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-log.addHandler(iotLogHandler)
+if args.logConfig:
+    logging.config.fileConfig(args.logConfig)
+else:
+    log.setLevel(getattr(logging, args.loglevel.upper()))
+    # We need a stderr logger
+    lh = logging.StreamHandler()
+    lh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    log.addHandler(lh)
+    # And our handler to send stuff out to IoT hubs
+    iotLogHandler = IotHubLogHandler(level=logging.WARNING)
+    iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    log.addHandler(iotLogHandler)
 
 config = IOControllerConfig(args.config)
 
 seenUsers = {}
 newCardId = None
 iotHubClient = IOTHub(config.iotHubConnectString, config)
-iotLogHandler.setIotClient(iotHubClient)
+for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
+    handler.setIotClient(iotHubClient)
 prox = PCProx()
 accessToken = AccessToken(tenant=config.tenant, clientId=config.clientId, clientSecret=config.clientSecret)
 liquidApi = DXLiquidIntelApi(tenant=config.tenant, apiEndPoint=config.apiBaseUri, accessToken=accessToken)

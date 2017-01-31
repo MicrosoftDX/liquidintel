@@ -11,7 +11,9 @@
             "cwd": "${workspaceRoot}",
             "args": [
                 "--config",
-                "./external/IOController.cfg"
+                "./external/IOController.cfg",
+                "-l",
+                "./external/log.cfg"
             ],
             "debugOptions": [
                 "WaitOnAbnormalExit",
