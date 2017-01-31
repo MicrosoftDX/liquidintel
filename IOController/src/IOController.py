@@ -3,7 +3,7 @@
 # Main module for reading card & controlling IO 
 #
 
-import sys, argparse, time, datetime, logging, logging.config
+import sys, argparse, time, datetime, logging, logging.config, signal, multiprocessing
 from IOControllerConfig import IOControllerConfig
 from pcProx import PCProx
 from DXLiquidIntelApi import DXLiquidIntelApi
@@ -39,6 +39,9 @@ else:
 log.info('Start IOController process.')
 config = IOControllerConfig(args.config)
 
+stop_event = multiprocessing.Event()
+signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
+
 seenUsers = {}
 newCardId = 0
 iotHubClient = IOTHub(config.iotHubConnectString, config)
@@ -49,7 +52,7 @@ accessToken = AccessToken(tenant=config.tenant, clientId=config.clientId, client
 liquidApi = DXLiquidIntelApi(tenant=config.tenant, apiEndPoint=config.apiBaseUri, accessToken=accessToken)
 groupMembership = GroupMembership(groups=config.accessGroupNames, accessToken=accessToken)
 kegIO = Kegerator(config.tapsConfig)
-while True:
+while not stop_event.is_set():
     cardId = 0
     if newCardId != 0:
         cardId = newCardId
@@ -75,5 +78,4 @@ while True:
             prox.beepFail()
             log.info('User: %s is NOT a permitted user', user.alias)
             time.sleep(3)
-
-
+log.info('End IOController - due to SIGTERM')
