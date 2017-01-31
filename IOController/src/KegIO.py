@@ -16,7 +16,7 @@ class Kegerator(object):
                 self.pulseCount += 1
 
         if sys.platform != 'win32':
-            def initializeGpio(self):
+            def initializeGpio(self, tapConfig):
                 self.shutoffValve = DigitalOutputDevice(tapConfig.shutoffValvePin)
                 self.flowSensor = DigitalInputDevice(tapConfig.flowSensorPin)
                 self.flowSensor.when_activated = lambda: self._countEdge(1)
@@ -27,7 +27,7 @@ class Kegerator(object):
                 self.flowSensor.close()
 
         else:
-            def initializeGpio(self):
+            def initializeGpio(self, tapConfig):
                 # Do nothing on Windows
                 self.pulseCount = 0
             
@@ -38,7 +38,7 @@ class Kegerator(object):
         def __init__(self, tapConfig):
             self.tapId = tapConfig.tapId
             self.pulseCount = 0
-            self.initializeGpio()
+            self.initializeGpio(tapConfig)
 
         def close(self):
             self.closeGpio()
