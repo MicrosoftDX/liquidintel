@@ -26,10 +26,10 @@ class Session(object):
         while datetime.datetime.utcnow() < endSessionTime:
             # If someone else swipes a card, this session will terminate
             cardId = self._proxReader.readCard()
-            if cardId:
+            if cardId != 0:
                 self._terminateSession()
                 return cardId
             time.sleep(1)
 
         self._terminateSession()
-        return None
+        return 0

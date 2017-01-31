@@ -1,14 +1,19 @@
 
-import sys
+import sys, logging
 from gpiozero import *
+
+log = logging.getLogger(__name__)
 
 class Kegerator(object):
 
     class TapConfig(object):
         def __init__(self, tapId, shutoffValvePin, flowSensorPin):
             self.tapId = tapId
-            self.shutoffValvePin = shutoffValvePin
-            self.flowSensorPin = flowSensorPin
+            self.shutoffValvePin = int(shutoffValvePin)
+            self.flowSensorPin = int(flowSensorPin)
+
+        def __eq__(self, other):
+            return self.__dict__ == other.__dict__
 
     class _TapDevice(object):
         def _countEdge(self, raising):
@@ -47,6 +52,7 @@ class Kegerator(object):
             self.pulseCount = 0
 
     def _initializeTapsDevices(self, tapsConfigVariable):
+        log.debug('Initializing hardware I/O configuration')
         if self._tapsDevices:
             for tap in self._tapsDevices:
                 tap.close()

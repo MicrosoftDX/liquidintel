@@ -21,13 +21,13 @@ class DXLiquidIntelApi(object):
     def getUserForCardId(self, cardId):
         accessToken = self._token.getToken(self._tokenResource.value)
         if accessToken:
-            getUserUri = URL(self.apiEndPoint.value).add_path_segment('api').add_path_segment('getpersonbycardid').add_path_segment(cardId)
+            getUserUri = URL(self.apiEndPoint.value).add_path_segment('api').add_path_segment('getpersonbycardid').add_path_segment(str(cardId))
             userReq = requests.get(getUserUri.as_string(), headers={'Authorization':accessToken})
             try:
                 userReq.raise_for_status()
                 json = userReq.json()
                 emailName = json.get('EmailName', '')
-                personnelId = int(json.get('PersonnelId', 0))
+                personnelId = int(json.get('PersonnelNumber', 0))
                 return (personnelId, '{0}@{1}'.format(emailName, self.tenant.value))
             except:
                 log.warning('Failed to decode getpersonbycardid response: %s', userReq.content, exc_info=1)

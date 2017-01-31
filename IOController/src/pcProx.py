@@ -15,13 +15,13 @@ class PCProx(object):
 
         def readCard(self):
             cardId = 0
-            bitCount = self._pcProx._Z11GetActiveIDPhs(buf, 40)
+            bitCount = self._pcProx._Z11GetActiveIDPhs(self._buffer, len(self._buffer))
             if (bitCount > 0):
                     bytes = (bitCount+7)/8
                     cardId = 0
                     for i in range(0, bytes):
-                        cardId += c_ubyte(buf[i]).value << (i * 8)
-            return str(cardId)
+                        cardId += c_ubyte(self._buffer[i]).value << (i * 8)
+            return cardId
 
         def beepFail(self):
             self._pcProx._Z7BeepNowhs(2,1)
@@ -31,7 +31,7 @@ class PCProx(object):
 
     else:
         def readCard(self):
-            return '1801958'
+            return 1801958
 
         def beepFail(self):
             # No-op

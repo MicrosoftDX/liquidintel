@@ -1,7 +1,9 @@
 
-import sys, datetime, json
+import sys, datetime, json, logging
 sys.path.append('../bin')
 from iothub_client import *
+
+log = logging.getLogger(__name__)
 
 class IOTHub(object):
 
@@ -18,7 +20,11 @@ class IOTHub(object):
         # Notify the configuration object that potentially some of our desired properties have
         # changed. Dependent objects that have registered handlers for any change of config will
         # be notified accordingly.
-        self._config.refreshFromTwin(payload)
+        jsonPayload = json.loads(payLoad)
+        log.debug('Twin callback value: %s', jsonPayload)
+        if 'desired' in jsonPayload:
+            jsonPayload = jsonPayload['desired']
+        self._config.refreshFromTwin(jsonPayload)
         return 0
 
     def _receiveMessageCallback(self, message, counter):

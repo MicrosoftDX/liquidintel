@@ -24,7 +24,7 @@ args = argsparser.parse_args()
 # Configure logging - either from a config file or manually
 log = logging.getLogger()
 if args.logConfig:
-    logging.config.fileConfig(args.logConfig)
+    logging.config.fileConfig(args.logConfig, disable_existing_loggers=False)
 else:
     log.setLevel(getattr(logging, args.loglevel.upper()))
     # We need a stderr logger
@@ -36,10 +36,11 @@ else:
     iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
     log.addHandler(iotLogHandler)
 
+log.info('Start IOController process.')
 config = IOControllerConfig(args.config)
 
 seenUsers = {}
-newCardId = None
+newCardId = 0
 iotHubClient = IOTHub(config.iotHubConnectString, config)
 for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
     handler.setIotClient(iotHubClient)
@@ -49,21 +50,23 @@ liquidApi = DXLiquidIntelApi(tenant=config.tenant, apiEndPoint=config.apiBaseUri
 groupMembership = GroupMembership(groups=config.accessGroupNames, accessToken=accessToken)
 kegIO = Kegerator(config.tapsConfig)
 while True:
-    if newCardId:
+    cardId = 0
+    if newCardId != 0:
         cardId = newCardId
-        newCardId = None
+        newCardId = 0
     else:
         cardId = prox.readCard()
-    if cardId:
-        log.info('Card: %s has been read from reader', cardId)
+    if cardId != 0:
+        log.debug('Card: %d has been read from reader', cardId)
         # Check our user cache
-        if cardId in seenUsers and not seenUsers[cardId].isExpired:
-            user = seenUsers[cardId]
+        cardKey = str(cardId)
+        if cardKey in seenUsers and not seenUsers[cardKey].isExpired:
+            user = seenUsers[cardKey]
         else:
             (personnelId, userId) = liquidApi.getUserForCardId(cardId)
-            log.info('Card: %s is associated with user: %d, %s', cardId, personnelId, userId)
+            log.debug('Card: %d is associated with user: %d, %s', cardId, personnelId, userId)
             user = User(personnelId, userId, cardId, groupMembership.isUserMember(userId))
-            seenUsers[cardId] = user
+            seenUsers[cardKey] = user
         # Start session if the user is allowed
         if user.allowAccess:
             session = BeerSession(user, prox, kegIO, iotHubClient, config.sessionTimeout)
@@ -71,6 +74,6 @@ while True:
         else:
             prox.beepFail()
             log.info('User: %s is NOT a permitted user', user.alias)
-
+            time.sleep(3)
 
 
