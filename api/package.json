@@ -13,5 +13,9 @@
     "passport": "^0.3.2",
     "passport-azure-ad": "^3.0.4",
     "tedious": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.4",
+    "typescript": "^2.1.5"
   }
 }
