@@ -13,6 +13,7 @@
     "passport": "^0.3.2",
     "passport-azure-ad": "^3.0.4",
     "passport-http": "^0.3.0",
+    "request": "^2.79.0",
     "tedious": "^1.14.0"
   },
   "devDependencies": {
