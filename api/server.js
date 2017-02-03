@@ -5,21 +5,13 @@ var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
 var Connection = require('tedious').Connection;
 var passport = require('passport');
-var BearerStrategy = require('passport-azure-ad').BearerStrategy;
+var BasicStrategy = require('passport-http').BasicStrategy;
 var fs = require('fs');
 var env = require('dotenv').load();
 var moment = require('moment');
 var keg = require('./app/models/keg.js');
 var kegController = require('./app/controllers/kegController.js');
 var personController = require('./app/controllers/personController.js');
-var options = {
-    identityMetadata: process.env.AADIdentityMetadata,
-    loggingLevel: process.env.AADLoggingLevel,
-    clientID: process.env.AADClientID,
-    audience: process.env.AADAudience,
-    validateIssuer: process.env.AADValidateIssuer,
-    passReqToCallback: process.env.AADPassReqToCallback
-};
 var users = [];
 var owner = null;
 var config = {
@@ -45,13 +37,33 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
-var bearerStrategy = new BearerStrategy(options, function (token, done) {
-    return done(null, token);
-});
-passport.use(bearerStrategy);
+passport.use(new BasicStrategy(function (username, password, done) {
+    var request = new Request("SELECT c.client_id, c.api_key FROM dbo.SecurityTokens AS c WHERE c.client_id=@clientId and c.api_key=@apiKey;", function (err, rowCount, rows) {
+        if (err) {
+            return done(err);
+        }
+        if (rowCount === 0 || rowCount > 1) {
+            return done(null, false, { message: 'Invalid client_id or api_key' });
+        }
+        var jsonArray = [];
+        rows.forEach(function (columns) {
+            var rowObject = {};
+            columns.forEach(function (column) {
+                rowObject[column.metadata.colName] = column.value;
+            });
+            jsonArray.push(rowObject);
+        });
+        console.log(jsonArray[0].client_id);
+        if (username.valueOf() === jsonArray[0].client_id && password.valueOf() === jsonArray[0].api_key)
+            return done(null, true);
+    });
+    request.addParameter('clientId', TYPES.NVarChar, username);
+    request.addParameter('apiKey', TYPES.NVarChar, password);
+    connection.execSql(request);
+}));
 var port = process.env.PORT || 8000;
 var router = express.Router();
-router.use(passport.authenticate('oauth-bearer', { session: false }), function (req, res, next) {
+router.use(passport.authenticate('basic', { session: false }), function (req, res, next) {
     console.log('Authenticated the User/App successfully!');
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -60,7 +72,7 @@ router.use(passport.authenticate('oauth-bearer', { session: false }), function (
 router.get('/', function (req, res) {
     res.json({ message: 'Welcome to DX Liquid Intelligence api!' });
 });
-router.route('/GetPersonByCardId/:card_id')
+router.route('/isPersonValid/:card_id')
     .get(function (req, res) {
     personController.getPersonByCardId(req.params.card_id, connection, function (resp) {
         if (resp.code == 200) {

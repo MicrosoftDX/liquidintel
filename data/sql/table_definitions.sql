@@ -10,6 +10,9 @@ IF OBJECT_ID('dbo.DimKeg', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.DimTap', 'U') IS NOT NULL 
   DROP TABLE dbo.DimTap; 
 
+IF OBJECT_ID('dbo.SecurityTokens', 'U') IS NOT NULL 
+  DROP TABLE dbo.SecurityTokens; 
+
 
 CREATE TABLE dbo.DimKeg(
  Id INT IDENTITY(1,1) NOT NULL,
@@ -72,6 +75,12 @@ ON dbo.FactDrinkers (PersonnelNumber)
 INCLUDE (PourDateTime, TapId);
 
 
+CREATE TABLE dbo.SecurityTokens(
+ client_id nvarchar(400) not null,
+ [api_key] nvarchar(1000) not null,
+ [desc] nvarchar(2000) not null,
+ CONSTRAINT pk_security PRIMARY KEY(client_id)
+)
 
 INSERT INTO dbo.DimTap VALUES ('Left')
 INSERT INTO dbo.DimTap VALUES ('Right')
@@ -86,3 +95,6 @@ INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentV
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (2, '2017-01-11 22:30:00', 2, 18928, 0, 0)
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (3, '2017-01-18 23:30:00', 1, 18928, 7030, 1)
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (4, '2017-01-23 20:00:00', 2, 18928, 10235, 1)
+
+INSERT INTO dbo.SecurityTokens VALUES ('0001-0001', 'ZHhsaXF1aWQtcmFzcGJlcnJ5cGk=','Raspberry Pi running on the DX Kegerator')
+INSERT INTO dbo.SecurityTokens VALUES ('0001-0002', 'ZHhsaXF1aWQtZGFzaGJvYXJk','Client App for the DX Kegerator')

@@ -112,6 +112,7 @@ module.exports = {
         }); 
     },
 
+//TODO
     putKegFinished: function(tapId, connection, outputFunc){
         var markKegAsFinished = "UPDATE dbo.FactKegInstall SET isCurrent=0 WHERE tapId=@tap_id and isCurrent=1";
         var request = new Request(markKegAsFinished, function(err, rowCount, rows){
