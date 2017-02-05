@@ -1,0 +1,12 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",
+    "command": "tsc",
+    "windows": { "command": ".\\node_modules\\.bin\\tsc" } ,    //This command is because we're running on a Windows machine
+    "isShellCommand": true,
+    "args": ["-w", "-p", "."],
+    "showOutput": "always",     //This can be 'silent' if you don't want to see the output
+    "isWatching": true,
+    "problemMatcher": "$tsc-watch"
+}

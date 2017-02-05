@@ -1,10 +1,23 @@
 {
-    "name": "liquid-intel-api",
-    "version": "0.0.1",
-    "main": "server.js",
-    "dependencies": {
-        "express": "~4.0.0",
-        "body-parser": "~1.0.1",
-        "tedious": "^1.14.0"
-    }
+  "name": "liquid-intel-api",
+  "version": "0.0.1",
+  "main": "server.js",
+  "dependencies": {
+    "body-parser": "~1.0.1",
+    "dotenv": "^4.0.0",
+    "express": "~4.0.0",
+    "fs": "0.0.1-security",
+    "https": "^1.0.0",
+    "moment": "^2.17.1",
+    "mssql": "^3.3.0",
+    "passport": "^0.3.2",
+    "passport-azure-ad": "^3.0.4",
+    "passport-http": "^0.3.0",
+    "request": "^2.79.0",
+    "tedious": "^1.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^7.0.4",
+    "typescript": "^2.1.5"
+  }
 }
