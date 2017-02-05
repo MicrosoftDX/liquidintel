@@ -7,17 +7,15 @@ from KegIO import Kegerator
 class IOControllerConfig(object):
 
     # The set of configuration attributes
-    tenant = NotifyVariable('')
     sessionTimeout = NotifyVariable(0)
-    clientId = NotifyVariable('')
-    clientSecret = NotifyVariable('')
     apiBaseUri = NotifyVariable('')
-    accessGroupNames = NotifyVariable([])
+    apiUser = NotifyVariable('')
+    apiKey = NotifyVariable('')
     tapsConfig = NotifyVariable(None)
     iotHubConnectString = NotifyVariable('')
+    installDir = NotifyVariable('')
 
     # Section names in the config file
-    SECTION_AUTHENTICATION = 'Authentication'
     SECTION_GENERAL = 'General'
     SECTION_LIQUIDAPI = 'DXLiquidIntelApi'
     SECTION_KEGERATOR = 'Kegerator'
@@ -91,23 +89,21 @@ class IOControllerConfig(object):
             return 0
 
     def _refreshConfigFromSource(self, configSource):
-        self.tenant.value = configSource.get(IOControllerConfig.SECTION_AUTHENTICATION, 'tenant', self.tenant.value)
         self.sessionTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'sessionTimeout', self.sessionTimeout.value)
-        self.clientId.value = configSource.get(IOControllerConfig.SECTION_AUTHENTICATION, 'clientId', self.clientId.value)
-        self.clientSecret.value = configSource.get(IOControllerConfig.SECTION_AUTHENTICATION, 'clientSecret', self.clientSecret.value)
         self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'BaseUri', self.apiBaseUri.value)
-        self.accessGroupNames.value = configSource.getlist(IOControllerConfig.SECTION_GENERAL, 'accessGroups', self.accessGroupNames.value)
+        self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
+        self.apiKey.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiKey', self.apiKey.value)
         self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin']) if isinstance(tap, dict) else tap for tap in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
         self.iotHubConnectString.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'iotHubConnectString', self.iotHubConnectString.value)
+        self.installDir.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installDir', self.installDir.value)
 
-    def __init__(self, configFile):
+    def __init__(self, configFiles):
         # Read the static config from the config file
-        config = SafeConfigParser({'tenant':'microsoft.com', 'apiEndpoint':'https://dxliquidintel.azurewebsites.net', 'sessionTimeout':'30'})
+        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net', 'sessionTimeout':'30'})
         config.add_section(IOControllerConfig.SECTION_GENERAL)
-        config.add_section(IOControllerConfig.SECTION_AUTHENTICATION)
         config.add_section(IOControllerConfig.SECTION_LIQUIDAPI)
         config.add_section(IOControllerConfig.SECTION_KEGERATOR)
-        config.read(configFile)
+        config.read(configFiles)
 
         self._refreshConfigFromSource(IOControllerConfig._configParserWrapperSource(config))
 

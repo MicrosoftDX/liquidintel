@@ -1,5 +1,5 @@
 
-import sys, datetime, json, logging
+import sys, datetime, json, logging, uuid, threading
 sys.path.append('../bin')
 from iothub_client import *
 
@@ -7,13 +7,26 @@ log = logging.getLogger(__name__)
 
 class IOTHub(object):
 
+    def _runHandlerAsync(self, handler, *args, **kwargs):
+        log.debug('Running handler in 500ms: %s', handler)
+        threading.Timer(0.5, handler, args, kwargs).start()
+
     def _deviceMethodCallback(self, methodName, payload, context):
-        print(
-            "\nMethod callback called with:\nmethodName = %s\npayload = %s\ncontext = %s" % 
-            (methodName, payload, context))
+        log.debug('Method call: %s, payload: %s', methodName, payload)
+        jsonPayload = json.loads(json.loads(payload))
+        log.debug('Method call: %s, payload: %s:%s', methodName, type(jsonPayload), jsonPayload)
+        response = {}
+        responseStatus = 404
+        if methodName.lower().startswith('updatefi'):
+            operationId = str(uuid.uuid4())
+            response = {'operationId':operationId}
+            responseStatus = 201
+            log.debug('Update firmware. Source: %s, version: %s', jsonPayload['source'], jsonPayload['version'])
+            self._runHandlerAsync(self._methodHandler.updateFirmware, jsonPayload['source'], jsonPayload['version'], operationId, self)
+            
         deviceMethodReturnValue = DeviceMethodReturnValue()
-        deviceMethodReturnValue.response = "{ \"Response\": \"This is the response from the device\" }"
-        deviceMethodReturnValue.status = 200
+        deviceMethodReturnValue.response = json.dumps(response)
+        deviceMethodReturnValue.status = responseStatus
         return deviceMethodReturnValue
 
     def _deviceTwinCallback(self, updateState, payLoad, user_context):
@@ -42,10 +55,11 @@ class IOTHub(object):
         self._iotHubClient.set_device_method_callback(self._deviceMethodCallback, 0)
         self._messageId = 0
 
-    def __init__(self, connectString, config):
+    def __init__(self, connectString, config, methodHandler):
         connectString += self._initializeIotHubClient
         self._initializeIotHubClient(connectString)
         self._config = config
+        self._methodHandler = methodHandler
 
     def _sendEvent(self, payload, messageType):
         message = IoTHubMessage(json.dumps(payload))
@@ -68,3 +82,5 @@ class IOTHub(object):
             'logLevel': logLevel
         }, 'LogMessage')
 
+    def updateProperties(self, payload):
+        self._iotHubClient.tw

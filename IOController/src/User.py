@@ -1,9 +1,8 @@
 import datetime
 
 class User(object):
-    def __init__(self, personnelId, alias, cardId, allowAccess):
+    def __init__(self, personnelId, cardId, allowAccess):
         self._personnelId = personnelId
-        self._alias = alias
         self.cardId = cardId
         self._allowAccess = allowAccess
         self.expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
@@ -15,14 +14,8 @@ class User(object):
         return self._personnelId
 
     @property
-    def alias(self):
-        if not self._alias:
-            return ''
-        return self._alias
-
-    @property
     def isValidUser(self):
-        return self._alias <> None
+        return self.personnelId <> 0    
 
     @property
     def isExpired(self):

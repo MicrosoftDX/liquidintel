@@ -8,15 +8,14 @@ from IOControllerConfig import IOControllerConfig
 from pcProx import PCProx
 from DXLiquidIntelApi import DXLiquidIntelApi
 from User import User
-from AccessToken import AccessToken
-from GroupMembership import GroupMembership
 from KegIO import Kegerator
 from BeerSession import Session
 from IOTHubs import IOTHub
 from IotHubLogHandler import IotHubLogHandler
+from MethodHandler import MethodHandler
 
 argsparser = argparse.ArgumentParser()
-argsparser.add_argument('-c', '--config', default='./IOController.cfg')
+argsparser.add_argument('-c', '--config', action='append')
 argsparser.add_argument('-l', '--logConfig')
 argsparser.add_argument('-L', '--loglevel', default='INFO')
 args = argsparser.parse_args()
@@ -44,13 +43,11 @@ signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
 seenUsers = {}
 newCardId = 0
-iotHubClient = IOTHub(config.iotHubConnectString, config)
+iotHubClient = IOTHub(config.iotHubConnectString, config, MethodHandler(config.installDir))
 for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
     handler.setIotClient(iotHubClient)
 prox = PCProx()
-accessToken = AccessToken(tenant=config.tenant, clientId=config.clientId, clientSecret=config.clientSecret)
-liquidApi = DXLiquidIntelApi(tenant=config.tenant, apiEndPoint=config.apiBaseUri, accessToken=accessToken)
-groupMembership = GroupMembership(groups=config.accessGroupNames, accessToken=accessToken)
+liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey)
 kegIO = Kegerator(config.tapsConfig)
 while not stop_event.is_set():
     cardId = 0
@@ -66,9 +63,9 @@ while not stop_event.is_set():
         if cardKey in seenUsers and not seenUsers[cardKey].isExpired:
             user = seenUsers[cardKey]
         else:
-            (personnelId, userId) = liquidApi.getUserForCardId(cardId)
-            log.debug('Card: %d is associated with user: %d, %s', cardId, personnelId, userId)
-            user = User(personnelId, userId, cardId, groupMembership.isUserMember(userId))
+            (userValid, personnelId) = liquidApi.isUserAuthenticated(cardId)
+            log.debug('Card: %d is associated with user: %s', cardId, str(personnelId))
+            user = User(personnelId, cardId, userValid)
             seenUsers[cardKey] = user
         # Start session if the user is allowed
         if user.allowAccess:
@@ -76,6 +73,7 @@ while not stop_event.is_set():
             newCardId = session.run()
         else:
             prox.beepFail()
-            log.info('User: %s is NOT a permitted user', user.alias)
+            log.info('User: %s is NOT a permitted user', str(user.personnelId))
             time.sleep(3)
+
 log.info('End IOController - due to SIGTERM')
