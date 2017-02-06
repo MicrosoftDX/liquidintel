@@ -13,6 +13,7 @@ var moment = require('moment');
 var keg = require('./app/models/keg.js');
 var kegController = require('./app/controllers/kegController.js');
 var personController = require('./app/controllers/personController.js');
+var sessionController = require('./app/controllers/session.js');
 
 /* Adding SSL */
 /*var securityOptions = {
@@ -43,10 +44,10 @@ var config = {
     options: {
         database: process.env.SqlDatabase,
         encrypt: true, 
-        rowCollectionOnRequestCompletion: process.env.SqlRowCollectionOnRequestCompletion
+        rowCollectionOnRequestCompletion: true,
+        useColumnNames: true
     }
 };
-
 
 var connection = new Connection(config);
 connection.on('connect', function(err){
@@ -66,7 +67,6 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
 
-
 /*
 /* Calling the OIDCBearerStrategy and managing users
 /*
@@ -85,31 +85,20 @@ passport.use(bearerStrategy);
 passport.use(new BasicStrategy(
   function(username, password, done) {
     var request = new Request("SELECT c.client_id, c.api_key FROM dbo.SecurityTokens AS c WHERE c.client_id=@clientId and c.api_key=@apiKey;", function(err, rowCount, rows){
-        if(err){
+        if (err) {
             return done(err);
         }
-        if(rowCount===0 || rowCount>1){
+        if (rowCount===0 || rowCount>1) {
             return done(null, false, {message: 'Invalid client_id or api_key'});
         }
-        var jsonArray = []
-        rows.forEach(function (columns) {
-        var rowObject ={};
-        columns.forEach(function(column) {
-            rowObject[column.metadata.colName] = column.value;
-        });
-        jsonArray.push(rowObject)
-        });
-        console.log(jsonArray[0].client_id);
-
-        if (username.valueOf() === jsonArray[0].client_id && password.valueOf() === jsonArray[0].api_key)
+        if (username.valueOf() === rows[0].client_id.value && password.valueOf() === rows[0].api_key.value)
             return done(null, true);
+        return done(null, false, {message: 'Invalid client_id or api_key'});
     });
     request.addParameter('clientId', TYPES.NVarChar, username);
     request.addParameter('apiKey', TYPES.NVarChar, password);
     connection.execSql(request);
   }));
-
-
 
 /* Setting Port to 8000 */
 
@@ -124,11 +113,9 @@ router.use(passport.authenticate('basic', {session: false}), function(req, res, 
     next();
 });
 
-
 router.get('/', function(req, res) {
     res.json({ message: 'Welcome to DX Liquid Intelligence api!' });   
 });
-
 
 router.route('/isPersonValid/:card_id')
     .get(function(req, res) {
@@ -144,7 +131,6 @@ router.route('/isPersonValid/:card_id')
         }); 
     });
 
-
 router.route('/kegs')
     .get(function(req, res){
         kegController.getKeg(null, connection, function(resp){
@@ -159,7 +145,6 @@ router.route('/kegs')
         }); 
     });
 
-
 router.route('/CurrentKeg')
     .get(function(req, res){
         kegController.getCurrentKeg(null, connection, function(resp){
@@ -173,8 +158,6 @@ router.route('/CurrentKeg')
             }
         }); 
     });
-
-
 
 router.route('/CurrentKeg/:tap_id')
 //Get Current Keg for the TapId specified

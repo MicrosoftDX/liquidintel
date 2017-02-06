@@ -6,15 +6,18 @@ var env = require('dotenv').load();
 
 module.exports = {
     getPersonByCardId: function(cardId, connection, output){
-        var sqlStatement = "SELECT p.[PersonnelNumber], p.[EmailName], p.[FullName] FROM dbo.[CARD02CardKeyMappingS] c INNER JOIN dbo.[HC01Person] p ON c.SAPPersonnelNbr = p.PersonnelNumber WHERE c.CardKeyNbr = @card_id";
+        var sqlStatement = 
+            "SELECT p.[PersonnelNumber], p.[EmailName], p.[FullName] "
+            "FROM dbo.[CARD02CardKeyMappingS] c INNER JOIN dbo.[HC01Person] p ON c.SAPPersonnelNbr = p.PersonnelNumber "
+            "WHERE c.CardKeyNbr = @card_id";
         var request = new Request(sqlStatement, function(err, rowCount, rows){
-            if(err){
+            if (err) {
                 return output({code: 500, msg:'Internal Error: '+err});
             }
-            else if(rowCount==0){
+            else if (rowCount == 0) {
                 return output({code: 404, msg:"No person found having CardId: "+cardId});
             }
-            else{
+            else {
                 var jsonArray = [];
                 rows.forEach(function (columns){
                     var rowObject = {};
@@ -24,7 +27,11 @@ module.exports = {
                     jsonArray.push(rowObject);
                 });
                 var obj = {code: 200, msg: jsonArray}
-                return output(obj);
+                return output({code: 200, msg: {
+                    'PersonnelNumber':rows[0].PersonnelNumber.value,
+                    'Valid':true,
+                    'FullName':rows[0].FullName.value
+                }});
             }
         });
         request.addParameter('card_id', TYPES.Int, cardId);

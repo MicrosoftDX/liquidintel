@@ -63,13 +63,13 @@ while not stop_event.is_set():
         if cardKey in seenUsers and not seenUsers[cardKey].isExpired:
             user = seenUsers[cardKey]
         else:
-            (userValid, personnelId) = liquidApi.isUserAuthenticated(cardId)
-            log.debug('Card: %d is associated with user: %s', cardId, str(personnelId))
-            user = User(personnelId, cardId, userValid)
+            (userValid, personnelId, fullName) = liquidApi.isUserAuthenticated(cardId)
+            log.debug('Card: %d is associated with user: %s (%s)', cardId, str(personnelId), str(fullName))
+            user = User(personnelId, cardId, fullName, userValid)
             seenUsers[cardKey] = user
         # Start session if the user is allowed
         if user.allowAccess:
-            session = BeerSession(user, prox, kegIO, iotHubClient, config.sessionTimeout)
+            session = Session(user, prox, kegIO, liquidApi, config.sessionTimeout)
             newCardId = session.run()
         else:
             prox.beepFail()

@@ -12,6 +12,7 @@ var moment = require('moment');
 var keg = require('./app/models/keg.js');
 var kegController = require('./app/controllers/kegController.js');
 var personController = require('./app/controllers/personController.js');
+var sessionController = require('./app/controllers/session.js');
 var users = [];
 var owner = null;
 var config = {
@@ -21,7 +22,8 @@ var config = {
     options: {
         database: process.env.SqlDatabase,
         encrypt: true,
-        rowCollectionOnRequestCompletion: process.env.SqlRowCollectionOnRequestCompletion
+        rowCollectionOnRequestCompletion: true,
+        useColumnNames: true
     }
 };
 var connection = new Connection(config);
@@ -45,17 +47,9 @@ passport.use(new BasicStrategy(function (username, password, done) {
         if (rowCount === 0 || rowCount > 1) {
             return done(null, false, { message: 'Invalid client_id or api_key' });
         }
-        var jsonArray = [];
-        rows.forEach(function (columns) {
-            var rowObject = {};
-            columns.forEach(function (column) {
-                rowObject[column.metadata.colName] = column.value;
-            });
-            jsonArray.push(rowObject);
-        });
-        console.log(jsonArray[0].client_id);
-        if (username.valueOf() === jsonArray[0].client_id && password.valueOf() === jsonArray[0].api_key)
+        if (username.valueOf() === rows[0].client_id.value && password.valueOf() === rows[0].api_key.value)
             return done(null, true);
+        return done(null, false, { message: 'Invalid client_id or api_key' });
     });
     request.addParameter('clientId', TYPES.NVarChar, username);
     request.addParameter('apiKey', TYPES.NVarChar, password);

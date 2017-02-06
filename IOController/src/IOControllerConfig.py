@@ -90,7 +90,7 @@ class IOControllerConfig(object):
 
     def _refreshConfigFromSource(self, configSource):
         self.sessionTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'sessionTimeout', self.sessionTimeout.value)
-        self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'BaseUri', self.apiBaseUri.value)
+        self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiEndpoint', self.apiBaseUri.value)
         self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
         self.apiKey.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiKey', self.apiKey.value)
         self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin']) if isinstance(tap, dict) else tap for tap in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
@@ -99,7 +99,7 @@ class IOControllerConfig(object):
 
     def __init__(self, configFiles):
         # Read the static config from the config file
-        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net', 'sessionTimeout':'30'})
+        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30'})
         config.add_section(IOControllerConfig.SECTION_GENERAL)
         config.add_section(IOControllerConfig.SECTION_LIQUIDAPI)
         config.add_section(IOControllerConfig.SECTION_KEGERATOR)

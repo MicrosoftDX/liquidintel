@@ -2,7 +2,7 @@
 # Module for encapsulating the DXLiquidIntel API 
 #
 
-import logging
+import logging, time
 from NotifyVariable import NotifyVariable
 import requests
 from requests.auth import HTTPBasicAuth
@@ -18,33 +18,24 @@ class DXLiquidIntelApi(object):
         self._apiKey = apiKey
 
     def isUserAuthenticated(self, cardId):
-        try:
-            userAuthUri = URL(self.apiEndPoint.value).add_path_segment('api').add_path_segment('ispersonvalid').add_path_segment(str(cardId))
-            userReq = requests.get(userAuthUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value))
-            userReq.raise_for_status()
-            json = userReq.json()
-            if isinstance(json, list):
-                json = json[0]
-            validUser = json.get('Valid', False)
-            personnelId = int(json.get('PersonnelNumber', 0))
-            return (validUser, personnelId)
-        except:
-            log.warning('Failed to check user validity. User card id: %d', cardId, exc_info=1)
-            return (None, None)
-            
-    def getUserForCardId(self, cardId):
-        accessToken = None
-        if accessToken:
-            getUserUri = URL(self.apiEndPoint.value).add_path_segment('api').add_path_segment('getpersonbycardid').add_path_segment(str(cardId))
-            userReq = requests.get(getUserUri.as_string(), headers={'Authorization':accessToken})
+        retries = 3
+        while retries > 0:
             try:
+                userAuthUri = URL(self.apiEndPoint.value).add_path_segment('ispersonvalid').add_path_segment(str(cardId))
+                userReq = requests.get(userAuthUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value))
                 userReq.raise_for_status()
                 json = userReq.json()
-                emailName = json.get('EmailName', '')
+                if isinstance(json, list):
+                    json = json[0]
+                validUser = json.get('Valid', False)
                 personnelId = int(json.get('PersonnelNumber', 0))
-                return (personnelId, '{0}@{1}'.format(emailName, self.tenant.value))
+                fullName = json.get('FullName', '')
+                return (validUser, personnelId, fullName)
             except:
-                log.warning('Failed to decode getpersonbycardid response: %s', userReq.content, exc_info=1)
-                return (None, None)
-                
-        return (None, None)
+                log.warning('Failed to check user validity. User card id: %d. Retries remaining: %d', cardId, retries - 1, exc_info=1)
+            retries -= 1
+            time.sleep(3)
+        return (None, None, None)
+            
+    def sendSessionDetails(self, user, kegIO):
+        return 0
