@@ -15,10 +15,7 @@ class Session(object):
     def _terminateSession(self):
         self._proxReader.beepEndSession()
         # Write session information to IOT Hubs
-        try:
-            self._apiClient.sendSessionDetails(self.user, self._kegIO)
-        except:
-            log.warning('Failed to write session details to service. User: %s', self.user.alias, exc_info=1)
+        self._apiClient.sendSessionDetails(self.user, self._kegIO)
 
     def run(self):
         endSessionTime = datetime.datetime.utcnow() + datetime.timedelta(seconds=self.sessionTimeout.value)
