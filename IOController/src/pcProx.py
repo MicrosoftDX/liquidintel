@@ -27,7 +27,7 @@ class PCProx(object):
             self._pcProx._Z7BeepNowhs(2,1)
 
         def beepEndSession(self):
-            self._pcProx._Z7BeepNowhw(0,0)
+            self._pcProx._Z7BeepNowhs(0,0)
 
     else:
         def readCard(self):

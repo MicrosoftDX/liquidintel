@@ -10,8 +10,6 @@ from DXLiquidIntelApi import DXLiquidIntelApi
 from User import User
 from KegIO import Kegerator
 from BeerSession import Session
-from IOTHubs import IOTHub
-from IotHubLogHandler import IotHubLogHandler
 from MethodHandler import MethodHandler
 
 argsparser = argparse.ArgumentParser()
@@ -31,9 +29,9 @@ else:
     lh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     log.addHandler(lh)
     # And our handler to send stuff out to IoT hubs
-    iotLogHandler = IotHubLogHandler(level=logging.WARNING)
-    iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    log.addHandler(iotLogHandler)
+    #iotLogHandler = IotHubLogHandler(level=logging.WARNING)
+    #iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
+    #log.addHandler(iotLogHandler)
 
 log.info('Start IOController process.')
 config = IOControllerConfig(args.config)
@@ -43,9 +41,9 @@ signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
 seenUsers = {}
 newCardId = 0
-iotHubClient = IOTHub(config.iotHubConnectString, config, MethodHandler(config.installDir))
-for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
-    handler.setIotClient(iotHubClient)
+#iotHubClient = IOTHub(config.iotHubConnectString, config, MethodHandler(config.installDir))
+#for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
+#    handler.setIotClient(iotHubClient)
 prox = PCProx()
 liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey)
 kegIO = Kegerator(config.tapsConfig)

@@ -1,19 +1,20 @@
-var express = require('express');        // call express
+/// <reference path="typings/index.d.ts" />
+
+import express = require('express');        // call express
 var app = express();                 // define our app using express
+
+import tedious = require('tedious');
 var bodyParser = require('body-parser');
-var Request = require('tedious').Request;
-var TYPES = require('tedious').TYPES;
-var Connection = require('tedious').Connection;
 var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
 //var BearerStrategy = require('passport-azure-ad').BearerStrategy;
 var fs = require('fs'); //For SSL
 var env = require('dotenv').load();
 var moment = require('moment');
-var keg = require('./app/models/keg.js');
-var kegController = require('./app/controllers/kegController.js');
-var personController = require('./app/controllers/personController.js');
-var sessionController = require('./app/controllers/session.js');
+import kegController = require('./app/controllers/kegController');
+import personController = require('./app/controllers/personController');
+import sessionController = require('./app/controllers/session');
+import queryExpression = require('./app/utils/query_expression');
 
 /* Adding SSL */
 /*var securityOptions = {
@@ -49,7 +50,7 @@ var config = {
     }
 };
 
-var connection = new Connection(config);
+var connection = new tedious.Connection(config);
 connection.on('connect', function(err){
   if(err)
   {
@@ -82,29 +83,31 @@ app.use(passport.session());
 passport.use(bearerStrategy);
 */
 
-passport.use(new BasicStrategy(
-  function(username, password, done) {
-    var request = new Request("SELECT c.client_id, c.api_key FROM dbo.SecurityTokens AS c WHERE c.client_id=@clientId and c.api_key=@apiKey;", function(err, rowCount, rows){
+passport.use(new BasicStrategy((username, password, done) => {
+    var sql = "SELECT client_id, api_key " +
+              "FROM SecurityTokens " +
+              "WHERE client_id = @clientId and api_key = @apiKey";
+    var request = new tedious.Request(sql, (err, rowCount, rows) => {
         if (err) {
             return done(err);
         }
-        if (rowCount===0 || rowCount>1) {
+        else if (rowCount == 0 || rowCount > 1) {
             return done(null, false, {message: 'Invalid client_id or api_key'});
         }
-        if (username.valueOf() === rows[0].client_id.value && password.valueOf() === rows[0].api_key.value)
+        else if (username.valueOf() == rows[0].client_id.value && password.valueOf() == rows[0].api_key.value) {
             return done(null, true);
+        }
         return done(null, false, {message: 'Invalid client_id or api_key'});
     });
-    request.addParameter('clientId', TYPES.NVarChar, username);
-    request.addParameter('apiKey', TYPES.NVarChar, password);
+    request.addParameter('clientId', tedious.TYPES.NVarChar, username);
+    request.addParameter('apiKey', tedious.TYPES.NVarChar, password);
     connection.execSql(request);
-  }));
+}));
 
 /* Setting Port to 8000 */
 
 var port = process.env.PORT || 8000;
 var router = express.Router();
-
 
 router.use(passport.authenticate('basic', {session: false}), function(req, res, next) {
     console.log('Authenticated the User/App successfully!');
@@ -117,68 +120,40 @@ router.get('/', function(req, res) {
     res.json({ message: 'Welcome to DX Liquid Intelligence api!' });   
 });
 
-router.route('/isPersonValid/:card_id')
-    .get(function(req, res) {
-        personController.getPersonByCardId(req.params.card_id, connection, function(resp){
-            if(resp.code==200)
-            {
+var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>express.Response)=>void) => {
+    return (req:express.Request, res:express.Response) => {
+        handler(req, resp => {
+            if (resp.code == 200) {
                 return res.json(resp.msg);
             }
-            else
-            {
+            else {
                 return res.send(resp.code, resp.msg);
             }
-        }); 
-    });
+        });
+    };
+};
+
+router.route('/isPersonValid/:card_id')
+    .get(stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, connection, resultDispatcher)));
 
 router.route('/kegs')
-    .get(function(req, res){
-        kegController.getKeg(null, connection, function(resp){
-            if(resp.code==200)
-            {
-                return res.json(resp.msg);
-            }
-            else
-            {
-                return res.send(resp.code, resp.msg);
-            }
-        }); 
-    });
+    .get(stdHandler((req, resultDispatcher) => kegController.getKeg(null, connection, resultDispatcher)));
+
+router.route('/activity/:sessionId?')
+    .get(stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), connection, resultDispatcher)))
+    .post(stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, connection, resultDispatcher)));
 
 router.route('/CurrentKeg')
-    .get(function(req, res){
-        kegController.getCurrentKeg(null, connection, function(resp){
-            if(resp.code==200)
-            {
-                return res.json(resp.msg);
-            }
-            else
-            {
-                return res.send(resp.code, resp.msg);
-            }
-        }); 
-    });
+    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, connection, resultDispatcher)));
 
-router.route('/CurrentKeg/:tap_id')
 //Get Current Keg for the TapId specified
-    .get(function(req, res){
-        kegController.getCurrentKeg(req.params.tap_id, connection, function(resp){
-            if(resp.code==200)
-            {
-                return res.json(resp.msg);
-            }
-            else
-            {
-                return res.send(resp.code, resp.msg);
-            }
-        }); 
-    })
-
+router.route('/CurrentKeg/:tap_id')
+    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, connection, resultDispatcher)))
 //TODO: Add a new Keg
-        .post(function(req, res){
+    .post(function(req, res){
             if(req.body.kegId!=null){
                 var checkForKeg = "SELECT Id FROM dbo.DimKeg WHERE Id=@kegId";
-                var request = new Request(checkForKeg, function(err, rowCount, rows){
+                var request = new tedious.Request(checkForKeg, function(err, rowCount, rows){
                     if(err){
                         console.log('Internal Error: '+err);
                         return res.send(500, err);
