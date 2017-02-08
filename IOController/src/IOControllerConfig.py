@@ -103,7 +103,7 @@ class IOControllerConfig(object):
 
     def __init__(self, configFiles):
         # Read the static config from the config file
-        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30', 'requestTimeout':'5', 'userCacheTtl': 3600})
+        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30', 'requestTimeout':'5', 'userCacheTtl': '3600'})
         config.add_section(IOControllerConfig.SECTION_GENERAL)
         config.add_section(IOControllerConfig.SECTION_LIQUIDAPI)
         config.add_section(IOControllerConfig.SECTION_KEGERATOR)
