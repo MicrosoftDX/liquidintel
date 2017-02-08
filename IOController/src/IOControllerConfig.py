@@ -97,7 +97,8 @@ class IOControllerConfig(object):
         self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
         self.apiKey.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiKey', self.apiKey.value)
         self.apiRequestTimeout.value = configSource.getint(IOControllerConfig.SECTION_LIQUIDAPI, 'requestTimeout', self.apiRequestTimeout.value)
-        self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin']) if isinstance(tap, dict) else tap for tap in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
+        self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin'], tap['flowcalibrationfactor']) if isinstance(tap, dict) else tap for tap 
+            in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
         self.iotHubConnectString.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'iotHubConnectString', self.iotHubConnectString.value)
         self.installDir.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installDir', self.installDir.value)
 

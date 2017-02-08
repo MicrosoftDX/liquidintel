@@ -49,12 +49,12 @@ class DXLiquidIntelApi(object):
         fullName = json.get('FullName', '')
         return (validUser, personnelId, fullName)
 
-    def _sendSessionDetails(self, user, tapsCounters, timeout):
+    def _sendSessionDetails(self, user, sessionTime, tapsCounters, timeout):
         sessionUri = URL(self.apiEndPoint.value).add_path_segment('activity')
         payload = {
-            'sessionTime': datetime.datetime.utcnow().isoformat(),
+            'sessionTime': sessionTime.isoformat(),
             'personnelNumber':user.personnelId,
-            'Taps': {tapId:{'amount':tapsCounters[tapId]} for tapId in tapsCounters}
+            'Taps': {tapId:{'amount':tapsCounters[tapId].volume} for tapId in tapsCounters}
         }
         userReq = requests.post(sessionUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), json=payload, timeout=timeout)
         userReq.raise_for_status()
@@ -64,5 +64,5 @@ class DXLiquidIntelApi(object):
     def isUserAuthenticated(self, cardId):
         return self._retryWrapper('Failed to check user validity. User card id: {0}'.format(cardId), (False, None, None), partial(self._isUserAuthenticatedImpl, cardId))
             
-    def sendSessionDetails(self, user, tapsCounters):
-        return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), False, partial(self._sendSessionDetails, user, tapsCounters))
+    def sendSessionDetails(self, user, sessionTime, tapsCounters):
+        return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), False, partial(self._sendSessionDetails, user, sessionTime, tapsCounters))

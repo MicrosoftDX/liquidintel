@@ -1,6 +1,7 @@
 
 import datetime, time, logging
 import pcProx, KegIO, User
+from FifoQueue import Fifo
 
 log = logging.getLogger(__name__)
 
@@ -10,6 +11,7 @@ class Session(object):
         self._kegIO = kegIO
         kegIO.resetFlowCount()
         self.tapsCounters = None
+        self.sessionTime = datetime.datetime.utcnow()
         self._endSessionTime = datetime.datetime.utcnow() + datetime.timedelta(seconds=sessionTimeout.value)
 
     def _end(self):
@@ -20,46 +22,15 @@ class Session(object):
     def expired(self):
         return self._endSessionTime < datetime.datetime.utcnow()
 
-# Doubly-linked list implementation of a FIFO queue
-class _Fifo: 
-    def __init__(self): 
-        self._first = None
-        self._last = None
-
-    def enqueue(self, data): 
-        if self._last:
-            self._last = (self._last, None, data)
-        else:
-            self._last = (None, None, data)
-            self._first = self._last
-
-    def dequeue(self): 
-        if not self._first:
-            return None
-        ignore, self._first, retval = self._first
-        if not self._first:
-            self._last = None
-        return retval 
-
-    def putBack(self, data):
-        if self._first:
-            self._first = (None, self._first, data)
-        else:
-            self._first = (None, None, data)
-            self._last = self._first
-
-    @property
-    def isEmpty(self):
-        return self._first == None
-
 class SessionManager(object):
     def __init__(self, proxReader, kegIO, apiClient, sessionTimeout):
         self._proxReader = proxReader
         self._kegIO = kegIO
         self._apiClient = apiClient
         self._sessionTimeout = sessionTimeout
-        self._pendingSessions = _Fifo()
+        self._pendingSessions = Fifo()
         self._currentSession = None
+        self._sendMaxRetries = 3
 
     def _endCurrentSession(self):
         if self._currentSession != None:
@@ -69,7 +40,7 @@ class SessionManager(object):
             log.info('Session ended for %d:%s. Tap amounts: [%s]', 
                 self._currentSession.user.personnelId, 
                 self._currentSession.user.fullName,
-                str({tapId:self._currentSession.tapsCounters[tapId] for tapId in self._currentSession.tapsCounters}))
+                str({tapId:'{0} pulses, {1} ml'.format(self._currentSession.tapsCounters[tapId].pulseCount, self._currentSession.tapsCounters[tapId].volume) for tapId in self._currentSession.tapsCounters}))
             self._currentSession = None
         
     def apply(self):
@@ -84,11 +55,17 @@ class SessionManager(object):
                 cardId = 0
             if cardId != 0 or self._currentSession.expired:
                 self._endCurrentSession()
-        pendingSession = self._pendingSessions.dequeue()
+        pendingSession = self._pendingSessions.peek()
         if pendingSession != None:
-            if not self._apiClient.sendSessionDetails(pendingSession.user, pendingSession.tapsCounters):
-                # Session activity could not be sent to API - re-insert back into our list
-                self._pendingSessions.putBack(pendingSession)
+            # Check if we've exceeded the max number of retries for this item
+            if self._pendingSessions.peekAttempts > self._sendMaxRetries:
+                log.warning('Session for user %d:%s at time: %s has exceeded maximum retries. This session will continue to be retried but will be moved to the tail of the queue',
+                    pendingSession.user.personnelId, pendingSession.user.fullName, pendingSession.sessionTime.isoformat())
+                self._pendingSessions.dequeue()
+                self._pendingSessions.enqueue(pendingSession)
+            else:
+                if self._apiClient.sendSessionDetails(pendingSession.user, pendingSession.sessionTime, pendingSession.tapsCounters):
+                    self._pendingSessions.dequeue()
         return cardId
 
     def startSession(self, user):
