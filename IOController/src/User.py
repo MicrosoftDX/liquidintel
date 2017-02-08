@@ -1,12 +1,12 @@
 import datetime
 
 class User(object):
-    def __init__(self, personnelId, cardId, fullName, allowAccess):
+    def __init__(self, personnelId, cardId, fullName, allowAccess, ttl):
         self._personnelId = personnelId
         self.cardId = cardId
         self.fullName = fullName
         self._allowAccess = allowAccess
-        self.expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        self.expiry = datetime.datetime.utcnow() + datetime.timedelta(seconds=ttl)
 
     @property
     def personnelId(self):

@@ -9,7 +9,7 @@ from pcProx import PCProx
 from DXLiquidIntelApi import DXLiquidIntelApi
 from User import User
 from KegIO import Kegerator
-from BeerSession import Session
+from BeerSession import SessionManager
 from MethodHandler import MethodHandler
 
 argsparser = argparse.ArgumentParser()
@@ -40,20 +40,15 @@ stop_event = multiprocessing.Event()
 signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
 seenUsers = {}
-newCardId = 0
 #iotHubClient = IOTHub(config.iotHubConnectString, config, MethodHandler(config.installDir))
 #for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
 #    handler.setIotClient(iotHubClient)
 prox = PCProx()
-liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey)
+liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey, requestTimeout=config.apiRequestTimeout)
 kegIO = Kegerator(config.tapsConfig)
+sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout)
 while not stop_event.is_set():
-    cardId = 0
-    if newCardId != 0:
-        cardId = newCardId
-        newCardId = 0
-    else:
-        cardId = prox.readCard()
+    cardId = sessionManager.apply()
     if cardId != 0:
         log.debug('Card: %d has been read from reader', cardId)
         # Check our user cache
@@ -63,15 +58,16 @@ while not stop_event.is_set():
         else:
             (userValid, personnelId, fullName) = liquidApi.isUserAuthenticated(cardId)
             log.debug('Card: %d is associated with user: %s (%s)', cardId, str(personnelId), str(fullName))
-            user = User(personnelId, cardId, fullName, userValid)
+            user = User(personnelId, cardId, fullName, userValid, config.userCacheTtl.value)
             seenUsers[cardKey] = user
         # Start session if the user is allowed
         if user.allowAccess:
-            session = Session(user, prox, kegIO, liquidApi, config.sessionTimeout)
-            newCardId = session.run()
+            sessionManager.startSession(user)
         else:
             prox.beepFail()
             log.info('User: %s is NOT a permitted user', str(user.personnelId))
             time.sleep(3)
+    else:
+        time.sleep(1)
 
 log.info('End IOController - due to SIGTERM')

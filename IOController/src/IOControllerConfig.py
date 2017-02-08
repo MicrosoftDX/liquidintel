@@ -8,9 +8,11 @@ class IOControllerConfig(object):
 
     # The set of configuration attributes
     sessionTimeout = NotifyVariable(0)
+    userCacheTtl = NotifyVariable(3600)
     apiBaseUri = NotifyVariable('')
     apiUser = NotifyVariable('')
     apiKey = NotifyVariable('')
+    apiRequestTimeout = NotifyVariable(5)
     tapsConfig = NotifyVariable(None)
     iotHubConnectString = NotifyVariable('')
     installDir = NotifyVariable('')
@@ -90,16 +92,18 @@ class IOControllerConfig(object):
 
     def _refreshConfigFromSource(self, configSource):
         self.sessionTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'sessionTimeout', self.sessionTimeout.value)
+        self.userCacheTtl.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'userCacheTtl', self.userCacheTtl.value)
         self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiEndpoint', self.apiBaseUri.value)
         self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
         self.apiKey.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiKey', self.apiKey.value)
+        self.apiRequestTimeout.value = configSource.getint(IOControllerConfig.SECTION_LIQUIDAPI, 'requestTimeout', self.apiRequestTimeout.value)
         self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin']) if isinstance(tap, dict) else tap for tap in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
         self.iotHubConnectString.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'iotHubConnectString', self.iotHubConnectString.value)
         self.installDir.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installDir', self.installDir.value)
 
     def __init__(self, configFiles):
         # Read the static config from the config file
-        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30'})
+        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30', 'requestTimeout':'5', 'userCacheTtl': 3600})
         config.add_section(IOControllerConfig.SECTION_GENERAL)
         config.add_section(IOControllerConfig.SECTION_LIQUIDAPI)
         config.add_section(IOControllerConfig.SECTION_KEGERATOR)

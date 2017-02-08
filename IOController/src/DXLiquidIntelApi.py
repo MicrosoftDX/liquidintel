@@ -15,16 +15,17 @@ log = logging.getLogger(__name__)
 
 class DXLiquidIntelApi(object):
     # Note that all arguments (with exception of accessToken) are of type NotifyVariable, so that we can update when config changes
-    def __init__(self, apiEndPoint, apiUser, apiKey):
+    def __init__(self, apiEndPoint, apiUser, apiKey, requestTimeout):
         self.apiEndPoint = apiEndPoint
         self._apiUser = apiUser
         self._apiKey = apiKey
+        self._requestTimeout = requestTimeout
 
     def _retryWrapper(self, failureMessage, failResult, operation):
         retries = 3
         while retries > 0:
             try:
-                return operation()
+                return operation(self._requestTimeout.value)
             except HTTPError as ex:
                 if ex.response.status_code == codes.not_found:
                     log.warning('%s. Received NOT_FOUND - abandoning', failureMessage, exc_info=1)
@@ -36,9 +37,9 @@ class DXLiquidIntelApi(object):
             time.sleep(3)
         return failResult
 
-    def _isUserAuthenticatedImpl(self, cardId):
+    def _isUserAuthenticatedImpl(self, cardId, timeout):
         userAuthUri = URL(self.apiEndPoint.value).add_path_segment('ispersonvalid').add_path_segment(str(cardId))
-        userReq = requests.get(userAuthUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value))
+        userReq = requests.get(userAuthUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), timeout=timeout)
         userReq.raise_for_status()
         json = userReq.json()
         if isinstance(json, list):
@@ -48,20 +49,20 @@ class DXLiquidIntelApi(object):
         fullName = json.get('FullName', '')
         return (validUser, personnelId, fullName)
 
-    def _sendSessionDetails(self, user, kegIO):
+    def _sendSessionDetails(self, user, tapsCounters, timeout):
         sessionUri = URL(self.apiEndPoint.value).add_path_segment('activity')
-        tapsInfo = kegIO.getTapsFlowCount()
         payload = {
             'sessionTime': datetime.datetime.utcnow().isoformat(),
             'personnelNumber':user.personnelId,
-            'Taps': {tapId:{'amount':tapsInfo[tapId]} for tapId in tapsInfo}
+            'Taps': {tapId:{'amount':tapsCounters[tapId]} for tapId in tapsCounters}
         }
-        userReq = requests.post(sessionUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), json=payload)
+        userReq = requests.post(sessionUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), json=payload, timeout=timeout)
         userReq.raise_for_status()
         log.info('Session info for user: %d:%s added with activities: %s', user.personnelId, user.fullName, str([activity['ActivityId'] for activity in userReq.json()]))
+        return True
 
     def isUserAuthenticated(self, cardId):
         return self._retryWrapper('Failed to check user validity. User card id: {0}'.format(cardId), (False, None, None), partial(self._isUserAuthenticatedImpl, cardId))
             
-    def sendSessionDetails(self, user, kegIO):
-        return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), None, partial(self._sendSessionDetails, user, kegIO))
+    def sendSessionDetails(self, user, tapsCounters):
+        return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), False, partial(self._sendSessionDetails, user, tapsCounters))
