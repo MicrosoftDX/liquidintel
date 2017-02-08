@@ -26,14 +26,14 @@ class _Fifo:
         self._first = None
         self._last = None
 
-    def push(self, data): 
+    def enqueue(self, data): 
         if self._last:
             self._last = (self._last, None, data)
         else:
             self._last = (None, None, data)
             self._first = self._last
 
-    def pop(self): 
+    def dequeue(self): 
         if not self._first:
             return None
         ignore, self._first, retval = self._first
@@ -65,7 +65,7 @@ class SessionManager(object):
         if self._currentSession != None:
             self._currentSession._end()
             self._proxReader.beepEndSession()
-            self._pendingSessions.push(self._currentSession)
+            self._pendingSessions.enqueue(self._currentSession)
             log.info('Session ended for %d:%s. Tap amounts: [%s]', 
                 self._currentSession.user.personnelId, 
                 self._currentSession.user.fullName,
@@ -84,7 +84,7 @@ class SessionManager(object):
                 cardId = 0
             if cardId != 0 or self._currentSession.expired:
                 self._endCurrentSession()
-        pendingSession = self._pendingSessions.pop()
+        pendingSession = self._pendingSessions.dequeue()
         if pendingSession != None:
             if not self._apiClient.sendSessionDetails(pendingSession.user, pendingSession.tapsCounters):
                 # Session activity could not be sent to API - re-insert back into our list

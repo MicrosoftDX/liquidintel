@@ -10,7 +10,6 @@ from DXLiquidIntelApi import DXLiquidIntelApi
 from User import User
 from KegIO import Kegerator
 from BeerSession import SessionManager
-from MethodHandler import MethodHandler
 
 argsparser = argparse.ArgumentParser()
 argsparser.add_argument('-c', '--config', action='append')
@@ -28,10 +27,6 @@ else:
     lh = logging.StreamHandler()
     lh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     log.addHandler(lh)
-    # And our handler to send stuff out to IoT hubs
-    #iotLogHandler = IotHubLogHandler(level=logging.WARNING)
-    #iotLogHandler.setFormatter(logging.Formatter('%(levelname)s: %(message)s'))
-    #log.addHandler(iotLogHandler)
 
 log.info('Start IOController process.')
 config = IOControllerConfig(args.config)
@@ -40,9 +35,6 @@ stop_event = multiprocessing.Event()
 signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
 seenUsers = {}
-#iotHubClient = IOTHub(config.iotHubConnectString, config, MethodHandler(config.installDir))
-#for handler in [handler for handler in log.handlers if isinstance(handler, IotHubLogHandler)]:
-#    handler.setIotClient(iotHubClient)
 prox = PCProx()
 liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey, requestTimeout=config.apiRequestTimeout)
 kegIO = Kegerator(config.tapsConfig)
@@ -62,6 +54,7 @@ while not stop_event.is_set():
             seenUsers[cardKey] = user
         # Start session if the user is allowed
         if user.allowAccess:
+            log.debug('Starting beer session for: %d:%s', user.personnelId, user.fullName)
             sessionManager.startSession(user)
         else:
             prox.beepFail()
