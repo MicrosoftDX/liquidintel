@@ -1,0 +1,13 @@
+# Builds the API for now - TODO: buid web app and IOController too
+language: node_js
+node_js:
+- 'stable'
+- "6"
+before_install: cd api
+install:
+- npm install
+deploy:
+ provider: azure_web_apps
+ skip_cleanup: false
+ verbose: true
+ on: master
