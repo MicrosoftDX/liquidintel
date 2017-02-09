@@ -16,24 +16,6 @@ import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
 import queryExpression = require('./app/utils/query_expression');
 
-/* Adding SSL */
-/*var securityOptions = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('certificate.pem'),
-    requestCert: true
-};*
-
-/* Azure AD */
-/*var options = {
-  identityMetadata: process.env.AADIdentityMetadata,
-  loggingLevel: process.env.AADLoggingLevel,
-  clientID: process.env.AADClientID,
-  audience: process.env.AADAudience,
-  validateIssuer: process.env.AADValidateIssuer,
-  passReqToCallback: process.env.AADPassReqToCallback
-};*/
-/* Azure AD - till here */
-
 // array to hold logged in users and the current logged in user (owner)
 var users = [];
 var owner = null;
@@ -67,21 +49,6 @@ app.use(bodyParser.json());
 /* Azure AD */
 app.use(passport.initialize());
 app.use(passport.session());
-
-/*
-/* Calling the OIDCBearerStrategy and managing users
-/*
-/* Passport pattern provides the need to manage users and info tokens
-/* with a FindorCreate() method that must be provided by the implementor.
-/* Here we just autoregister any user and implement a FindById().
-/* You'll want to do something smarter.
-**/
-/*var bearerStrategy = new BearerStrategy(options, function(token, done){
-    return done(null, token);
-});
-
-passport.use(bearerStrategy);
-*/
 
 passport.use(new BasicStrategy((username, password, done) => {
     var sql = "SELECT client_id, api_key " +

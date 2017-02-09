@@ -28,7 +28,7 @@ class DXLiquidIntelApi(object):
                 return operation(self._requestTimeout.value)
             except HTTPError as ex:
                 if ex.response.status_code == codes.not_found:
-                    log.warning('%s. Received NOT_FOUND - abandoning', failureMessage, exc_info=1)
+                    log.warning('%s. Received NOT_FOUND - abandoning', failureMessage)
                     return failResult
                 log.warning('%s. Retries remaining: %d', failureMessage, retries - 1, exc_info=1)
             except:

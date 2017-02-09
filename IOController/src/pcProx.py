@@ -30,8 +30,12 @@ class PCProx(object):
             self._pcProx._Z7BeepNowhs(0,0)
 
     else:
+        def __init__(self):
+            self.counter = 0
+
         def readCard(self):
-            return 1801958
+            self.counter += 1
+            return [1801958, 55, 1958144][self.counter % 3]
 
         def beepFail(self):
             # No-op

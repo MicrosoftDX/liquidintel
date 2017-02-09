@@ -1,6 +1,10 @@
 
 import express = require('express');
 import tedious = require('tedious');
+import aad = require('../../ad')
+
+var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
+var groupMembership = new aad.GraphGroupMembership(process.env.AuthorizedGroups.split(';'), token);
 
 export function getPersonByCardId(cardId: number, connection: tedious.Connection, output: (resp:any) => express.Response) {
     var sqlStatement = 
@@ -15,11 +19,13 @@ export function getPersonByCardId(cardId: number, connection: tedious.Connection
             return output({code: 404, msg:"No person found having CardId: "+cardId});
         }
         else {
-            return output({code: 200, msg: {
-                'PersonnelNumber':rows[0].PersonnelNumber.value,
-                'Valid':true,
-                'FullName':rows[0].FullName.value
-            }});
+            // Perform an AAD lookup to determine if this user is a transitive member of any of our configured groups
+            groupMembership.isUserMember(`${rows[0].EmailName.value}@${process.env.Tenant}`, (err: Error, result: boolean) => {
+                output({code: 200, msg: {
+                    'PersonnelNumber':rows[0].PersonnelNumber.value,
+                    'Valid':result,
+                    'FullName':rows[0].FullName.value
+                }})});
         }
     });
     request.addParameter('card_id', tedious.TYPES.Int, cardId);
