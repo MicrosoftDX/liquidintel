@@ -61,9 +61,11 @@ CREATE TABLE dbo.FactDrinkers(
  PourDateTime datetime2 NOT NULL,
  PersonnelNumber INT NOT NULL,
  TapId int NOT NULL,
+ KegId int NOT NULL,
  PourAmountInML INT NULL,
  CONSTRAINT pk_FactDrinkers PRIMARY KEY(Id),
  CONSTRAINT fk_FactDrinkers_DimTap FOREIGN KEY(TapId) REFERENCES dbo.DimTap(Id)
+ CONSTRAINT fk_FactDrinkers_DimKeg FOREIGN KEY(KegId) REFERENCES dbo.DimKeg(Id)
 )
 
 CREATE NONCLUSTERED INDEX IX_FactDrinkers_PourDateTime

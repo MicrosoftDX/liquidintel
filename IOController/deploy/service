@@ -1,0 +1,30 @@
+#!/bin/bash
+
+SERVICE=IOController
+WORK_DIR="/var/lib/$SERVICE"
+INSTALL_DIR="/opt/$SERVICE"
+CONFIG_DIR="/etc/$SERVICE"
+DAEMON="/usr/bin/python"
+ARGS="$INSTALL_DIR/current/IOController.py --config $CONFIG_DIR/IOController.cfg --config $INSTALL_DIR/current/IOController.py -l $CONFIG_DIR/log.cfg"
+PIDFILE="/var/run/IOController.pid"
+
+case "$1" in
+  start)
+    echo "Starting server"
+    mkdir -p "$WORK_DIR"
+    /sbin/start-stop-daemon --start --pidfile $PIDFILE \
+        -b --make-pidfile \
+        -d $INSTALL_DIR/current \
+        --exec $DAEMON $ARGS
+    ;;
+  stop)
+    echo "Stopping server"
+    /sbin/start-stop-daemon --stop --pidfile $PIDFILE --verbose --remove-pidfile
+    ;;
+  *)
+    echo "Usage: /etc/init.d/IOController {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0

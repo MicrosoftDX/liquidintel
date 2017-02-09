@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "express": "registry:dt/express#4.0.0+20170118060322",
+    "express-serve-static-core": "registry:dt/express-serve-static-core#4.0.0+20161228005052",
+    "form-data": "registry:dt/form-data#0.0.0+20161115134730",
+    "mime": "registry:dt/mime#0.0.0+20160428043022",
+    "serve-static": "registry:dt/serve-static#1.7.1+20161128184045"
+  },
+  "globalDependencies": {
+    "node": "registry:dt/node#7.0.0+20170204020307"
+  }
+}
