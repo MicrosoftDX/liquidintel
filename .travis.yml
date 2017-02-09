@@ -2,11 +2,12 @@
 language: node_js
 node_js:
 - "6"
+test: 
 before_install: cd api
 install:
 - npm install
 deploy:
  provider: azure_web_apps
- skip_cleanup: false
  verbose: true
- on: master
+ on: 
+    branch: master
