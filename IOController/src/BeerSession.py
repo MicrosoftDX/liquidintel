@@ -6,21 +6,32 @@ from FifoQueue import Fifo
 log = logging.getLogger(__name__)
 
 class Session(object):
-    def __init__(self, user, kegIO, sessionTimeout):
+    def _notifyFlow(self, tapId, pulseCount):
+        self._lastActivityTime = datetime.datetime.utcnow()
+
+    def __init__(self, user, kegIO, sessionTimeout, inactivityTimeout=10):
         self.user = user
         self._kegIO = kegIO
+        kegIO += self._notifyFlow
+        kegIO.setShutoffValve(1)
         kegIO.resetFlowCount()
         self.tapsCounters = None
         self.sessionTime = datetime.datetime.utcnow()
         self._endSessionTime = datetime.datetime.utcnow() + datetime.timedelta(seconds=sessionTimeout.value)
+        self._lastActivityTime = datetime.datetime.utcnow()
+        self._inactivityTimeout = datetime.timedelta(seconds=inactivityTimeout)
 
     def _end(self):
+        self._kegIO -= self._notifyFlow
+        # Turn off the beer
+        self._kegIO.setShutoffValve(0)
         # Snapshot our flow sensors
         self.tapsCounters = self._kegIO.getTapsFlowCount()
 
     @property
     def expired(self):
-        return self._endSessionTime < datetime.datetime.utcnow()
+        now = datetime.datetime.utcnow()
+        return self._endSessionTime < now or self._lastActivityTime + self._inactivityTimeout < now
 
 class SessionManager(object):
     def __init__(self, proxReader, kegIO, apiClient, sessionTimeout):

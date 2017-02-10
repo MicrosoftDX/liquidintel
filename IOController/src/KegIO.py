@@ -1,5 +1,6 @@
 
 import sys, logging
+from threading import Thread, Event
 from gpiozero import *
 
 log = logging.getLogger(__name__)
@@ -20,31 +21,53 @@ class Kegerator(object):
         def _countEdge(self, raising):
             if raising:
                 self.pulseCount += 1
+                for handler in self._flowHandlers:
+                    handler(self.tapId, self.pulseCount)
 
         if sys.platform != 'win32':
             def initializeGpio(self, tapConfig):
                 self.shutoffValve = DigitalOutputDevice(tapConfig.shutoffValvePin)
                 self.flowSensor = DigitalInputDevice(tapConfig.flowSensorPin)
                 self.flowSensor.when_activated = lambda: self._countEdge(1)
-                self.flowSensor.when_deactivated = lambda: self._countEdge(0)
 
             def closeGpio(self):
                 self.shutoffValve.close()
                 self.flowSensor.close()
 
+            def setShutoffValve(self, turnOn):
+                self.shutoffValve.value = turnOn
+
         else:
+            class WinEmulatePulse(Thread):
+                def __init__(self, event, handler):
+                    Thread.__init__(self)
+                    self._event = event
+                    self._handler = handler
+
+                def run(self):
+                    while not self._event.wait(0.1):
+                        self._handler(1)
+
             def initializeGpio(self, tapConfig):
-                # Do nothing on Windows
+                # Emulate pulses with a background thread
+                self._stopEvent = Event()
+                Kegerator._TapDevice.WinEmulatePulse(self._stopEvent, self._countEdge).start()
                 self.pulseCount = 0
             
             def closeGpio(self):
-                # No-op on Windows
+                # Signal the pulse emulator to StopIteration
+                self._stopEvent.set()
                 return 0
+
+        def setShutoffValve(self, turnOn):
+            # No-op on windows
+            return 0
 
         def __init__(self, tapConfig):
             self.tapId = tapConfig.tapId
             self.flowCalibrationFactor = tapConfig.flowCalibrationFactor
             self.pulseCount = 0
+            self._flowHandlers = []
             self.initializeGpio(tapConfig)
 
         def close(self):
@@ -52,6 +75,12 @@ class Kegerator(object):
 
         def resetPulseCount(self):
             self.pulseCount = 0
+
+        def addFlowSensorHandler(self, handler):
+            self._flowHandlers.append(handler)
+
+        def removeFlowSensorHandler(self, handler):
+            self._flowHandlers.remove(handler)
 
     def _resetTapsDevices(self):
         if self._hwInitialized:
@@ -80,9 +109,24 @@ class Kegerator(object):
     def __exit__(self, type, value, traceback):
         self._resetTapsDevices()
 
+    def __iadd__(self, handler):
+        # Allows callers to register for flow sensor pulse notifications
+        for tap in self._tapsDevices:
+            tap.addFlowSensorHandler(handler)
+        return self
+
+    def __isub__(self, handler):
+        for tap in self._tapsDevices:
+            tap.removeFlowSensorHandler(handler)
+        return self
+
     def resetFlowCount(self):
         for tap in self._tapsDevices:
             tap.resetPulseCount()
+
+    def setShutoffValve(self, turnOn):
+        for tap in self._tapsDevices:
+            tap.setShutoffValve(turnOn)
 
     def getTapsFlowCount(self):
         return {tap.tapId: type('', (object,), {'pulseCount': tap.pulseCount, 'volume': tap.pulseCount * tap.flowCalibrationFactor}) for tap in self._tapsDevices}
