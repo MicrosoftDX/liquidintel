@@ -6,7 +6,6 @@ test:
 before_install: cd api
 install:
 - npm install
-before_deploy: cd api
 deploy:
  provider: azure_web_apps
  skip_cleanup: true
