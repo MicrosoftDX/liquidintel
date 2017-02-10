@@ -66,19 +66,31 @@ function postNewSession(body, connection, output) {
                 return output({ code: 500, msg: "Failed to update session activity: " + error });
             }
             var requests = [];
-            var nextRequest = function () {
-                var requestInfo = requests.shift();
-                if (requestInfo[1]) {
-                    connection.prepare(requestInfo[0]);
-                    requestInfo[0].on('prepared', function () {
-                        connection.execute(requestInfo[0], requestInfo[2]);
+            var newActivities = [];
+            var checkDone = function () {
+                if (requests.length == 0) {
+                    return done(null, function () {
+                        return output({ code: 200, msg: newActivities.map(function (activity) { return { ActivityId: activity[0], KegId: activity[1] }; }) });
                     });
                 }
+            };
+            var nextRequest = function () {
+                var requestInfo = requests.shift();
+                if (requestInfo) {
+                    if (requestInfo[1]) {
+                        connection.prepare(requestInfo[0]);
+                        requestInfo[0].on('prepared', function () {
+                            connection.execute(requestInfo[0], requestInfo[2]);
+                        });
+                    }
+                    else {
+                        connection.execute(requestInfo[0], requestInfo[2]);
+                    }
+                }
                 else {
-                    connection.execute(requestInfo[0], requestInfo[2]);
+                    checkDone();
                 }
             };
-            var newActivities = [];
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " +
                 "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
                 "SELECT Id, KegId FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
@@ -100,7 +112,8 @@ function postNewSession(body, connection, output) {
             insertDrinkers.addParameter('pourAmount', tedious.TYPES.Int, null);
             var prepareRequest = true;
             requests = tapsResp.msg
-                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null; })
+                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null &&
+                body.Taps[tapInfo.TapId.toString()].amount > 0; })
                 .map(function (tapInfo) {
                 var prepare = prepareRequest;
                 prepareRequest = false;
@@ -121,18 +134,14 @@ function postNewSession(body, connection, output) {
                         return output({ code: 500, msg: "Failed to update session activity: " + error });
                     });
                 }
-                if (requests.length == 0) {
-                    return done(null, function () {
-                        return output({ code: 200, msg: newActivities.map(function (activity) { return { ActivityId: activity[0], KegId: activity[1] }; }) });
-                    });
-                }
                 nextRequest();
             });
             updateKegVolume.addParameter('pourAmount', tedious.TYPES.Decimal, 0.0);
             updateKegVolume.addParameter('kegId', tedious.TYPES.Int, 0);
             prepareRequest = true;
             requests = requests.concat(tapsResp.msg
-                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null; })
+                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null &&
+                body.Taps[tapInfo.TapId.toString()].amount > 0; })
                 .map(function (tapInfo) {
                 var prepare = prepareRequest;
                 prepareRequest = false;

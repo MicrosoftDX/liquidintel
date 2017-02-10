@@ -71,19 +71,32 @@ export function postNewSession(body: any, connection: tedious.Connection, output
             }
             // Add journal entries into the activities table
             var requests: [tedious.Request, boolean, any][] = [];
-            var nextRequest = () => {
-                var requestInfo = requests.shift();
-                if (requestInfo[1]) {
-                    connection.prepare(requestInfo[0]);
-                    requestInfo[0].on('prepared', () => {
-                        connection.execute(requestInfo[0], requestInfo[2]);
+            var newActivities: [number, number][] = [];
+            var checkDone = () => {
+                if (requests.length == 0) {
+                    // We're done - commit the xact
+                    return done(null, () => {
+                        return output({code:200, msg: newActivities.map(activity => { return {ActivityId: activity[0], KegId: activity[1]}; })});
                     });
                 }
+            };
+            var nextRequest = () => {
+                var requestInfo = requests.shift();
+                if (requestInfo) {
+                    if (requestInfo[1]) {
+                        connection.prepare(requestInfo[0]);
+                        requestInfo[0].on('prepared', () => {
+                            connection.execute(requestInfo[0], requestInfo[2]);
+                        });
+                    }
+                    else {
+                        connection.execute(requestInfo[0], requestInfo[2]);
+                    }
+                }
                 else {
-                    connection.execute(requestInfo[0], requestInfo[2]);
+                    checkDone();
                 }
             };
-            var newActivities: [number, number][] = [];
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " + 
                                "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
                                "SELECT Id, KegId FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
@@ -105,7 +118,8 @@ export function postNewSession(body: any, connection: tedious.Connection, output
             insertDrinkers.addParameter('pourAmount', tedious.TYPES.Int, null);
             var prepareRequest = true;
             requests = tapsResp.msg
-                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null)
+                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
+                                   body.Taps[tapInfo.TapId.toString()].amount > 0)
                 .map(tapInfo => {
                     var prepare = prepareRequest;
                     prepareRequest = false;
@@ -127,19 +141,14 @@ export function postNewSession(body: any, connection: tedious.Connection, output
                         return output({code:500, msg: "Failed to update session activity: " + error});
                     });
                 }
-                if (requests.length == 0) {
-                    // We're done - commit the xact
-                    return done(null, () => {
-                        return output({code:200, msg: newActivities.map(activity => { return {ActivityId: activity[0], KegId: activity[1]}; })});
-                    });
-                }
                 nextRequest();
             });
             updateKegVolume.addParameter('pourAmount', tedious.TYPES.Decimal, 0.0);
             updateKegVolume.addParameter('kegId', tedious.TYPES.Int, 0);
             prepareRequest = true;
             requests = requests.concat(tapsResp.msg
-                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null)
+                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
+                                   body.Taps[tapInfo.TapId.toString()].amount > 0)
                 .map(tapInfo => {
                     var prepare = prepareRequest;
                     prepareRequest = false;
