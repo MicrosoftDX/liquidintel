@@ -9,7 +9,7 @@ class Session(object):
     def _notifyFlow(self, tapId, pulseCount):
         self._lastActivityTime = datetime.datetime.utcnow()
 
-    def __init__(self, user, kegIO, sessionTimeout, inactivityTimeout=10):
+    def __init__(self, user, kegIO, sessionTimeout, inactivityTimeout):
         self.user = user
         self._kegIO = kegIO
         kegIO += self._notifyFlow
@@ -19,7 +19,7 @@ class Session(object):
         self.sessionTime = datetime.datetime.utcnow()
         self._endSessionTime = datetime.datetime.utcnow() + datetime.timedelta(seconds=sessionTimeout.value)
         self._lastActivityTime = datetime.datetime.utcnow()
-        self._inactivityTimeout = datetime.timedelta(seconds=inactivityTimeout)
+        self._inactivityTimeout = datetime.timedelta(seconds=inactivityTimeout.value)
 
     def _end(self):
         self._kegIO -= self._notifyFlow
@@ -34,11 +34,12 @@ class Session(object):
         return self._endSessionTime < now or self._lastActivityTime + self._inactivityTimeout < now
 
 class SessionManager(object):
-    def __init__(self, proxReader, kegIO, apiClient, sessionTimeout):
+    def __init__(self, proxReader, kegIO, apiClient, sessionTimeout, inactivityTimeout):
         self._proxReader = proxReader
         self._kegIO = kegIO
         self._apiClient = apiClient
         self._sessionTimeout = sessionTimeout
+        self._inactivityTimeout = inactivityTimeout
         self._pendingSessions = Fifo()
         self._currentSession = None
         self._sendMaxRetries = 3
@@ -81,5 +82,5 @@ class SessionManager(object):
 
     def startSession(self, user):
         self._endCurrentSession()
-        self._currentSession = Session(user, self._kegIO, self._sessionTimeout)
+        self._currentSession = Session(user, self._kegIO, self._sessionTimeout, self._inactivityTimeout)
 
