@@ -1,5 +1,5 @@
 "use strict";
-var tedious = require("tedious");
+const tedious = require("tedious");
 function getCurrentKeg_Internal(tapId, connection, outputFunc) {
     var sqlStatement = "SELECT i.TapId, i.InstallDate, i.kegSizeInML, i.currentVolumeInML, " +
         "    k.Id as KegId, k.Name, k.Brewery, k.BeerType, k.ABV, k.IBU, " +
@@ -9,7 +9,7 @@ function getCurrentKeg_Internal(tapId, connection, outputFunc) {
     if (tapId != null) {
         sqlStatement += "AND i.TapId = @tap_id";
     }
-    var request = new tedious.Request(sqlStatement, function (err, rowCount, rows) {
+    var request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
         if (err) {
             return outputFunc({ code: 500, msg: 'Internal Error: ' + err });
         }
@@ -17,7 +17,7 @@ function getCurrentKeg_Internal(tapId, connection, outputFunc) {
             return outputFunc({ code: 404, msg: 'Current Keg(s) Not Found!' });
         }
         else {
-            return outputFunc({ code: 200, msg: rows.map(function (row) {
+            return outputFunc({ code: 200, msg: rows.map(row => {
                     return {
                         'TapId': row.TapId.value,
                         'KegId': row.KegId.value,
@@ -53,12 +53,12 @@ function getKeg(kegId, connection, outputFunc) {
     if (kegId != null) {
         sqlStatement += "WHERE Id = @keg_id";
     }
-    var request = new tedious.Request(sqlStatement, function (err, rowCount, rows) {
+    var request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
         if (err) {
             return outputFunc({ code: 500, msg: 'Internal Error: ' + err });
         }
         else {
-            return outputFunc({ code: 200, msg: rows.map(function (row) {
+            return outputFunc({ code: 200, msg: rows.map(row => {
                     return {
                         'KegId': row.Id.value,
                         'Name': row.Name.value,
