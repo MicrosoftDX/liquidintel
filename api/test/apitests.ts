@@ -1,3 +1,4 @@
+require('mocha');
 var chai = require('chai');
 var server = require('../server');
 
