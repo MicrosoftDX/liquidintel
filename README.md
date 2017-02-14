@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MicrosoftDX/liquidintel.svg?branch=master)](https://travis-ci.org/MicrosoftDX/liquidintel)
+
 # DX Liquid Intelligence
 A project to control and report on kegerators including an IO Controller, API, Data Layer, and Web App. 
 
