@@ -59,9 +59,9 @@ class Kegerator(object):
                 self._stopEvent.set()
                 return 0
 
-        def setShutoffValve(self, turnOn):
-            # No-op on windows
-            return 0
+            def setShutoffValve(self, turnOn):
+                # No-op on windows
+                return 0
 
         def __init__(self, tapConfig):
             self.tapId = tapConfig.tapId
