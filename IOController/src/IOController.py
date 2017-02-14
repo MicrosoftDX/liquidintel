@@ -38,7 +38,7 @@ seenUsers = {}
 prox = PCProx()
 liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey, requestTimeout=config.apiRequestTimeout)
 kegIO = Kegerator(config.tapsConfig)
-sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout)
+sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout, config.inactivityTimeout)
 with kegIO:
     while not stop_event.is_set():
         cardId = sessionManager.apply()

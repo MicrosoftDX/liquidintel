@@ -1,6 +1,6 @@
 "use strict";
-var tedious = require("tedious");
-var kegController = require("./kegController");
+const tedious = require("tedious");
+const kegController = require("./kegController");
 function getSessions(sessionId, queryParams, connection, output) {
     var sqlStatement = "SELECT d.Id as SessionId, k.Name as BeerName, * " +
         "FROM FactDrinkers d INNER JOIN DimKeg k ON d.KegId = k.Id " +
@@ -19,7 +19,7 @@ function getSessions(sessionId, queryParams, connection, output) {
         }
     }
     sqlStatement += " ORDER BY d.PourDateTime DESC";
-    var request = new tedious.Request(sqlStatement, function (err, rowCount, rows) {
+    var request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
         if (err) {
             return output({ code: 500, msg: 'Internal Error: ' + err });
         }
@@ -27,7 +27,7 @@ function getSessions(sessionId, queryParams, connection, output) {
             return output({ code: 404, msg: 'Specified session not found!' });
         }
         else {
-            return output({ code: 200, msg: rows.map(function (row) {
+            return output({ code: 200, msg: rows.map(row => {
                     return {
                         'SessionId': row.SessionId.value,
                         'PourTime': row.PourDateTime.value,
@@ -57,34 +57,46 @@ function getSessions(sessionId, queryParams, connection, output) {
 }
 exports.getSessions = getSessions;
 function postNewSession(body, connection, output) {
-    kegController.getCurrentKeg_Internal(null, connection, function (tapsResp) {
+    kegController.getCurrentKeg_Internal(null, connection, (tapsResp) => {
         if (tapsResp.code != 200) {
             return output(tapsResp);
         }
-        connection.transaction(function (error, done) {
+        connection.transaction((error, done) => {
             if (error) {
                 return output({ code: 500, msg: "Failed to update session activity: " + error });
             }
             var requests = [];
-            var nextRequest = function () {
-                var requestInfo = requests.shift();
-                if (requestInfo[1]) {
-                    connection.prepare(requestInfo[0]);
-                    requestInfo[0].on('prepared', function () {
-                        connection.execute(requestInfo[0], requestInfo[2]);
+            var newActivities = [];
+            var checkDone = () => {
+                if (requests.length == 0) {
+                    return done(null, () => {
+                        return output({ code: 200, msg: newActivities.map(activity => { return { ActivityId: activity[0], KegId: activity[1] }; }) });
                     });
                 }
+            };
+            var nextRequest = () => {
+                var requestInfo = requests.shift();
+                if (requestInfo) {
+                    if (requestInfo[1]) {
+                        connection.prepare(requestInfo[0]);
+                        requestInfo[0].on('prepared', () => {
+                            connection.execute(requestInfo[0], requestInfo[2]);
+                        });
+                    }
+                    else {
+                        connection.execute(requestInfo[0], requestInfo[2]);
+                    }
+                }
                 else {
-                    connection.execute(requestInfo[0], requestInfo[2]);
+                    checkDone();
                 }
             };
-            var newActivities = [];
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " +
                 "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
                 "SELECT Id, KegId FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
-            var insertDrinkers = new tedious.Request(sqlStatement, function (error, rowCount, rows) {
+            var insertDrinkers = new tedious.Request(sqlStatement, (error, rowCount, rows) => {
                 if (error) {
-                    return done(error, function () {
+                    return done(error, () => {
                         return output({ code: 500, msg: "Failed to update session activity: " + error });
                     });
                 }
@@ -100,8 +112,9 @@ function postNewSession(body, connection, output) {
             insertDrinkers.addParameter('pourAmount', tedious.TYPES.Int, null);
             var prepareRequest = true;
             requests = tapsResp.msg
-                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null; })
-                .map(function (tapInfo) {
+                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
+                body.Taps[tapInfo.TapId.toString()].amount > 0)
+                .map(tapInfo => {
                 var prepare = prepareRequest;
                 prepareRequest = false;
                 return [insertDrinkers, prepare, {
@@ -115,15 +128,10 @@ function postNewSession(body, connection, output) {
             sqlStatement = "UPDATE FactKegInstall " +
                 "SET currentVolumeInML = currentVolumeInML - @pourAmount " +
                 "WHERE KegId = @kegId";
-            var updateKegVolume = new tedious.Request(sqlStatement, function (error, rowCount, rows) {
+            var updateKegVolume = new tedious.Request(sqlStatement, (error, rowCount, rows) => {
                 if (error) {
-                    return done(error, function () {
+                    return done(error, () => {
                         return output({ code: 500, msg: "Failed to update session activity: " + error });
-                    });
-                }
-                if (requests.length == 0) {
-                    return done(null, function () {
-                        return output({ code: 200, msg: newActivities.map(function (activity) { return { ActivityId: activity[0], KegId: activity[1] }; }) });
                     });
                 }
                 nextRequest();
@@ -132,8 +140,9 @@ function postNewSession(body, connection, output) {
             updateKegVolume.addParameter('kegId', tedious.TYPES.Int, 0);
             prepareRequest = true;
             requests = requests.concat(tapsResp.msg
-                .filter(function (tapInfo) { return body.Taps[tapInfo.TapId.toString()] != null; })
-                .map(function (tapInfo) {
+                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
+                body.Taps[tapInfo.TapId.toString()].amount > 0)
+                .map(tapInfo => {
                 var prepare = prepareRequest;
                 prepareRequest = false;
                 return [updateKegVolume, prepare, {

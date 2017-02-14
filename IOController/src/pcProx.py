@@ -35,7 +35,7 @@ class PCProx(object):
 
         def readCard(self):
             self.counter += 1
-            return [1801958, 55, 1958144][self.counter % 3]
+            return [1801958, 0, 0, 55, 0, 0, 1958144, 0, 0, 0, 0][self.counter % 11]
 
         def beepFail(self):
             # No-op

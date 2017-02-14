@@ -9,6 +9,7 @@ class IOControllerConfig(object):
     # The set of configuration attributes
     sessionTimeout = NotifyVariable(0)
     userCacheTtl = NotifyVariable(3600)
+    inactivityTimeout = NotifyVariable(10)
     apiBaseUri = NotifyVariable('')
     apiUser = NotifyVariable('')
     apiKey = NotifyVariable('')
@@ -92,6 +93,7 @@ class IOControllerConfig(object):
 
     def _refreshConfigFromSource(self, configSource):
         self.sessionTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'sessionTimeout', self.sessionTimeout.value)
+        self.inactivityTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'inactivityTimeout', self.inactivityTimeout.value)
         self.userCacheTtl.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'userCacheTtl', self.userCacheTtl.value)
         self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiEndpoint', self.apiBaseUri.value)
         self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
@@ -104,7 +106,7 @@ class IOControllerConfig(object):
 
     def __init__(self, configFiles):
         # Read the static config from the config file
-        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30', 'requestTimeout':'5', 'userCacheTtl': '3600'})
+        config = SafeConfigParser({'apiEndpoint':'https://dxliquidintel.azurewebsites.net/api', 'sessionTimeout':'30', 'requestTimeout':'5', 'userCacheTtl': '3600', 'inactivityTimeout': '10'})
         config.add_section(IOControllerConfig.SECTION_GENERAL)
         config.add_section(IOControllerConfig.SECTION_LIQUIDAPI)
         config.add_section(IOControllerConfig.SECTION_KEGERATOR)

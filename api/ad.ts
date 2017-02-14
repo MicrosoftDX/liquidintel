@@ -1,6 +1,6 @@
 /// <reference path="typings/index.d.ts" />
 
-var request = require('request')
+import request = require('request')
 
 export class Token {
     public value: string = null;
@@ -25,40 +25,79 @@ export class Token {
                 }, (err, response, body) => {
                     let result = body; // JSON.parse(body);
                     console.log('Response ' + JSON.stringify(body));
-                    if (err || result == null) { next(err, null); return; }
+                    if (err || result == null) { 
+                        next(err, null); return; 
+                    }
                     this.value = (result.access_token) ? result.access_token : null;
-                    this.expires = (result.expires_on) ? parseInt(result.expires_on)*1000 : Date.now();
+                    this.expires = (result.expires_on) ? parseInt(result.expires_on) * 1000 : Date.now();
                     next(null, this);
                 });
         } else {
-            next('Unable to acquire', null);
+            next('Unable to acquire access token', null);
         }
+    }
+
+    public accessToken(): Promise<String> {
+        return new Promise<string>((resolve, reject) => {
+            this.acquire((err, token) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(token.value);
+            });
+        });
     }
 }
 
 export class SimpleGraph
 {
-    constructor() { }
+    constructor(protected accessToken: Token) { }
 
     static baseUri =  "https://graph.microsoft.com/v1.0/"
 
-    groupIdsFromNames(names: string[], token: string, next : (err: Error, result: any[]) => void) {
+    public groupIdsFromNames(names: string[]): Promise<string[]> {
+        return new Promise<string[]>((resolve, reject) => {
+            this.groupsFromNames(names, (err, groups) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(groups.map((v) => v.id));
+            });
+        });
+    }
+
+    public async userInGroups(upn: string, groupIds: string[]): Promise<boolean> {
+        return new Promise<boolean>((resolve, reject) => { 
+            this.memberOf(upn, groupIds, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(result);
+            });
+        });
+    }
+
+    protected async groupsFromNames(names: string[], next : (err: Error, result: any[]) => void) {
         let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');        
         let url = SimpleGraph.baseUri + `groups?$filter=${predicate}&$select=id,displayName`;
         console.log(url);
+        let token = await this.accessToken.accessToken();
         request({ 
                 url: url, 
                 json: true, 
                 headers: { Authorization: "Bearer " + token } 
             }, 
             (error, message, result) => {
-                if (error) return next(error, null);
+                if (error) {
+                    return next(error, null);
+                }
                 console.log(result);
-                next(null,result.value);
+                next(null, result.value);
             });
     }
 
-    isUserMemberOfAnyGroups(upn: string, groupIds: string[], token: string, next: (err: Error, result: boolean) => void) {
+    protected async memberOf(upn: string, groupIds: string[], next: (err: Error, result: boolean) => void) {
+        let token = await this.accessToken.accessToken();
         request.post({
                 url: SimpleGraph.baseUri + `users/${upn}/checkMemberGroups`,
                 json: true,
@@ -77,54 +116,17 @@ export class SimpleGraph
     }
 }
 
-export class GraphGroupMembership extends SimpleGraph {
-    protected groupIds: string[];
+export class GraphGroupMembership {
+    protected graph: SimpleGraph;
+    protected groupIds: Promise<string[]>;
     
-    constructor(protected groupNames: string[], protected token: Token) { 
-        super();
+    constructor(protected groupNames: string[], token: Token) { 
+        this.graph = new SimpleGraph(token);
+        this.groupIds = this.graph.groupIdsFromNames(groupNames);
     }
 
-    isUserMember(upn: string, next: (err: Error, result: boolean) => void) {
-        this.getGroupIds((err, groupIds) => {
-            if (err) {
-                next(err, null);
-            }
-            else {
-                this.token.acquire((err, token) => {
-                    if (err) {
-                        next(err, null);
-                    }
-                    else {
-                        super.isUserMemberOfAnyGroups(upn, groupIds, token.value, (err, result) => {
-                            next(err, result);
-                        });
-                    }
-                });
-            }
-        });
-    }
-
-    protected getGroupIds(next : (err: Error, result: any[]) => void) {
-        if (this.groupIds) {
-            next(null, this.groupIds);
-        }
-        else {
-            this.token.acquire((err, token) => {
-                if (err) {
-                    next(err, null);
-                }
-                else {
-                    super.groupIdsFromNames(this.groupNames, this.token.value, (err, result) => {
-                        if (err) {
-                            next(err, null);
-                        }
-                        else {
-                            this.groupIds = result.map(item => item.id);
-                            next(null, this.groupIds);
-                        }
-                    });
-                }
-            });
-        }
+    public async isUserMember(upn: string): Promise<boolean> {
+        let groups = await this.groupIds;
+        return this.graph.userInGroups(upn, groups);
     }
 }

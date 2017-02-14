@@ -7,8 +7,8 @@ var Operators;
     Operators[Operators["GreaterThan"] = 3] = "GreaterThan";
     Operators[Operators["Range"] = 4] = "Range";
 })(Operators = exports.Operators || (exports.Operators = {}));
-var QueryExpression = (function () {
-    function QueryExpression(queryParams) {
+class QueryExpression {
+    constructor(queryParams) {
         this.params = {};
         this.mapping = null;
         for (var prop in queryParams) {
@@ -34,10 +34,10 @@ var QueryExpression = (function () {
             }
         }
     }
-    QueryExpression.prototype.getClause = function (paramName) {
+    getClause(paramName) {
         return this.params[paramName.toLowerCase()];
-    };
-    QueryExpression.prototype.isAny = function () {
+    }
+    isAny() {
         if (this.mapping != null) {
             for (var prop in this.mapping) {
                 if (this.getClause(prop) != null) {
@@ -47,11 +47,10 @@ var QueryExpression = (function () {
             return false;
         }
         return Object.keys(this.params).length > 0;
-    };
-    QueryExpression.prototype.getSqlFilterPredicates = function () {
-        var _this = this;
-        var predicates = Object.keys(this.mapping).map(function (prop) {
-            var clause = _this.getClause(prop);
+    }
+    getSqlFilterPredicates() {
+        var predicates = Object.keys(this.mapping).map(prop => {
+            var clause = this.getClause(prop);
             if (clause != null) {
                 var comparitor = "";
                 switch (clause.operator) {
@@ -65,20 +64,20 @@ var QueryExpression = (function () {
                         comparitor = "<";
                         break;
                     case Operators.Range:
-                        return _this.mapping[prop].sqlName + " > @" + prop + "Low AND " +
-                            _this.mapping[prop].sqlName + " < @" + prop + "Hi";
+                        return this.mapping[prop].sqlName + " > @" + prop + "Low AND " +
+                            this.mapping[prop].sqlName + " < @" + prop + "Hi";
                 }
                 if (comparitor != "") {
-                    return _this.mapping[prop].sqlName + " " + comparitor + " @" + prop;
+                    return this.mapping[prop].sqlName + " " + comparitor + " @" + prop;
                 }
             }
             return "";
         });
         return predicates
-            .filter(function (clause) { return clause != ""; })
+            .filter(clause => clause != "")
             .join(" AND ");
-    };
-    QueryExpression.prototype.addRequestParameters = function (request) {
+    }
+    addRequestParameters(request) {
         for (var prop in this.mapping) {
             var clause = this.getClause(prop);
             if (clause != null) {
@@ -91,8 +90,8 @@ var QueryExpression = (function () {
                 }
             }
         }
-    };
-    QueryExpression.getParamInfo = function (paramName) {
+    }
+    static getParamInfo(paramName) {
         var retval = QueryExpression.checkParamInfo(paramName, QueryExpression._suffix_gt, Operators.GreaterThan);
         if (retval[1] != Operators.Unknown) {
             return retval;
@@ -102,17 +101,16 @@ var QueryExpression = (function () {
             return retval;
         }
         return [paramName, Operators.EqualTo];
-    };
-    QueryExpression.checkParamInfo = function (paramName, suffixCheck, operator) {
+    }
+    static checkParamInfo(paramName, suffixCheck, operator) {
         var checkName = paramName.toLowerCase();
         var suffixIndex = checkName.lastIndexOf(suffixCheck);
         if (suffixIndex == checkName.length - suffixCheck.length) {
             return [paramName.substr(0, suffixIndex), operator];
         }
         return [paramName, Operators.Unknown];
-    };
-    return QueryExpression;
-}());
+    }
+}
 QueryExpression._suffix_gt = "_gt";
 QueryExpression._suffix_lt = "_lt";
 exports.QueryExpression = QueryExpression;
