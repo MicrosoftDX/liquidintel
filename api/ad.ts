@@ -24,7 +24,7 @@ export class Token {
                     }
                 }, (err, response, body) => {
                     let result = body; // JSON.parse(body);
-                    console.log('Response ' + JSON.stringify(body));
+                    //console.log('Response ' + JSON.stringify(body));
                     if (err || result == null) { next(err, null); return; }
                     this.value = (result.access_token) ? result.access_token : null;
                     this.expires = (result.expires_on) ? parseInt(result.expires_on)*1000 : Date.now();
@@ -45,7 +45,7 @@ export class SimpleGraph
     groupIdsFromNames(names: string[], token: string, next : (err: Error, result: any[]) => void) {
         let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');        
         let url = SimpleGraph.baseUri + `groups?$filter=${predicate}&$select=id,displayName`;
-        console.log(url);
+        //console.log(url);
         request({ 
                 url: url, 
                 json: true, 
@@ -53,7 +53,7 @@ export class SimpleGraph
             }, 
             (error, message, result) => {
                 if (error) return next(error, null);
-                console.log(result);
+                //console.log(result);
                 next(null,result.value);
             });
     }

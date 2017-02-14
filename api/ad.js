@@ -30,7 +30,6 @@ var Token = (function () {
                 }
             }, function (err, response, body) {
                 var result = body;
-                console.log('Response ' + JSON.stringify(body));
                 if (err || result == null) {
                     next(err, null);
                     return;
@@ -53,7 +52,6 @@ var SimpleGraph = (function () {
     SimpleGraph.prototype.groupIdsFromNames = function (names, token, next) {
         var predicate = names.map(function (v) { return "displayName+eq+'" + encodeURI(v) + "'"; }).join('+or+');
         var url = SimpleGraph.baseUri + ("groups?$filter=" + predicate + "&$select=id,displayName");
-        console.log(url);
         request({
             url: url,
             json: true,
@@ -61,7 +59,6 @@ var SimpleGraph = (function () {
         }, function (error, message, result) {
             if (error)
                 return next(error, null);
-            console.log(result);
             next(null, result.value);
         });
     };
