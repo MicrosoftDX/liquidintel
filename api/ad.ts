@@ -71,6 +71,8 @@ export class SimpleGraph
                     next(error, false);
                 }
                 else {
+                    console.log(response);
+                    console.log(body);
                     next(null, (<string[]>body.value).length > 0);
                 }
             });

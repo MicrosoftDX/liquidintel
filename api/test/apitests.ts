@@ -170,8 +170,6 @@ describe('testing api', function() {
         .get('/api/isPersonValid/1801975')
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
         .end(function(err, res){
-            if (err){console.log(err)};
-            console.log(res);
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
@@ -187,8 +185,6 @@ describe('testing api', function() {
         .get('/api/isPersonValid/1958144')
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
         .end(function(err, res){
-            if (err){console.log(err)};
-            console.log(res);
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
