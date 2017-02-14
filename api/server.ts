@@ -33,6 +33,7 @@ var config = {
 };
 
 var connection = new tedious.Connection(config);
+
 connection.on('connect', function(err){
   if(err)
   {
@@ -155,6 +156,8 @@ router.route('/timeline')
 
 app.use('/api', router);
 
-app.listen(port);
+app.listen(port, function () {
+    console.log('Listening on port: ' + port);
+});
 
-console.log('Listening on port: ' + port);
+module.exports = {app, connection};

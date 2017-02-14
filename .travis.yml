@@ -2,13 +2,19 @@
 language: node_js
 node_js:
 - "6"
-test: 
-before_install: cd api
+before_install: 
+- cd api
+- npm install -g typescript
 install:
 - npm install
-deploy:
- provider: azure_web_apps
- skip_cleanup: true
- verbose: true
- on: 
-    branch: master
+- tsc
+#
+# Uncommeting deploy below will deploy to the web app based on env variables
+# configured in Travis. For now we'll only deploy Master and the web app is already
+# configured to deploy from master straight from GitHub using kudu so we'll use Travis 
+# for running tests for now
+#
+# deploy:
+# provider: azure_web_apps
+# skip_cleanup: true
+# verbose: true

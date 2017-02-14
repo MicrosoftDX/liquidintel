@@ -32,7 +32,6 @@ class Token {
                 }
             }, (err, response, body) => {
                 let result = body;
-                console.log('Response ' + JSON.stringify(body));
                 if (err || result == null) {
                     next(err, null);
                     return;
@@ -88,7 +87,6 @@ class SimpleGraph {
         return __awaiter(this, void 0, void 0, function* () {
             let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');
             let url = SimpleGraph.baseUri + `groups?$filter=${predicate}&$select=id,displayName`;
-            console.log(url);
             let token = yield this.accessToken.accessToken();
             request({
                 url: url,
@@ -98,7 +96,6 @@ class SimpleGraph {
                 if (error) {
                     return next(error, null);
                 }
-                console.log(result);
                 next(null, result.value);
             });
         });
