@@ -2,19 +2,19 @@
 
 #Notifies Skype Teams channel of Travis builds
 notifications:
-    webhooks: https://outlook.office.com/webhook/a306d5a1-d393-4c81-9fce-a0d7d1fe987a@72f988bf-86f1-41af-91ab-2d7cd011db47/TravisCI/26562f1234464a60b768fa3ed1385896/d17db4b1-39ff-4f12-a233-f5904a32bee0
+webhooks: https://outlook.office.com/webhook/a306d5a1-d393-4c81-9fce-a0d7d1fe987a@72f988bf-86f1-41af-91ab-2d7cd011db47/TravisCI/26562f1234464a60b768fa3ed1385896/d17db4b1-39ff-4f12-a233-f5904a32bee0
 
 language: node_js
-    node_js:
-    - "6"
+node_js:
+- "6"
 
 before_install: 
-    - cd api
-    - npm install -g typescript
+- cd api
+- npm install -g typescript
 
 install:
-    - npm install
-    - tsc
+- npm install
+- tsc
 #
 # Uncommeting deploy below will deploy to the web app based on env variables
 # configured in Travis. For now we'll only deploy Master and the web app is already
