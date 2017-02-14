@@ -1,17 +1,17 @@
 "use strict";
-var express = require("express");
+const express = require("express");
 var app = express();
-var tedious = require("tedious");
+const tedious = require("tedious");
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
 var fs = require('fs');
 var env = require('dotenv').load();
 var moment = require('moment');
-var kegController = require("./app/controllers/kegController");
-var personController = require("./app/controllers/personController");
-var sessionController = require("./app/controllers/session");
-var queryExpression = require("./app/utils/query_expression");
+const kegController = require("./app/controllers/kegController");
+const personController = require("./app/controllers/personController");
+const sessionController = require("./app/controllers/session");
+const queryExpression = require("./app/utils/query_expression");
 var users = [];
 var owner = null;
 var config = {
@@ -38,11 +38,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 app.use(passport.session());
-passport.use(new BasicStrategy(function (username, password, done) {
+passport.use(new BasicStrategy((username, password, done) => {
     var sql = "SELECT client_id, api_key " +
         "FROM SecurityTokens " +
         "WHERE client_id = @clientId and api_key = @apiKey";
-    var request = new tedious.Request(sql, function (err, rowCount, rows) {
+    var request = new tedious.Request(sql, (err, rowCount, rows) => {
         if (err) {
             return done(err);
         }
@@ -69,9 +69,9 @@ router.use(passport.authenticate('basic', { session: false }), function (req, re
 router.get('/', function (req, res) {
     res.json({ message: 'Welcome to DX Liquid Intelligence api!' });
 });
-var stdHandler = function (handler) {
-    return function (req, res) {
-        handler(req, function (resp) {
+var stdHandler = (handler) => {
+    return (req, res) => {
+        handler(req, resp => {
             if (resp.code == 200) {
                 return res.json(resp.msg);
             }
@@ -82,16 +82,16 @@ var stdHandler = function (handler) {
     };
 };
 router.route('/isPersonValid/:card_id')
-    .get(stdHandler(function (req, resultDispatcher) { return personController.getPersonByCardId(req.params.card_id, connection, resultDispatcher); }));
+    .get(stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, connection, resultDispatcher)));
 router.route('/kegs')
-    .get(stdHandler(function (req, resultDispatcher) { return kegController.getKeg(null, connection, resultDispatcher); }));
+    .get(stdHandler((req, resultDispatcher) => kegController.getKeg(null, connection, resultDispatcher)));
 router.route('/activity/:sessionId?')
-    .get(stdHandler(function (req, resultDispatcher) { return sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), connection, resultDispatcher); }))
-    .post(stdHandler(function (req, resultDispatcher) { return sessionController.postNewSession(req.body, connection, resultDispatcher); }));
+    .get(stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), connection, resultDispatcher)))
+    .post(stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, connection, resultDispatcher)));
 router.route('/CurrentKeg')
-    .get(stdHandler(function (req, resultDispatcher) { return kegController.getCurrentKeg(null, connection, resultDispatcher); }));
+    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, connection, resultDispatcher)));
 router.route('/CurrentKeg/:tap_id')
-    .get(stdHandler(function (req, resultDispatcher) { return kegController.getCurrentKeg(req.params.tap_id, connection, resultDispatcher); }))
+    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, connection, resultDispatcher)))
     .post(function (req, res) {
     if (req.body.kegId != null) {
         var checkForKeg = "SELECT Id FROM dbo.DimKeg WHERE Id=@kegId";
