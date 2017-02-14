@@ -53,7 +53,8 @@ export class SimpleGraph
             }, 
             (error, message, result) => {
                 if (error) return next(error, null);
-                //console.log(result);
+                console.log(names);
+                console.log(result);
                 next(null,result.value);
             });
     }
@@ -95,8 +96,6 @@ export class GraphGroupMembership extends SimpleGraph {
                         next(err, null);
                     }
                     else {
-                        console.log(groupIds);
-                        console.log(token);
                         super.isUserMemberOfAnyGroups(upn, groupIds, token.value, (err, result) => {
                             next(err, result);
                         });
