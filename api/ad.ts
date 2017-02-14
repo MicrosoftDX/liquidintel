@@ -53,8 +53,6 @@ export class SimpleGraph
             }, 
             (error, message, result) => {
                 if (error) return next(error, null);
-                console.log(names);
-                console.log(result);
                 next(null,result.value);
             });
     }
