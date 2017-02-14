@@ -165,11 +165,13 @@ describe('testing api', function() {
         })
     });
 
-    it('should get specific person on /api/isPersonValid/<id> GET', function(done) {
+    it('should get valid specific person on /api/isPersonValid/<id> GET', function(done) {
         chai.request(server)
         .get('/api/isPersonValid/1801975')
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
         .end(function(err, res){
+            if (err){console.log(err)};
+            console.log(res);
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
@@ -180,11 +182,13 @@ describe('testing api', function() {
         })
     });
 
-    it('should get specific person on /api/isPersonValid/<id> GET', function(done) {
+    it('should get not valid specific person on /api/isPersonValid/<id> GET', function(done) {
         chai.request(server)
         .get('/api/isPersonValid/1958144')
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
         .end(function(err, res){
+            if (err){console.log(err)};
+            console.log(res);
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
