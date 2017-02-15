@@ -1,6 +1,7 @@
 import React from 'react';
 import KegStatus from './kegStatus';
 import BeerActivity from './beerActivity';
+import {webAppConfig} from '../../config/default.js';
 
 
 import {
@@ -25,16 +26,19 @@ export default class HomeContainer extends React.Component {
   }
 
   componentDidMount() {
-    var apiUrl = "http://chelita-api.azurewebsites.net";
+    var apiUrl = webAppConfig.api.url;
     //Get Keg status
     var myHeaders = new Headers();
     myHeaders.append("Acept", "application/json");
     myHeaders.append("Cache-Control", "no-cache");
     myHeaders.delete("X-Requested-With");
+    myHeaders.append("Authorization", 
+    btoa(webAppConfig.api.username+":" +webAppConfig.api.password ));
+    
     var myInit = { method: 'GET',
                 headers: myHeaders};
 
-    fetch(apiUrl + '/users',myInit)
+    fetch(apiUrl + '/currentKeg',myInit)
     .then(function(response) { 
         return response.json();
     }).then(res => {
