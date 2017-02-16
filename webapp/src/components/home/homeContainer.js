@@ -29,7 +29,7 @@ export default class HomeContainer extends React.Component {
   componentDidMount() {
     //Get Keg status
     var myHeaders = new Headers();
-    myHeaders.append("Acept", "application/json");
+    myHeaders.append("Accept", "application/json");
     myHeaders.append("Cache-Control", "no-cache");
     myHeaders.delete("X-Requested-With");
     myHeaders.append("Authorization", 
