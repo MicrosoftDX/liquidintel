@@ -21,7 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "PACE": "pace#~1.0.2",
+    "fetch":"^2.0.2",
     "d3": "3.5.17",
     "vex": "2.3.4",
     "kapusta-jquery.sparkline": "^2.1.3",
