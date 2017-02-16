@@ -32,37 +32,42 @@ export default new TdsPromises();
 
 export class TdsConnection {
     private _connection: ConnectionPool.PooledConnection;
+    private _openPromise: Promise<void>;
     private _inTransaction: boolean;
 
     constructor() {
     }
 
     open(): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
-            TdsPromises._connectionPool.acquire((err: Error, connection: ConnectionPool.PooledConnection) => {
-                try {
-                    if (err) {
-                        if (connection) {
-                            connection.release();
+        if (!this._openPromise) {
+            this._openPromise = new Promise<void>((resolve, reject) => {
+                TdsPromises._connectionPool.acquire((err: Error, connection: ConnectionPool.PooledConnection) => {
+                    try {
+                        if (err) {
+                            if (connection) {
+                                connection.release();
+                            }
+                            reject(err);
+                        } 
+                        else {
+                            this._connection = connection;
+                            resolve();
                         }
-                        reject(err);
                     } 
-                    else {
-                        this._connection = connection;
-                        resolve();
+                    catch (ex) {
+                        reject(ex);
                     }
-                } 
-                catch (ex) {
-                    reject(ex);
-                }
+                });
             });
-        });
+        }
+        return this._openPromise;
     }
 
     close(): void {
         if (this._connection) {
             this._connection.release();
             this._connection = null;
+            this._openPromise = null;
         }
     }
 
