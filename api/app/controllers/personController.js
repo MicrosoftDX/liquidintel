@@ -11,7 +11,7 @@ const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
 const aad = require("../../ad");
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership(process.env.AuthorizedGroups.split(';'), token);
+var groupMembership = new aad.GraphGroupMembership((process.env.AuthorizedGroups || "").split(';'), token);
 function getPersonByCardId(cardId, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

@@ -5,7 +5,7 @@ import {TYPES} from 'tedious';
 import aad = require('../../ad')
 
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership(process.env.AuthorizedGroups.split(';'), token);
+var groupMembership = new aad.GraphGroupMembership((process.env.AuthorizedGroups || "").split(';'), token);
 
 export async function getPersonByCardId(cardId: number, output: (resp:any) => express.Response) {
     try {

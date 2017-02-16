@@ -2,7 +2,7 @@
 import aad = require('../../ad')
 
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership(process.env.AdminGroups.split(';'), token);
+var groupMembership = new aad.GraphGroupMembership((process.env.AdminGroups || "").split(';'), token);
 var cache = new Map<string, [boolean, number]>();
 
 export async function isUserAdmin(user: string): Promise<boolean> {

@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const aad = require("../../ad");
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership(process.env.AdminGroups.split(';'), token);
+var groupMembership = new aad.GraphGroupMembership((process.env.AdminGroups || "").split(';'), token);
 var cache = new Map();
 function isUserAdmin(user) {
     return __awaiter(this, void 0, void 0, function* () {

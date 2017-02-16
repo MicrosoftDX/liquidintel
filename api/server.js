@@ -64,7 +64,7 @@ passport.use(new BasicStrategy((username, password, done) => __awaiter(this, voi
 passport.use(new BearerStrategy({
     identityMetadata: process.env.AADMetadataEndpoint,
     clientID: process.env.ClientId,
-    audience: JSON.parse(process.env.AADAudience),
+    audience: (process.env.AADAudience || "").split(';'),
     validateIssuer: true,
 }, (token, done) => __awaiter(this, void 0, void 0, function* () {
     if (yield adminUserCache.isUserAdmin(token.oid)) {

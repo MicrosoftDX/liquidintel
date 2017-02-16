@@ -66,7 +66,7 @@ passport.use(new BasicStrategy(async (username, password, done) => {
 passport.use(new BearerStrategy({  
         identityMetadata: process.env.AADMetadataEndpoint,
         clientID: process.env.ClientId,  
-        audience: JSON.parse(process.env.AADAudience),  
+        audience: (process.env.AADAudience || "").split(';'),  
         validateIssuer: true,  
     }, async (token, done) => { 
         // Verify that the user associated with the supplied token is a member of our specified group
