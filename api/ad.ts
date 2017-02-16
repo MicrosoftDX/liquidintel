@@ -24,7 +24,7 @@ export class Token {
                     }
                 }, (err, response, body) => {
                     let result = body; // JSON.parse(body);
-                    console.log('Response ' + JSON.stringify(body));
+                    //console.log('Response ' + JSON.stringify(body));
                     if (err || result == null) { 
                         next(err, null); return; 
                     }
@@ -80,7 +80,8 @@ export class SimpleGraph
     protected async groupsFromNames(names: string[], next : (err: Error, result: any[]) => void) {
         let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');        
         let url = SimpleGraph.baseUri + `groups?$filter=${predicate}&$select=id,displayName`;
-        console.log(url);
+
+        //console.log(url);
         let token = await this.accessToken.accessToken();
         request({ 
                 url: url, 
@@ -88,10 +89,11 @@ export class SimpleGraph
                 headers: { Authorization: "Bearer " + token } 
             }, 
             (error, message, result) => {
+
                 if (error) {
                     return next(error, null);
                 }
-                console.log(result);
+                //console.log(result);
                 next(null, result.value);
             });
     }

@@ -100,6 +100,9 @@ router.route('/kegFinished/:tap_id')
     .put(function (req, res) {
 });
 app.use('/api', router);
-app.listen(port);
+app.listen(port, function () {
+    console.log('Listening on port: ' + port);
+});
 console.log('Listening on port: ' + port);
+module.exports = { app };
 //# sourceMappingURL=server.js.map

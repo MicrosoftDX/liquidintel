@@ -147,7 +147,10 @@ router.route('/timeline')
 
 app.use('/api', router);
 
-app.listen(port);
+app.listen(port, function () {
+    console.log('Listening on port: ' + port);
+});
 
 console.log('Listening on port: ' + port);
- 
+
+module.exports = {app};
