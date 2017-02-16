@@ -109,7 +109,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
         // Now decrement the available volume in each of our kegs
         sqlStatement = "UPDATE FactKegInstall " + 
                         "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 
-                        "WHERE KegId = @kegId";
+                        "WHERE KegId = @kegId AND isCurrent = 1";
         var updateKegVolume = await connection.sql(sqlStatement)
             .parameter('pourAmount', TYPES.Decimal, 0.0)
             .parameter('kegId', TYPES.Int, 0)

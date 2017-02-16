@@ -18,14 +18,6 @@ describe('testing api', function () {
             done();
         });
     });
-    it('should return 401 when without auth on /api GET', function (done) {
-        chai.request(server)
-            .get('/api')
-            .end(function (err, res) {
-            res.should.have.status(401);
-            done();
-        });
-    });
     it('should respond with welcome to /api on /api GET', function (done) {
         chai.request(server)
             .get('/api')
@@ -54,6 +46,15 @@ describe('testing api', function () {
             res.body[0].should.have.property('BeerDescription');
             res.body[0].should.have.property('UntappdId');
             res.body[0].should.have.property('imagePath');
+            done();
+        });
+    });
+    it('should require bearer token authentication on /api/kegs POST', function (done) {
+        chai.request(server)
+            .post('/api/kegs')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end(function (err, res) {
+            res.should.have.status(401);
             done();
         });
     });
@@ -95,6 +96,16 @@ describe('testing api', function () {
             res.body[0].should.have.property('UntappdId');
             res.body[0].should.have.property('imagePath');
             should.not.exist(res.body[1]);
+            done();
+        });
+    });
+    it('should require bearer token authentication on /api/CurrentKeg/<id> PUT', function (done) {
+        chai.request(server)
+            .put('/api/CurrentKeg/1')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .send({ KegId: 6, KegSize: 17000 })
+            .end(function (err, res) {
+            res.should.have.status(401);
             done();
         });
     });

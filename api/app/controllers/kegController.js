@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
+const request_promise = require("request-promise");
 function getCurrentKeg_Internal(tapId) {
     return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
         try {
@@ -64,6 +65,47 @@ function getCurrentKeg(tapId, outputFunc) {
     });
 }
 exports.getCurrentKeg = getCurrentKeg;
+function postPreviouslyInstalledKeg(kegId, tapId, kegSize, outputFunc) {
+    return __awaiter(this, void 0, void 0, function* () {
+        var inXact = false;
+        var connection;
+        try {
+            connection = new tds.TdsConnection();
+            yield connection.open();
+            yield connection.beginTransaction();
+            inXact = true;
+            var sqlStatement = "UPDATE FactKegInstall " +
+                "SET isCurrent = 0 " +
+                "WHERE TapId = @tapId";
+            yield connection.sql(sqlStatement)
+                .parameter("tapId", tedious_1.TYPES.Int, tapId)
+                .execute(false);
+            sqlStatement = "INSERT INTO FactKegInstall (TapId, KegId, InstallDate, kegSizeInML, currentVolumeInML, isCurrent) " +
+                "VALUES (@tapId, @kegId, @installDate, @kegSize, @kegSize, 1)";
+            yield connection.sql(sqlStatement)
+                .parameter("tapId", tedious_1.TYPES.Int, tapId)
+                .parameter("kegId", tedious_1.TYPES.Int, kegId)
+                .parameter("installDate", tedious_1.TYPES.DateTime2, new Date(Date.now()))
+                .parameter("kegSize", tedious_1.TYPES.Decimal, kegSize)
+                .execute(false);
+            yield connection.commitTransaction();
+            inXact = false;
+            getCurrentKeg(tapId, outputFunc);
+        }
+        catch (ex) {
+            if (inXact) {
+                yield connection.rollbackTransaction();
+            }
+            outputFunc({ code: 500, msg: "Failed to post new keg: " + ex });
+        }
+        finally {
+            if (connection) {
+                connection.close();
+            }
+        }
+    });
+}
+exports.postPreviouslyInstalledKeg = postPreviouslyInstalledKeg;
 function getKeg(kegId, outputFunc) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -98,12 +140,44 @@ function getKeg(kegId, outputFunc) {
     });
 }
 exports.getKeg = getKeg;
-function postNewKeg() {
+function postNewKeg(body, output) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            if (body.UntappdId) {
+                var beerInfo = yield request_promise.get({
+                    uri: `https://api.untappd.com/v4/beer/info/${body.UntappdId}?client_id=${process.env.UntappdClientId}&client_secret=${process.env.UntappdClientSecret}`,
+                    json: true
+                });
+                body.Name = beerInfo.beer.beer_name;
+                body.Brewery = beerInfo.brewery.brewery_name;
+                body.BeerType = beerInfo.beer.beer_style;
+                body.ABV = beerInfo.beer.beer_abv;
+                body.IBU = beerInfo.beer.beer_ibu;
+                body.BeerDescription = beerInfo.beer.beer_description;
+                body.imagePath = beerInfo.beer.beer_label;
+            }
+            var sqlStatement = "INSERT INTO DimKeg " +
+                "(Name, Brewery, BeerType, ABV, IBU, BeerDescription, UntappdId, imagePath) " +
+                "VALUES (@name, @brewery, @beerType, @abv, @ibu, @beerDescription, @UntappdId, @imagePath); " +
+                "SELECT SCOPE_IDENTITY() as Id;";
+            var results = yield tds.default.sql(sqlStatement)
+                .parameter("name", tedious_1.TYPES.NVarChar, body.Name)
+                .parameter("brewery", tedious_1.TYPES.NVarChar, body.Brewery)
+                .parameter("beerType", tedious_1.TYPES.NVarChar, body.BeerType)
+                .parameter("abv", tedious_1.TYPES.NVarChar, body.ABV)
+                .parameter("ibu", tedious_1.TYPES.NVarChar, body.IBU)
+                .parameter("beerDescription", tedious_1.TYPES.NVarChar, body.BeerDescription)
+                .parameter("UntappdId", tedious_1.TYPES.Int, body.UntappdId)
+                .parameter("imagePath", tedious_1.TYPES.NVarChar, body.imagePath)
+                .executeImmediate();
+            getKeg(results[0].Id, output);
+        }
+        catch (ex) {
+            output({ code: 500, msg: 'Internal error: ' + ex });
+        }
+    });
 }
 exports.postNewKeg = postNewKeg;
-function postPreviouslyInstalledKeg(kegId, tapId, volumeInGallons, outputFunc) {
-}
-exports.postPreviouslyInstalledKeg = postPreviouslyInstalledKeg;
 function putKegFinished(tapId, outputFunc) {
     var markKegAsFinished = "UPDATE dbo.FactKegInstall SET isCurrent=0 WHERE tapId=@tap_id and isCurrent=1";
 }

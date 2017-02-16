@@ -111,7 +111,7 @@ function postNewSession(body, output) {
             })));
             sqlStatement = "UPDATE FactKegInstall " +
                 "SET currentVolumeInML = currentVolumeInML - @pourAmount " +
-                "WHERE KegId = @kegId";
+                "WHERE KegId = @kegId AND isCurrent = 1";
             var updateKegVolume = yield connection.sql(sqlStatement)
                 .parameter('pourAmount', tedious_1.TYPES.Decimal, 0.0)
                 .parameter('kegId', tedious_1.TYPES.Int, 0)
