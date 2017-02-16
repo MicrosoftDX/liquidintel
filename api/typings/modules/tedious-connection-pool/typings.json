@@ -1,0 +1,8 @@
+{
+  "resolution": "main",
+  "tree": {
+    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/62adcdbd5f239980d5c8c083c230de882995caa4/tedious-connection-pool/index.d.ts",
+    "raw": "registry:dt/tedious-connection-pool#0.0.0+20160708003644",
+    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/62adcdbd5f239980d5c8c083c230de882995caa4/tedious-connection-pool/index.d.ts"
+  }
+}

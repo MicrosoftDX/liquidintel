@@ -8,13 +8,16 @@
     "express": "~4.0.0",
     "fs": "0.0.1-security",
     "https": "^1.0.0",
+    "lodash": "^4.17.4",
+    "lodash-deep": "^2.0.0",
     "moment": "^2.17.1",
     "mssql": "^3.3.0",
     "passport": "^0.3.2",
     "passport-azure-ad": "^3.0.4",
     "passport-http": "^0.3.0",
     "request": "^2.79.0",
-    "tedious": "^1.14.0"
+    "tedious": "^1.14.0",
+    "tedious-connection-pool": "^1.0.5"
   },
   "devDependencies": {
     "@types/node": "^7.0.4",

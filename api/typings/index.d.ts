@@ -4,4 +4,5 @@
 /// <reference path="modules/mime/index.d.ts" />
 /// <reference path="modules/request/index.d.ts" />
 /// <reference path="modules/serve-static/index.d.ts" />
+/// <reference path="modules/tedious-connection-pool/index.d.ts" />
 /// <reference path="modules/tedious/index.d.ts" />

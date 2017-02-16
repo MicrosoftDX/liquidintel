@@ -7,32 +7,36 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const tedious = require("tedious");
+const tds = require("../utils/tds-promises");
+const tedious_1 = require("tedious");
 const aad = require("../../ad");
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
 var groupMembership = new aad.GraphGroupMembership(process.env.AuthorizedGroups.split(';'), token);
-function getPersonByCardId(cardId, connection, output) {
-    var sqlStatement = "SELECT p.[PersonnelNumber], p.[EmailName], p.[FullName] " +
-        "FROM dbo.[CARD02CardKeyMappingS] c INNER JOIN dbo.[HC01Person] p ON c.SAPPersonnelNbr = p.PersonnelNumber " +
-        "WHERE c.CardKeyNbr = @card_id";
-    var request = new tedious.Request(sqlStatement, (err, rowCount, rows) => __awaiter(this, void 0, void 0, function* () {
-        if (err) {
-            return output({ code: 500, msg: 'Internal Error: ' + err });
+function getPersonByCardId(cardId, output) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            var sqlStatement = "SELECT p.[PersonnelNumber], p.[EmailName], p.[FullName] " +
+                "FROM dbo.[CARD02CardKeyMappingS] c INNER JOIN dbo.[HC01Person] p ON c.SAPPersonnelNbr = p.PersonnelNumber " +
+                "WHERE c.CardKeyNbr = @card_id";
+            let results = yield tds.default.sql(sqlStatement)
+                .parameter('card_id', tedious_1.TYPES.Int, cardId)
+                .executeImmediate();
+            if (!results || results.length != 1) {
+                return output({ code: 404, msg: "No person found having CardId: " + cardId });
+            }
+            else {
+                let validUser = yield groupMembership.isUserMember(`${results[0].EmailName}@${process.env.Tenant}`);
+                output({ code: 200, msg: {
+                        'PersonnelNumber': results[0].PersonnelNumber,
+                        'Valid': validUser,
+                        'FullName': results[0].FullName
+                    } });
+            }
         }
-        else if (rowCount == 0) {
-            return output({ code: 404, msg: "No person found having CardId: " + cardId });
+        catch (ex) {
+            return output({ code: 500, msg: 'Internal Error: ' + ex });
         }
-        else {
-            let validUser = yield groupMembership.isUserMember(`${rows[0].EmailName.value}@${process.env.Tenant}`);
-            output({ code: 200, msg: {
-                    'PersonnelNumber': rows[0].PersonnelNumber.value,
-                    'Valid': validUser,
-                    'FullName': rows[0].FullName.value
-                } });
-        }
-    }));
-    request.addParameter('card_id', tedious.TYPES.Int, cardId);
-    connection.execSql(request);
+    });
 }
 exports.getPersonByCardId = getPersonByCardId;
 //# sourceMappingURL=personController.js.map
