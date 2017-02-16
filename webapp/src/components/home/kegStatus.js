@@ -66,6 +66,65 @@ export default class KegStatus extends React.Component {
         this.drawKnobs();
     }
     render() {
+        console.log("this.props.kegs says: ");
+        console.log(this.props.kegs);
+         var keg = {
+            "Name":"No name provided",
+            "Level":1,
+            "imagePath":"https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67",
+            "BeerDescription":"No description available",
+            "Brewery":"NA",
+            "BeerType":"NA",
+            "ABV":"ABV NA",
+            "IBU":"IBU NA",
+            "InstallDate":"2017-01-18T23:30:00.000Z"
+
+        }
+        var kegs = [keg,Object.assign({}, keg)];
+
+        console.log("Kegs default has: ")
+        console.log(kegs);
+        this.props.kegs.forEach(function(elem,index){
+            console.log("Going for round " + index);
+            console.log("elem says: ");
+            console.log(elem);
+            console.log("TapId is:" + elem.TapId);
+            console.log("And keg[elem.TapId -1] is: ");
+            console.log(elem.TapId - 1);
+            if(elem.length === 0 && elem.constructor === Object){
+                return;
+            }
+            if(elem.Name.length > 0){
+                kegs[elem.TapId - 1].Name = elem.Name;
+            }
+            if(elem.CurrentVolume >0 && elem.KegSize > 0){
+                kegs[elem.TapId - 1].Level = Math.round(elem.CurrentVolume / elem.KegSize * 100);
+            }
+            if(elem.imagePath.length > 0){
+                kegs[elem.TapId - 1].imagePath = elem.imagePath;
+            }
+            if(elem.BeerDescription.length > 0){
+                kegs[elem.TapId - 1].BeerDescription = elem.BeerDescription;
+            }
+            if(elem.Brewery.length > 0){
+                kegs[elem.TapId - 1].Brewery = elem.Brewery;
+            }
+            if(elem.BeerType.length > 0){
+                kegs[elem.TapId - 1].BeerType = elem.BeerType;
+            }
+            if(elem.ABV.length > 0 && elem.ABV != "NA"){
+                kegs[elem.TapId - 1].ABV = elem.ABV + "% ABV";
+            }
+            if(elem.IBU.length > 0 && elem.IBU != "NA"){
+                kegs[elem.TapId - 1].IBU = elem.IBU +  " IBU";
+            }
+            if(elem.InstallDate.length > 0){
+                kegs[elem.TapId - 1].InstallDate = moment(elem.InstallDate).fromNow;
+            }
+        });
+        console.log("Changing the keg array says: ");
+        console.log(kegs);
+
         return (
             <PanelContainer>
                 <PanelHeader className='bg-purple fg-white'>
@@ -81,58 +140,60 @@ export default class KegStatus extends React.Component {
                     <Grid>
                         <br />
                         <Row>
-                            <Col xs={6} className='text-center'>
-                                <input type='text' defaultValue='75' className='dial autosize' data-width='100%' data-fgcolor='#4DBD33' readOnly='readOnly' />
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                <input type='text' defaultValue='25' className='dial autosize' data-width='100%' data-fgcolor='#ffcccc' readOnly='readOnly' />
-                            </Col>
-
-                        </Row>
-                        
-                        <Row>
-                            <Col xs={6} className='text-center'>
-                                <img src="https://untappd.akamaized.net/site/beer_logos/beer-6849_e4b11_sm.jpeg"/>
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                <img src="https://untappd.akamaized.net/site/beer_logos/beer-12645_d8e48_sm.jpeg"/>
-                            </Col>
+                            {kegs.map(function(elem,index,ar){
+                                var color = elem.Level > 25? (elem.level > 75 ? "#4DBD33" :  '#FFA500') : '#ffcccc';
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <input key={index} type='text' defaultValue={elem.Level} className='dial autosize' data-width='100%' data-fgcolor={color} readOnly='readOnly' />
+                                    </Col>
+                                    );
+                            })}
                         </Row>
                         <Row>
-                            <Col xs={6} className='text-center'>
-                                <h1>African Amber</h1>
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                <h1>Trickster</h1>
-                            </Col>
+                            {kegs.map(function(elem,index,ar){
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <img key={index} src={elem.imagePath} height="100"/>
+                                    </Col>
+                                    );
+                            })}
                         </Row>
                         <Row>
-                            <Col xs={6} className='text-center'>
-                                <h3>Mac & Jack's Brewing Company</h3>
-
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                 <h3>Black Raven Brewing Company</h3>
-                            </Col>
+                            {kegs.map(function(elem,index,ar){
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <h1>{elem.Name}</h1>
+                                    </Col>
+                                    );
+                            })}
                         </Row>
                         <Row>
-                            <Col xs={6} className='text-center'>
-                                <p>Red Ale - American Amber / Red</p>
-
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                 <p>IPA - American</p>
-                            </Col>
+                            {kegs.map(function(elem,index,ar){
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <h3 key={index}>{elem.Brewery}</h3>
+                                    </Col>
+                                    );
+                            })}
                         </Row>
                         <Row>
-                            <Col xs={6} className='text-center'>
-                                <p><Label className='bg-darkgreen45 fg-white'>5.6% ABV</Label> <Label className='bg-blue fg-white'>No IBU</Label></p>
-                            </Col>
-                            <Col xs={6} className='text-center'>
-                                 <p><Label className='bg-darkgreen45 fg-white'>6.9% ABV</Label> <Label className='bg-blue fg-white'>70 IBU</Label></p>
-                            </Col>
+                            {kegs.map(function(elem,index,ar){
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <p key={index}>{elem.BeerType}</p>
+                                    </Col>
+                                    );
+                            })}
                         </Row>
-                        
+                        <Row>
+                            {kegs.map(function(elem,index,ar){
+                                return (
+                            <Col xs={6} className='text-center'>
+                                <p><Label key={index} className='bg-darkgreen45 fg-white'>{elem.ABV}</Label> <Label className='bg-blue fg-white'>{elem.IBU}</Label></p>
+                            </Col>
+                                    );
+                            })}
+                        </Row>
                         <br />
                     </Grid>
                 </PanelBody>

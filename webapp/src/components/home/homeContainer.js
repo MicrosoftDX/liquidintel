@@ -1,6 +1,7 @@
 import React from 'react';
 import KegStatus from './kegStatus';
 import BeerActivity from './beerActivity';
+import ErrorMessage from './errorMessage';
 import {webAppConfig} from '../../config/default.js';
 
 
@@ -20,59 +21,66 @@ export default class HomeContainer extends React.Component {
     super(props);
 
     this.state = {
-      kegRefills: [],
-      timeline: []
+      kegs: [],
+      activity: []
     };
   }
 
   componentDidMount() {
-    var apiUrl = webAppConfig.api.url;
     //Get Keg status
     var myHeaders = new Headers();
     myHeaders.append("Acept", "application/json");
     myHeaders.append("Cache-Control", "no-cache");
     myHeaders.delete("X-Requested-With");
     myHeaders.append("Authorization", 
-    btoa(webAppConfig.api.username+":" +webAppConfig.api.password ));
+    "Basic " + btoa(webAppConfig.api.username+ ":" + webAppConfig.api.password ));
     
     var myInit = { method: 'GET',
                 headers: myHeaders};
 
-    fetch(apiUrl + '/currentKeg',myInit)
+    fetch(webAppConfig.api.url + '/currentKeg',myInit)
     .then(function(response) { 
         return response.json();
     }).then(res => {
       if (res.length > 0){
-        const kegRefills = res;
-        console.log("KegRefills dice: ");
-        console.log(kegRefills);
-        this.setState({ kegRefills });
+        const kegs = res;
+        console.log("kegs dice: ");
+        console.log(kegs);
+        this.setState({ kegs });
       }
       });
 
-    fetch(apiUrl+'/users',myInit)
+    fetch(webAppConfig.api.url+'/activity',myInit)
     .then(function(response) { 
         return response.json();
     }).then(res => {
       if (res.length > 0){
-        const timeline = res;
-        console.log("pouredBeer dice: ");
-        console.log(timeline);
-        this.setState({ timeline });
+        const activity = res;
+        console.log("Activity says: ");
+        console.log(activity);
+        this.setState({ activity });
       }
       }); 
 
   }
 
-  render() {
+ render() {
     return (
       <div>
         <Row>
           <Col sm={12} md={7}>
-            <KegStatus data={this.state.kegRefills}/>
+            {this.state.kegs.length > 0 ? (
+              <KegStatus kegs={this.state.kegs}/>
+            ) : (
+              <ErrorMessage />
+            )}
           </Col>
           <Col sm={12} md={5}>
-            <BeerActivity data={this.state.timeline} />
+            {this.state.activity.length > 0 ? (
+              <BeerActivity activity={this.state.activity} />
+            ) : (
+              <ErrorMessage />
+            )}
           </Col>
         </Row>
       </div>

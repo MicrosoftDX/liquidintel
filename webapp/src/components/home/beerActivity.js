@@ -39,22 +39,22 @@ class ActivityItem extends React.Component {
 
     return (
       <a {...linkProps}>
-      <Row>
+      <Row sm="12">
         <div className='inbox-avatar'>
-            <Col sm={1}>
-                <img src={this.props.src} width='40' height='40' className={this.props.imgClass + ' hidden-xs'} />
+            <Col sm={2} xs={3}>
+                <img src={this.props.src} width='48' className={this.props.imgClass} />
             </Col>
-            <Col sm={7}>
-                    <div className='fg-darkgrayishblue75'>{this.props.name}</div>
-                    <div><small><Badge className={this.props.labelClass} style={{marginRight: 5, display: this.props.labelValue ? 'inline':'none'}}>{this.props.labelValue}</Badge><span>{this.props.description}</span></small></div>
-            </Col>
-            <Col sm={4}>
-                <div className='inbox-date hidden-sm hidden-xs fg-darkgray40 text-right'>
-                    <div style={{position: 'relative', top: 5}}>{this.props.date}</div>
-                    <div style={{position: 'relative', top: -5}}><small>#{this.props.itemId}</small></div>
+            <Col sm={10} xs={9}>
+                <div className='text-left'>
+                    <div className='fg-darkgrayishblue75'>{this.props.name} {this.props.description}</div>
+                    <div><small><span><img src={this.props.src}  height='35' className={this.props.imgClass} /> <Badge className={this.props.labelClass} style={{marginRight: 5, display: this.props.labelValue ? 'inline':'none'}}>{this.props.labelValue}</Badge> </span></small><span className='fg-darkgray40'>{this.props.date}</span></div>
                 </div>
             </Col>
+
         </div>
+        </Row>
+        <Row>
+            <hr align="center"/>
         </Row>
       </a>
     );
@@ -84,12 +84,11 @@ export default class BeerActivity extends React.Component{
                     <Grid>
                         <Row>
                             <Col xs={12}>
-                            {this.props.data.map(data => {
-                            var minutes = Math.round(Math.random()*10) + 1;
-                            minutes = minutes + ' mins ago'
-                            return <ActivityItem itemId={data.badge} unread src={data.photo} imgClass='border-green' name={data.name} labelValue='IPA LOVER' labelClass='bg-green fg-white' description={<span><strong>Enjoying: </strong><span><LoremIpsum query='1s'/></span></span>} date={minutes}/>;
+                            {this.props.activity.map(function(elem,index) {
+                            var relDate = moment(elem.PourTime).fromNow();
+                            return <ActivityItem key={index} itemId={elem.SessionId} unread src={elem.BeerImagePath} imgClass='border-green' name={elem.FullName} labelValue={elem.BeerType} labelClass='bg-green fg-white' description={<span> poured <strong><span>{elem.BeerName}</span></strong></span>} date={relDate}/>;
                             })}
-                            </Col><hr />
+                            </Col>
                         </Row>
                     </Grid>
                 </PanelBody>
