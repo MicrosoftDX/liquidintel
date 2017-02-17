@@ -27,11 +27,15 @@ matrix:
         - cd webapp
       install:
         - npm install
+      # deploy:
+      # provider: azure_web_apps
+      # skip_cleanup: true
+      # verbose: true
     - python: "2.7"
       language: python
       sudo: required
       before_install:
         - cd IOController/src
         - pip install gpiozero purl ConfigParser requests
-      install:
-        - python IOController.py 
+#      install:
+#        - IOController test call goes here 
