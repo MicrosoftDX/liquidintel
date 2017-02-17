@@ -34,6 +34,6 @@ matrix:
       sudo: required
       before_install:
         - cd IOController/src
-        - pip install gpiozero purl configparser
+        - pip install gpiozero purl ConfigParser
       install:
         - python IOController.py -q install
