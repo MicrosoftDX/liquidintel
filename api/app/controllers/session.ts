@@ -1,163 +1,139 @@
 
 import express = require('express');
-import tedious = require('tedious');
+import tds = require('../utils/tds-promises');
+import {TYPES} from 'tedious';
 import queryExpression = require('../utils/query_expression');
 import kegController = require('./kegController');
 
-export function getSessions(sessionId: number, queryParams: queryExpression.QueryExpression, connection: tedious.Connection, output: (resp:any) => express.Response) {
-    var sqlStatement = "SELECT d.Id as SessionId, k.Name as BeerName, * " + 
-                       "FROM FactDrinkers d INNER JOIN DimKeg k ON d.KegId = k.Id " +
-                       "    INNER JOIN HC01Person p ON d.PersonnelNumber = p.PersonnelNumber ";
-    queryParams.mapping = {
-        'PourTime':{sqlName:'PourDateTime', dataType: tedious.TYPES.DateTime2},
-        'PourAmount':{sqlName:'PourAmountInML', dataType: tedious.TYPES.Int}
-    };
-    if (sessionId != null || queryParams.isAny()) {
-        sqlStatement += "WHERE ";
-        if (sessionId != null) {
-            sqlStatement += "d.Id = @sessionId"
+export async function getSessions(sessionId: number, queryParams: queryExpression.QueryExpression, output: (resp:any) => express.Response) {
+    try {
+        queryParams.mapping = {
+            'pourtime': {sqlName:'PourDateTime', dataType: TYPES.DateTime2},
+            'pouramount': {sqlName:'PourAmountInML', dataType: TYPES.Int}
+        };
+        queryParams.ordering = [
+            'pourtime',
+            'pouramount'
+        ];
+        queryParams.limit = 'count';
+
+        var sqlStatement = `SELECT ${queryParams.getSqlLimitClause()} d.Id as SessionId, k.Name as BeerName, * ` + 
+                        `FROM FactDrinkers d INNER JOIN DimKeg k ON d.KegId = k.Id ` +
+                        `    INNER JOIN HC01Person p ON d.PersonnelNumber = p.PersonnelNumber `;
+        if (sessionId != null || queryParams.isAnyFilter()) {
+            sqlStatement += "WHERE ";
+            if (sessionId != null) {
+                sqlStatement += "d.Id = @sessionId"
+            }
+            else {
+                sqlStatement += queryParams.getSqlFilterPredicates();
+            }
+        }
+        if (queryParams.isAnyOrdering()) {
+            sqlStatement += queryParams.getSqlOrderByClauses()
         }
         else {
-            sqlStatement += queryParams.getSqlFilterPredicates();
+            sqlStatement += " ORDER BY d.PourDateTime DESC";
         }
-    }
-    sqlStatement += " ORDER BY d.PourDateTime DESC";
-    var request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
-        if (err) {
-            return output({code: 500, msg:'Internal Error: ' + err});
+        var stmt = tds.default.sql(sqlStatement);
+        if (sessionId != null) {
+            stmt.parameter('sessionId', TYPES.Int, sessionId);
         }
-        else if (rowCount == 0 && sessionId != null) {
+        if (queryParams.isAnyFilter()) {
+            queryParams.addRequestParameters(stmt);
+        }
+        let results = await stmt.executeImmediate();
+        if (sessionId != null && results.length == 0) {
             return output({code: 404, msg:'Specified session not found!'});
         }
         else {
-            return output({ code: 200, msg: rows.map(row => {
+            return output({ code: 200, msg: results.map(row => {
                     return {
-                        'SessionId': row.SessionId.value,
-                        'PourTime': row.PourDateTime.value,
-                        'PourAmount': row.PourAmountInML.value,
-                        'BeerName': row.BeerName.value,
-                        'Brewery': row.Brewery.value,
-                        'BeerType': row.BeerType.value,
-                        'ABV': row.ABV.value,
-                        'IBU': row.IBU.value,
-                        'BeerDescription': row.BeerDescription.value,
-                        'UntappdId': row.UntappdId.value,
-                        'BeerImagePath': row.imagePath.value,
-                        'PersonnelNumber': row.PersonnelNumber.value,
-                        'Alias': row.EmailName.value,
-                        'FullName': row.FullName.value
+                        'SessionId': row.SessionId,
+                        'PourTime': row.PourDateTime,
+                        'PourAmount': row.PourAmountInML,
+                        'BeerName': row.BeerName,
+                        'Brewery': row.Brewery,
+                        'BeerType': row.BeerType,
+                        'ABV': row.ABV,
+                        'IBU': row.IBU,
+                        'BeerDescription': row.BeerDescription,
+                        'UntappdId': row.UntappdId,
+                        'BeerImagePath': row.imagePath,
+                        'PersonnelNumber': row.PersonnelNumber,
+                        'Alias': row.EmailName,
+                        'FullName': row.FullName
                     };
                 })});
         }
-    });
-    if (sessionId != null) {
-        request.addParameter('sessionId', tedious.TYPES.Int, sessionId);
     }
-    else if (queryParams.isAny()) {
-        queryParams.addRequestParameters(request);
+    catch (ex) {
+        return output({code: 500, msg:'Internal Error: ' + ex});
     }
-    connection.execSql(request);
 }
 
-export function postNewSession(body: any, connection: tedious.Connection, output: (resp:any) => express.Response) {
-    // Lookup our current keg info
-    kegController.getCurrentKeg_Internal(null, connection, (tapsResp) => {
-        if (tapsResp.code != 200) {
-            return output(tapsResp);
-        }
-        connection.transaction((error, done) => {
-            if (error) {
-                return output({code:500, msg: "Failed to update session activity: " + error});
-            }
-            // Add journal entries into the activities table
-            var requests: [tedious.Request, boolean, any][] = [];
-            var newActivities: [number, number][] = [];
-            var checkDone = () => {
-                if (requests.length == 0) {
-                    // We're done - commit the xact
-                    return done(null, () => {
-                        return output({code:200, msg: newActivities.map(activity => { return {ActivityId: activity[0], KegId: activity[1]}; })});
-                    });
-                }
-            };
-            var nextRequest = () => {
-                var requestInfo = requests.shift();
-                if (requestInfo) {
-                    if (requestInfo[1]) {
-                        connection.prepare(requestInfo[0]);
-                        requestInfo[0].on('prepared', () => {
-                            connection.execute(requestInfo[0], requestInfo[2]);
-                        });
-                    }
-                    else {
-                        connection.execute(requestInfo[0], requestInfo[2]);
-                    }
-                }
-                else {
-                    checkDone();
-                }
-            };
-            var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " + 
-                               "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
-                               "SELECT Id, KegId FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
-            var insertDrinkers = new tedious.Request(sqlStatement, (error, rowCount, rows) => {
-                if (error) {
-                    return done(error, () => {
-                        return output({code:500, msg: "Failed to update session activity: " + error});
-                    });
-                }
-                if (rowCount > 0) {
-                    newActivities.push([rows[0].Id.value, rows[0].KegId.value]);
-                }
-                nextRequest();
+export async function postNewSession(body: any, output: (resp:any) => express.Response) {
+    var inXact = false;
+    var connection: tds.TdsConnection;
+    try {
+        // Lookup our current keg info
+        let tapsInfo = await kegController.getCurrentKeg_Internal(null);
+        let connection = new tds.TdsConnection();
+        await connection.beginTransaction();
+        inXact = true;
+        // Add journal entries into the activities table
+        var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " + 
+                            "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
+                            "SELECT Id, KegId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
+        var insertDrinkers = await connection.sql(sqlStatement)
+            .parameter('pourTime', TYPES.DateTime2, null)
+            .parameter('personnelNumber', TYPES.Int, null)
+            .parameter('tapId', TYPES.Int, null)
+            .parameter('kegId', TYPES.Int, null)
+            .parameter('pourAmount', TYPES.Int, null)
+            .prepare();
+        var newActivities = await Promise.all(tapsInfo
+            .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
+                                body.Taps[tapInfo.TapId.toString()].amount > 0)
+            .map(async tapInfo => {
+                // Important we await here as we can't have multiple statements activity at once
+                return await insertDrinkers.execute(false, {
+                    pourTime: new Date(body.sessionTime), 
+                    personnelNumber: body.personnelNumber,
+                    tapId: tapInfo.TapId,
+                    kegId: tapInfo.KegId,
+                    pourAmount: Number(body.Taps[tapInfo.TapId.toString()].amount)
+                })[0];
+            }));
+
+        // Now decrement the available volume in each of our kegs
+        sqlStatement = "UPDATE FactKegInstall " + 
+                        "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 
+                        "WHERE KegId = @kegId";
+        var updateKegVolume = await connection.sql(sqlStatement)
+            .parameter('pourAmount', TYPES.Decimal, 0.0)
+            .parameter('kegId', TYPES.Int, 0)
+            .prepare();
+        newActivities.forEach(async newActivity => {
+            await updateKegVolume.execute(false, {
+                kegId: newActivity.KegId,
+                pourAmount: newActivity.PourAmountInML
             });
-            insertDrinkers.addParameter('pourTime', tedious.TYPES.DateTime2, null);
-            insertDrinkers.addParameter('personnelNumber', tedious.TYPES.Int, null);
-            insertDrinkers.addParameter('tapId', tedious.TYPES.Int, null);
-            insertDrinkers.addParameter('kegId', tedious.TYPES.Int, null);
-            insertDrinkers.addParameter('pourAmount', tedious.TYPES.Int, null);
-            var prepareRequest = true;
-            requests = tapsResp.msg
-                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
-                                   body.Taps[tapInfo.TapId.toString()].amount > 0)
-                .map(tapInfo => {
-                    var prepare = prepareRequest;
-                    prepareRequest = false;
-                    return [insertDrinkers, prepare, {
-                        pourTime: new Date(body.sessionTime), 
-                        personnelNumber: body.personnelNumber,
-                        tapId: tapInfo.TapId,
-                        kegId: tapInfo.KegId,
-                        pourAmount: Number(body.Taps[tapInfo.TapId.toString()].amount)
-                    }];
-                });
-            // Now decrement the available volume in each of our kegs
-            sqlStatement = "UPDATE FactKegInstall " + 
-                           "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 
-                           "WHERE KegId = @kegId";
-            var updateKegVolume = new tedious.Request(sqlStatement, (error, rowCount, rows) => {
-                if (error) {
-                    return done(error, () => {
-                        return output({code:500, msg: "Failed to update session activity: " + error});
-                    });
-                }
-                nextRequest();
-            });
-            updateKegVolume.addParameter('pourAmount', tedious.TYPES.Decimal, 0.0);
-            updateKegVolume.addParameter('kegId', tedious.TYPES.Int, 0);
-            prepareRequest = true;
-            requests = requests.concat(tapsResp.msg
-                .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
-                                   body.Taps[tapInfo.TapId.toString()].amount > 0)
-                .map(tapInfo => {
-                    var prepare = prepareRequest;
-                    prepareRequest = false;
-                    return [updateKegVolume, prepare, {
-                        kegId: tapInfo.KegId,
-                        pourAmount: body.Taps[tapInfo.TapId.toString()].amount
-                    }];
-                }));
-            nextRequest();
         });
-    });
+
+        // commit
+        await connection.commitTransaction();
+        output({code: 200, msg: newActivities.map(activity => { return {ActivityId: activity.Id, KegId: activity.KegId}; })});
+    }
+    catch (ex) {
+        if (connection && inXact) {
+            await connection.rollbackTransaction();
+        }
+        output({code:500, msg: "Failed to update session activity: " + ex});
+    }
+    finally {
+        if (connection) {
+            connection.close();
+        }
+    }
 }

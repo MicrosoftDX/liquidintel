@@ -3,14 +3,11 @@ require('mocha');
 var chai = require('chai'), should = chai.should();
 var chaiHttp = require('chai-http');
 var server = require('../server').app;
-var dbconn = require('../server').connection;
 chai.use(chaiHttp);
 before(function (done) {
     this.timeout(15000);
     console.log("Tests ready to start - server listening");
-    dbconn.on('connect', function (err) {
-        done();
-    });
+    done();
 });
 describe('testing api', function () {
     it('should return 404 on / GET', function (done) {

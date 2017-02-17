@@ -2,7 +2,6 @@ require('mocha');
 var chai = require('chai'), should = chai.should();
 var chaiHttp = require('chai-http');
 var server = require('../server').app;
-var dbconn = require('../server').connection;
 chai.use(chaiHttp);
 import tedious = require('tedious');
 
@@ -10,9 +9,7 @@ before(function(done) {
     //Ensure the database connection is done before starting
     this.timeout(15000);
     console.log("Tests ready to start - server listening");
-    dbconn.on('connect', function(err){
-        done();
-    });
+    done();
 });
 
 describe('testing api', function() {

@@ -1,12 +1,15 @@
 
-import tedious = require('tedious');
+import tds = require('./tds-promises');
+import {TediousType, TYPES} from 'tedious';
 
 export enum Operators {
     Unknown,
     EqualTo,
     LessThan,
     GreaterThan,
-    Range
+    Range,
+    OrderAsc,
+    OrderDesc,
 }
 
 export interface Clause {
@@ -17,15 +20,37 @@ export interface Clause {
 
 export interface PropMapping {
     sqlName: string,
-    dataType: tedious.TediousType
+    dataType: TediousType
+}
+
+enum OperatorClass {
+    Filter,
+    Order,
 }
 
 export class QueryExpression {
-    private static _suffix_gt :string    = "_gt";
-    private static _suffix_lt :string    = "_lt";
+    private static _suffix_gt: string   = "_gt";
+    private static _suffix_lt: string   = "_lt";
+    private static _suffix_asc: string  = "_asc";
+    private static _suffix_desc: string = "_desc";
+
+    private static readonly suffixOperators: [string, Operators, OperatorClass][] = [
+        [QueryExpression._suffix_gt, Operators.GreaterThan, OperatorClass.Filter],
+        [QueryExpression._suffix_lt, Operators.LessThan, OperatorClass.Filter],
+        ["", Operators.EqualTo, OperatorClass.Filter],
+        ["", Operators.Range, OperatorClass.Filter],
+        [QueryExpression._suffix_asc, Operators.OrderAsc, OperatorClass.Order],
+        [QueryExpression._suffix_desc, Operators.OrderDesc, OperatorClass.Order]
+    ];
+
+    private static readonly operatorClasses = new Map(QueryExpression.suffixOperators.map((value: [string, Operators, OperatorClass]) => {
+        return <[Operators, OperatorClass]>[value[1], value[2]];
+    }));
 
     private params: {[key:string]: Clause;} = {};
     mapping: {[key:string]: PropMapping} = null;
+    ordering: string[] = null;
+    limit: string;
 
     constructor(queryParams: any) {
 
@@ -58,22 +83,43 @@ export class QueryExpression {
         return this.params[paramName.toLowerCase()];
     }
 
-    isAny(): Boolean {
-        if (this.mapping != null) {
+    isAnyFilter(): boolean {
+        if (this.mapping) {
             for (var prop in this.mapping) {
-                if (this.getClause(prop) != null) {
+                var clause = this.getClause(prop);
+                if (clause != null && QueryExpression.operatorClasses.get(clause.operator) == OperatorClass.Filter) {
                     return true;
                 }
             }
-            return false;
+            return false
         }
         return Object.keys(this.params).length > 0;
+    }
+
+    isAnyOrdering(): boolean {
+        if (this.ordering) {
+            for (var prop of this.ordering) {
+                var clause = this.getClause(prop);
+                if (clause != null && QueryExpression.operatorClasses.get(clause.operator) == OperatorClass.Order) {
+                    return true;
+                }
+            }
+            return false
+        }
+        return false;
+    }
+
+    isAnyLimit(): boolean {
+        if (this.limit) {
+            return this.getClause(this.limit) != null;
+        }
+        return false;
     }
 
     getSqlFilterPredicates(): string {
         var predicates = Object.keys(this.mapping).map(prop => {
             var clause = this.getClause(prop);
-            if (clause != null) {
+            if (clause != null && QueryExpression.operatorClasses.get(clause.operator) == OperatorClass.Filter) {
                 var comparitor = "";
                 switch (clause.operator) {
                     case Operators.EqualTo:
@@ -103,34 +149,62 @@ export class QueryExpression {
             .join(" AND ");
     }
 
-    addRequestParameters(request: tedious.Request) {
+    getSqlOrderByClauses(): string {
+        if (this.isAnyOrdering()) {
+            var orderByClauses = this.ordering
+                .map(prop => {
+                    var clause = this.getClause(prop);
+                    if (clause != null && QueryExpression.operatorClasses.get(clause.operator) == OperatorClass.Order) {
+                        var mappedProp = this.mapping[prop];
+                        if (mappedProp) {
+                            prop = mappedProp.sqlName;
+                        }
+                        return prop + " " + (clause.operator == Operators.OrderDesc ? "DESC" : "ASC");
+                    }
+                    return "";
+                })
+            return "ORDER BY " + orderByClauses
+                .filter(clause => clause != "")
+                .join(", ");
+        }
+        return "";
+    }
+
+    getSqlLimitClause(): string {
+        if (this.isAnyLimit()) {
+            return " TOP " + this.getClause(this.limit).value + " ";
+        }
+        return "";
+    }
+
+    addRequestParameters(stmt: tds.TdsStatement) {
         for (var prop in this.mapping) {
             var clause = this.getClause(prop);
             if (clause != null) {
                 if (clause.operator == Operators.Range) {
-                    request.addParameter(prop + "Low", this.mapping[prop].dataType, clause.value);
-                    request.addParameter(prop + "Hi", this.mapping[prop].dataType, clause.valueUpper);
+                    stmt.parameter(prop + "Low", this.mapping[prop].dataType, clause.value);
+                    stmt.parameter(prop + "Hi", this.mapping[prop].dataType, clause.valueUpper);
                 }
                 else {
-                    request.addParameter(prop, this.mapping[prop].dataType, clause.value);
+                    stmt.parameter(prop, this.mapping[prop].dataType, clause.value);
                 }
             }
         }
     }
 
-    private static getParamInfo(paramName:string): [string, Operators] {
-        var retval = QueryExpression.checkParamInfo(paramName, QueryExpression._suffix_gt, Operators.GreaterThan);
-        if (retval[1] != Operators.Unknown) {
-            return retval;
-        }
-        retval = QueryExpression.checkParamInfo(paramName, QueryExpression._suffix_lt, Operators.LessThan);
-        if (retval[1] != Operators.Unknown) {
-            return retval;
+    private static getParamInfo(paramName: string): [string, Operators] {
+        for (var suffix of QueryExpression.suffixOperators) {
+            if (suffix[0]) {
+                var retval = QueryExpression.checkParamInfo(paramName, suffix[0], suffix[1]);
+                if (retval[1] != Operators.Unknown) {
+                    return retval;
+                }
+            }
         }
         return [paramName, Operators.EqualTo];
     }
 
-    private static checkParamInfo(paramName:string, suffixCheck:string, operator:Operators): [string, Operators] {
+    private static checkParamInfo(paramName: string, suffixCheck: string, operator: Operators): [string, Operators] {
         var checkName = paramName.toLowerCase();
         var suffixIndex = checkName.lastIndexOf(suffixCheck);
         if (suffixIndex == checkName.length - suffixCheck.length) {

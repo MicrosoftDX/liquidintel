@@ -140,3 +140,6 @@ jspm_packages
 
 # Yarn Integrity file
 .yarn-integrity
+
+#Webapp gitignore
+webapp/tmp
