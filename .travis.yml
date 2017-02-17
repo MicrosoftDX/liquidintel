@@ -34,4 +34,4 @@ matrix:
         - cd IOController/src
         - pip install gpiozero purl ConfigParser requests
       install:
-        - python IOController.py -q install
+        - python IOController.py 
