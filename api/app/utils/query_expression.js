@@ -6,8 +6,9 @@ var Operators;
     Operators[Operators["LessThan"] = 2] = "LessThan";
     Operators[Operators["GreaterThan"] = 3] = "GreaterThan";
     Operators[Operators["Range"] = 4] = "Range";
-    Operators[Operators["OrderAsc"] = 5] = "OrderAsc";
-    Operators[Operators["OrderDesc"] = 6] = "OrderDesc";
+    Operators[Operators["Contains"] = 5] = "Contains";
+    Operators[Operators["OrderAsc"] = 6] = "OrderAsc";
+    Operators[Operators["OrderDesc"] = 7] = "OrderDesc";
 })(Operators = exports.Operators || (exports.Operators = {}));
 var OperatorClass;
 (function (OperatorClass) {
@@ -90,12 +91,14 @@ class QueryExpression {
                     case Operators.LessThan:
                         comparitor = "<";
                         break;
+                    case Operators.Contains:
+                        return `${this.mapping[prop].sqlName} IN (SELECT value FROM string_split(@${prop}, ',')`;
                     case Operators.Range:
-                        return this.mapping[prop].sqlName + " > @" + prop + "Low AND " +
-                            this.mapping[prop].sqlName + " < @" + prop + "Hi";
+                        return `${this.mapping[prop].sqlName} > @${prop}Low AND ` +
+                            `${this.mapping[prop].sqlName} < @${prop}Hi`;
                 }
                 if (comparitor != "") {
-                    return this.mapping[prop].sqlName + " " + comparitor + " @" + prop;
+                    return `${this.mapping[prop].sqlName} ${comparitor} @${prop}`;
                 }
             }
             return "";
@@ -166,11 +169,13 @@ class QueryExpression {
 }
 QueryExpression._suffix_gt = "_gt";
 QueryExpression._suffix_lt = "_lt";
+QueryExpression._suffix_in = "_in";
 QueryExpression._suffix_asc = "_asc";
 QueryExpression._suffix_desc = "_desc";
 QueryExpression.suffixOperators = [
     [QueryExpression._suffix_gt, Operators.GreaterThan, OperatorClass.Filter],
     [QueryExpression._suffix_lt, Operators.LessThan, OperatorClass.Filter],
+    [QueryExpression._suffix_in, Operators.Contains, OperatorClass.Filter],
     ["", Operators.EqualTo, OperatorClass.Filter],
     ["", Operators.Range, OperatorClass.Filter],
     [QueryExpression._suffix_asc, Operators.OrderAsc, OperatorClass.Order],

@@ -8,6 +8,7 @@ export enum Operators {
     LessThan,
     GreaterThan,
     Range,
+    Contains,
     OrderAsc,
     OrderDesc,
 }
@@ -31,12 +32,14 @@ enum OperatorClass {
 export class QueryExpression {
     private static _suffix_gt: string   = "_gt";
     private static _suffix_lt: string   = "_lt";
+    private static _suffix_in: string   = "_in";
     private static _suffix_asc: string  = "_asc";
     private static _suffix_desc: string = "_desc";
 
     private static readonly suffixOperators: [string, Operators, OperatorClass][] = [
         [QueryExpression._suffix_gt, Operators.GreaterThan, OperatorClass.Filter],
         [QueryExpression._suffix_lt, Operators.LessThan, OperatorClass.Filter],
+        [QueryExpression._suffix_in, Operators.Contains, OperatorClass.Filter],
         ["", Operators.EqualTo, OperatorClass.Filter],
         ["", Operators.Range, OperatorClass.Filter],
         [QueryExpression._suffix_asc, Operators.OrderAsc, OperatorClass.Order],
@@ -134,12 +137,15 @@ export class QueryExpression {
                         comparitor = "<";
                         break;
 
+                    case Operators.Contains:
+                        return `${this.mapping[prop].sqlName} IN (SELECT value FROM string_split(@${prop}, ',')`;
+
                     case Operators.Range:
-                        return this.mapping[prop].sqlName + " > @" + prop + "Low AND " + 
-                                this.mapping[prop].sqlName + " < @" + prop + "Hi";
+                        return `${this.mapping[prop].sqlName} > @${prop}Low AND ` + 
+                               `${this.mapping[prop].sqlName} < @${prop}Hi`;
                 }
                 if (comparitor != "") {
-                    return this.mapping[prop].sqlName + " " + comparitor + " @" + prop;
+                    return `${this.mapping[prop].sqlName} ${comparitor} @${prop}`;
                 }
             }
             return "";

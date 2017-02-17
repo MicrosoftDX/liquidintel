@@ -19,10 +19,6 @@ import sessionController = require('./app/controllers/session');
 import queryExpression = require('./app/utils/query_expression');
 import adminUserCache = require('./app/utils/admin_user_cache');
 
-// array to hold logged in users and the current logged in user (owner)
-var users = [];
-var owner = null;
-
 var config = {
     userName: process.env.SqlUsername,
     password: process.env.SqlPassword,
@@ -126,7 +122,11 @@ router.route('/CurrentKeg/:tap_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
     .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
 
-  router.route('/kegFinished/:tap_id')
+router.route('/users/:user_id?')
+    .get(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id || req.user.upn, resultDispatcher)))
+    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id || req.user.upn, req.body, resultDispatcher)));
+
+router.route('/kegFinished/:tap_id')
     .put(function(req, res){
 
     });
