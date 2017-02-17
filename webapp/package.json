@@ -36,7 +36,7 @@
     "prod:rtl": "run-s build:prod:rtl prod:server",
     "dist": "cross-env NODE_ENV=production run-s bundle:client && node tools/create-dist.js",
     "dist:watch": "run-s bundle:client && node tools/watch-dist.js",
-    "test": "mocha --compilers :./tools/babel-setup.js --recursive --watch ./test/*.js",
+    "test": "mocha --compilers :./tools/babel-setup.js --recursive",
     "start": "node server.js"
   },
   "author": "Sketchpixy <support@sketchpixy.com>",
