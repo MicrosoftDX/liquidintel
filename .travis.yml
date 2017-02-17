@@ -37,7 +37,7 @@ matrix:
       before_install:
         - cd IOController/src
         - pip install gpiozero purl ConfigParser requests
-       install:
+      install:
         - echo "IOController dependencies call goes here" 
-       script:
+      script:
         - echo "IOController test call goes here" 
