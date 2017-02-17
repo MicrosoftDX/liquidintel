@@ -34,7 +34,7 @@ matrix:
       sudo: required
       before_install:
         - cd IOController/src
-        - sudo apt-get -qq update
-        - sudo apt-get install gpiozero_1.3.1.post1-1
+        - pip install gpiozero
+        - pip install purl
       install:
         - python IOController.py -q install
