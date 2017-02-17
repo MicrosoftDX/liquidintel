@@ -17,8 +17,6 @@ matrix:
       install:
         - npm install
         - tsc
-      script:
-        - npm test
       # deploy:
       # provider: azure_web_apps
       # skip_cleanup: true
@@ -29,7 +27,7 @@ matrix:
         - cd webapp
       install:
         - npm install
-    - python: "3.6"
+    - python: "2.7"
       language: python
       sudo: required
       before_install:
