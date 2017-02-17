@@ -29,3 +29,11 @@ matrix:
         - cd webapp
       install:
         - npm install
+    - python: "3.6"
+      language: python
+      sudo: true
+      before_install:
+        - cd IOController/src
+        - sudo apt-get install python3-gpiozero
+      install:
+        - python IOController.py -q install
