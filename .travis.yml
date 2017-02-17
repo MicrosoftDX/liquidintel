@@ -1,27 +1,43 @@
-# Builds the API for now - TODO: buid web app and IOController too
-
 #Notifies Skype Teams channel of Travis builds
 notifications:
   webhooks: https://outlook.office.com/webhook/a306d5a1-d393-4c81-9fce-a0d7d1fe987a@72f988bf-86f1-41af-91ab-2d7cd011db47/TravisCI/26562f1234464a60b768fa3ed1385896/d17db4b1-39ff-4f12-a233-f5904a32bee0
 
-language: node_js
-node_js:
-- "6"
-
-before_install: 
-- cd api
-- npm install -g typescript
-
-install:
-- npm install
-- tsc
+# Builds and tests the API and Web App for now 
+# TODO:
+# - IOController
+# - Deploy API and Web App to Azure 
 #
-# Uncommeting deploy below will deploy to the web app based on env variables
-# configured in Travis. For now we'll only deploy Master and the web app is already
-# configured to deploy from master straight from GitHub using kudu so we'll use Travis 
-# for running tests for now
-#
-# deploy:
-# provider: azure_web_apps
-# skip_cleanup: true
-# verbose: true
+matrix:
+  fast_finish: true
+  include:
+    - node_js: stable
+      language: node_js
+      before_install:
+        - cd api
+      install:
+        - npm install
+        - tsc
+      # deploy:
+      # provider: azure_web_apps
+      # skip_cleanup: true
+      # verbose: true
+    - node_js: stable
+      language: node_js
+      before_install:
+        - cd webapp
+      install:
+        - npm install
+      # deploy:
+      # provider: azure_web_apps
+      # skip_cleanup: true
+      # verbose: true
+    - python: "2.7"
+      language: python
+      sudo: required
+      before_install:
+        - cd IOController/src
+        - pip install gpiozero purl ConfigParser requests
+      install:
+        - echo "IOController dependencies call goes here" 
+      script:
+        - echo "IOController test call goes here" 
