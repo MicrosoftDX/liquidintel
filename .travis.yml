@@ -31,9 +31,10 @@ matrix:
         - npm install
     - python: "3.6"
       language: python
-      sudo: true
+      sudo: required
       before_install:
         - cd IOController/src
-        - sudo apt-get install python3-gpiozero
+        - sudo apt-get -qq update
+        - sudo apt-get install gpiozero
       install:
         - python IOController.py -q install
