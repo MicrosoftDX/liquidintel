@@ -9,13 +9,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
+const queryExpression = require("../utils/query_expression");
 const kegController = require("./kegController");
+const untappd = require("../utils/untappd");
 function getSessions(sessionId, queryParams, output) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let sessions = yield getSessions_internal(sessionId, queryParams);
+            if (sessionId != null && sessions.length == 0) {
+                return output({ code: 404, msg: 'Specified session not found!' });
+            }
+            else {
+                return output({ code: 200, msg: sessions });
+            }
+        }
+        catch (ex) {
+            return output({ code: 500, msg: 'Internal Error: ' + ex });
+        }
+    });
+}
+exports.getSessions = getSessions;
+function getSessions_internal(sessionId, queryParams) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             queryParams.mapping = {
                 'pourtime': { sqlName: 'PourDateTime', dataType: tedious_1.TYPES.DateTime2 },
-                'pouramount': { sqlName: 'PourAmountInML', dataType: tedious_1.TYPES.Int }
+                'pouramount': { sqlName: 'PourAmountInML', dataType: tedious_1.TYPES.Int },
+                'activityid': { sqlName: 'd.Id', dataType: tedious_1.TYPES.Int }
             };
             queryParams.ordering = [
                 'pourtime',
@@ -48,36 +68,30 @@ function getSessions(sessionId, queryParams, output) {
                 queryParams.addRequestParameters(stmt);
             }
             let results = yield stmt.executeImmediate();
-            if (sessionId != null && results.length == 0) {
-                return output({ code: 404, msg: 'Specified session not found!' });
-            }
-            else {
-                return output({ code: 200, msg: results.map(row => {
-                        return {
-                            'SessionId': row.SessionId,
-                            'PourTime': row.PourDateTime,
-                            'PourAmount': row.PourAmountInML,
-                            'BeerName': row.BeerName,
-                            'Brewery': row.Brewery,
-                            'BeerType': row.BeerType,
-                            'ABV': row.ABV,
-                            'IBU': row.IBU,
-                            'BeerDescription': row.BeerDescription,
-                            'UntappdId': row.UntappdId,
-                            'BeerImagePath': row.imagePath,
-                            'PersonnelNumber': row.PersonnelNumber,
-                            'Alias': row.EmailName,
-                            'FullName': row.FullName
-                        };
-                    }) });
-            }
+            return results.map(row => {
+                return {
+                    SessionId: row.SessionId,
+                    PourTime: row.PourDateTime,
+                    PourAmount: row.PourAmountInML,
+                    BeerName: row.BeerName,
+                    Brewery: row.Brewery,
+                    BeerType: row.BeerType,
+                    ABV: row.ABV,
+                    IBU: row.IBU,
+                    BeerDescription: row.BeerDescription,
+                    UntappdId: row.UntappdId,
+                    BeerImagePath: row.imagePath,
+                    PersonnelNumber: row.PersonnelNumber,
+                    Alias: row.EmailName,
+                    FullName: row.FullName
+                };
+            });
         }
         catch (ex) {
-            return output({ code: 500, msg: 'Internal Error: ' + ex });
+            return Promise.reject(ex);
         }
     });
 }
-exports.getSessions = getSessions;
 function postNewSession(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
         var inXact = false;
@@ -123,7 +137,11 @@ function postNewSession(body, output) {
                 });
             }));
             yield connection.commitTransaction();
-            output({ code: 200, msg: newActivities.map(activity => { return { ActivityId: activity.Id, KegId: activity.KegId }; }) });
+            var retval = newActivities.map(activity => { return { ActivityId: activity.Id, KegId: activity.KegId }; });
+            if (untappd.isIntegrationEnabled()) {
+                postUntappdActivity(retval);
+            }
+            output({ code: 200, msg: retval });
         }
         catch (ex) {
             if (connection && inXact) {
@@ -139,4 +157,18 @@ function postNewSession(body, output) {
     });
 }
 exports.postNewSession = postNewSession;
+function postUntappdActivity(activities) {
+    if (!untappd.isIntegrationEnabled()) {
+        return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+        try {
+            let sessions = yield getSessions_internal(null, new queryExpression.QueryExpression({ activity_id: activities.map(activity => activity.ActivityId).join(',') }));
+            untappd.postSessionCheckin(sessions);
+        }
+        catch (ex) {
+            reject(ex);
+        }
+    }));
+}
 //# sourceMappingURL=session.js.map

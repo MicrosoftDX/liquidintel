@@ -2,7 +2,7 @@
 import express = require('express');
 import tds = require('../utils/tds-promises');
 import {TYPES} from 'tedious';
-import request_promise = require('request-promise')
+import untappd = require('../utils/untappd')
 
 export function getCurrentKeg_Internal(tapId: number): Promise<any[]> {
     return new Promise<any[]>(async (resolve, reject) => {
@@ -135,18 +135,15 @@ export async function getKeg(kegId: number, outputFunc: (resp:any) => express.Re
 export async function postNewKeg(body: any, output: (resp:any) => express.Response) {
     try {
         // If they've supplied an Untapped beer id, look this up now
-        if (body.UntappdId) {
-            var beerInfo = await request_promise.get({
-                uri: `https://api.untappd.com/v4/beer/info/${body.UntappdId}?client_id=${process.env.UntappdClientId}&client_secret=${process.env.UntappdClientSecret}`,
-                json: true
-            });
-            body.Name = beerInfo.beer.beer_name;
-            body.Brewery = beerInfo.brewery.brewery_name;
-            body.BeerType = beerInfo.beer.beer_style;
-            body.ABV = beerInfo.beer.beer_abv;
-            body.IBU = beerInfo.beer.beer_ibu;
-            body.BeerDescription = beerInfo.beer.beer_description;
-            body.imagePath = beerInfo.beer.beer_label;
+        if (body.UntappdId && untappd.isIntegrationEnabled) {
+            var beerInfo = await untappd.getBeerInfo(body.UntappdId);
+            body.Name = beerInfo.beer_name;
+            body.Brewery = beerInfo.brewery_name;
+            body.BeerType = beerInfo.beer_style;
+            body.ABV = beerInfo.beer_abv;
+            body.IBU = beerInfo.beer_ibu;
+            body.BeerDescription = beerInfo.beer_description;
+            body.imagePath = beerInfo.beer_label_image;
         }
         var sqlStatement = "INSERT INTO DimKeg " +
                         "(Name, Brewery, BeerType, ABV, IBU, BeerDescription, UntappdId, imagePath) " + 

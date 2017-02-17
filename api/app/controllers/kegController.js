@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
-const request_promise = require("request-promise");
+const untappd = require("../utils/untappd");
 function getCurrentKeg_Internal(tapId) {
     return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
         try {
@@ -143,18 +143,15 @@ exports.getKeg = getKeg;
 function postNewKeg(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (body.UntappdId) {
-                var beerInfo = yield request_promise.get({
-                    uri: `https://api.untappd.com/v4/beer/info/${body.UntappdId}?client_id=${process.env.UntappdClientId}&client_secret=${process.env.UntappdClientSecret}`,
-                    json: true
-                });
-                body.Name = beerInfo.beer.beer_name;
-                body.Brewery = beerInfo.brewery.brewery_name;
-                body.BeerType = beerInfo.beer.beer_style;
-                body.ABV = beerInfo.beer.beer_abv;
-                body.IBU = beerInfo.beer.beer_ibu;
-                body.BeerDescription = beerInfo.beer.beer_description;
-                body.imagePath = beerInfo.beer.beer_label;
+            if (body.UntappdId && untappd.isIntegrationEnabled) {
+                var beerInfo = yield untappd.getBeerInfo(body.UntappdId);
+                body.Name = beerInfo.beer_name;
+                body.Brewery = beerInfo.brewery_name;
+                body.BeerType = beerInfo.beer_style;
+                body.ABV = beerInfo.beer_abv;
+                body.IBU = beerInfo.beer_ibu;
+                body.BeerDescription = beerInfo.beer_description;
+                body.imagePath = beerInfo.beer_label_image;
             }
             var sqlStatement = "INSERT INTO DimKeg " +
                 "(Name, Brewery, BeerType, ABV, IBU, BeerDescription, UntappdId, imagePath) " +
