@@ -1,13 +1,34 @@
 "use strict";
 require('mocha');
-var chai = require('chai'), should = chai.should();
+const chai = require("chai");
 var chaiHttp = require('chai-http');
 var server = require('../server').app;
 chai.use(chaiHttp);
-before(function (done) {
-    this.timeout(15000);
-    console.log("Tests ready to start - server listening");
-    done();
+const request = require("request");
+var should = chai.should();
+var validBearerToken;
+var invalidBearerToken;
+before((done) => {
+    request.post({
+        url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
+        json: true,
+        form: {
+            'grant_type': 'refresh_token',
+            'client_id': process.env.ClientId,
+            'client_secret': process.env.ClientSecret,
+            'resource': process.env.ClientId,
+            'refresh_token': process.env.RefreshToken
+        }
+    }, (err, response, body) => {
+        if (!err && response.statusCode == 200) {
+            validBearerToken = body.access_token;
+            console.log("Tests ready to start - server listening");
+            done();
+        }
+        else {
+            throw err || body;
+        }
+    });
 });
 describe('testing api', function () {
     it('should return 404 on / GET', function (done) {
@@ -194,7 +215,59 @@ describe('testing api', function () {
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
             .end(function (err, res) {
             res.should.have.status(404);
-            res.text.should.equal('No person found having CardId: 0000000');
+            done();
+        });
+    });
+    it('should 401 on invalid bearer token on /api/users GET', function (done) {
+        chai.request(server)
+            .get('/api/users')
+            .end(function (err, res) {
+            res.should.have.status(401);
+            done();
+        });
+    });
+    it('should return user identified by access token for /api/users GET', function (done) {
+        chai.request(server)
+            .get('/api/users')
+            .set('Authorization', 'Bearer ' + validBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            done();
+        });
+    });
+    it('should not find specific invalid user for /api/users/:user_id GET', function (done) {
+        chai.request(server)
+            .get('/api/users/blah@microsoft.com')
+            .set('Authorization', 'Bearer ' + validBearerToken)
+            .end((err, res) => {
+            res.should.have.status(404);
+            done();
+        });
+    });
+    it('should return specific person that is a user for /api/users/:user_id GET', function (done) {
+        chai.request(server)
+            .get('/api/users/jamesbak@microsoft.com')
+            .set('Authorization', 'Bearer ' + validBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.PersonnelNumber.should.be.above(420000);
+            res.body.PersonnelNumber.should.be.below(430000);
+            should.not.equal(res.body.UntappdAccessToken, null);
+            done();
+        });
+    });
+    it('should return specific person that is not a user for /api/users/:user_id GET', function (done) {
+        chai.request(server)
+            .get('/api/users/OLIVERH@microsoft.com')
+            .set('Authorization', 'Bearer ' + validBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.PersonnelNumber.should.equal(52);
+            should.equal(res.body.UntappdAccessToken, null);
             done();
         });
     });

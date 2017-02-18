@@ -1,3 +1,4 @@
+/// <reference path="globals/chai-http/index.d.ts" />
 /// <reference path="globals/chai/index.d.ts" />
 /// <reference path="globals/mocha/index.d.ts" />
 /// <reference path="globals/passport/index.d.ts" />
