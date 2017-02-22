@@ -85,14 +85,9 @@ async function getSessions_internal(sessionId: number, queryParams: queryExpress
 }
 
 export async function postNewSession(body: any, output: (resp:any) => express.Response) {
-    var inXact = false;
-    var connection: tds.TdsConnection;
-    try {
+    new tds.TdsConnection().transaction(async (connection: tds.TdsConnection) => {
         // Lookup our current keg info
         let tapsInfo = await kegController.getCurrentKeg_Internal(null);
-        let connection = new tds.TdsConnection();
-        await connection.beginTransaction();
-        inXact = true;
         // Add journal entries into the activities table
         var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " + 
                             "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
@@ -132,27 +127,15 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 pourAmount: newActivity.PourAmountInML
             });
         });
-
-        // commit
-        await connection.commitTransaction();
         var retval = newActivities.map(activity => { return {ActivityId: activity.Id, KegId: activity.KegId}; });
         // Asynchronously post checkin to UntappdId
         if (untappd.isIntegrationEnabled()) {
             postUntappdActivity(retval);
         }
         output({code: 200, msg: retval});
-    }
-    catch (ex) {
-        if (connection && inXact) {
-            await connection.rollbackTransaction();
-        }
-        output({code:500, msg: "Failed to update session activity: " + ex});
-    }
-    finally {
-        if (connection) {
-            connection.close();
-        }
-    }
+    }, 
+    null, 
+    (ex: Error) => output({code:500, msg: "Failed to update session activity: " + ex}));
 }
 
 function postUntappdActivity(activities: any[]): Promise<void> {

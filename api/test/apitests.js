@@ -6,27 +6,44 @@ var server = require('../server').app;
 chai.use(chaiHttp);
 const request = require("request");
 var should = chai.should();
-var validBearerToken;
-var invalidBearerToken;
-before((done) => {
+var adminBearerToken;
+var nonAdminBearerToken;
+function getAccessToken(refreshToken, next) {
     request.post({
         url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
         json: true,
         form: {
             'grant_type': 'refresh_token',
-            'client_id': process.env.ClientId,
-            'client_secret': process.env.ClientSecret,
+            'client_id': process.env.AdminClientId,
+            'client_secret': process.env.AdminClientSecret,
             'resource': process.env.ClientId,
-            'refresh_token': process.env.RefreshToken
+            'refresh_token': refreshToken
         }
     }, (err, response, body) => {
         if (!err && response.statusCode == 200) {
-            validBearerToken = body.access_token;
-            console.log("Tests ready to start - server listening");
-            done();
+            next(null, body.access_token);
         }
         else {
-            throw err || body;
+            next(err || body, null);
+        }
+    });
+}
+before((done) => {
+    getAccessToken(process.env.AdminRefreshToken, (err, token) => {
+        if (token) {
+            adminBearerToken = token;
+            getAccessToken(process.env.NonAdminRefreshToken, (err, token) => {
+                if (token) {
+                    nonAdminBearerToken = token;
+                    done();
+                }
+                else {
+                    done(err);
+                }
+            });
+        }
+        else {
+            done(err);
         }
     });
 });
@@ -226,48 +243,70 @@ describe('testing api', function () {
             done();
         });
     });
-    it('should return user identified by access token for /api/users GET', function (done) {
+    it('should return all users for admin request to /api/users GET', function (done) {
         chai.request(server)
             .get('/api/users')
-            .set('Authorization', 'Bearer ' + validBearerToken)
+            .set('Authorization', 'Bearer ' + adminBearerToken)
             .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
+            res.body.should.be.an('array');
+            res.body.should.not.be.empty;
+            res.body[0].should.have.property('PersonnelNumber');
             done();
         });
     });
-    it('should not find specific invalid user for /api/users/:user_id GET', function (done) {
+    it('should not find specific invalid user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
             .get('/api/users/blah@microsoft.com')
-            .set('Authorization', 'Bearer ' + validBearerToken)
+            .set('Authorization', 'Bearer ' + adminBearerToken)
             .end((err, res) => {
             res.should.have.status(404);
             done();
         });
     });
-    it('should return specific person that is a user for /api/users/:user_id GET', function (done) {
+    it('should return specific person that is a user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
             .get('/api/users/jamesbak@microsoft.com')
-            .set('Authorization', 'Bearer ' + validBearerToken)
+            .set('Authorization', 'Bearer ' + adminBearerToken)
             .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
-            res.body.PersonnelNumber.should.be.above(420000);
-            res.body.PersonnelNumber.should.be.below(430000);
+            res.body.PersonnelNumber.should.be.within(420000, 430000);
             should.not.equal(res.body.UntappdAccessToken, null);
             done();
         });
     });
-    it('should return specific person that is not a user for /api/users/:user_id GET', function (done) {
+    it('should return specific person that is not a user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
             .get('/api/users/OLIVERH@microsoft.com')
-            .set('Authorization', 'Bearer ' + validBearerToken)
+            .set('Authorization', 'Bearer ' + adminBearerToken)
             .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.PersonnelNumber.should.equal(52);
-            should.equal(res.body.UntappdAccessToken, null);
+            should.equal(res.body.UntappdAccessToken, undefined);
+            done();
+        });
+    });
+    it('should return 400 Bad Request for non-admin request to /api/users/:user_id GET', function (done) {
+        chai.request(server)
+            .get('/api/users/OLIVERH@microsoft.com')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err, res) => {
+            res.should.have.status(400);
+            done();
+        });
+    });
+    it('should return user identified by access token for non-admin request to /api/users GET', function (done) {
+        chai.request(server)
+            .get('/api/users')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
             done();
         });
     });

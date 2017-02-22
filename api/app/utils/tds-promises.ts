@@ -137,6 +137,32 @@ export class TdsConnection {
             });
         });
     }
+
+    async transaction(transactionBody: (connection: TdsConnection) => Promise<void>, postCommit: () => void, error: (Error) => void): Promise<void> {
+        var inXact = false;
+        try {
+            await this.open();
+            await this.beginTransaction();
+            inXact = true;
+            await transactionBody(this);
+            await this.commitTransaction();
+            inXact = false;
+            if (postCommit) {
+                postCommit();
+            }
+        }
+        catch (ex) {
+            if (inXact) {
+                await this.rollbackTransaction();
+            }
+            if (error) {
+                error(ex);
+            }
+        }
+        finally {
+            this.close();
+        }
+    }
 }
 
 export class TdsStatement {

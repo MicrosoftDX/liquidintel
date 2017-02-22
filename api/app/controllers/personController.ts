@@ -34,9 +34,16 @@ export async function getPersonByCardId(cardId: number, output: (resp:any) => ex
     }
 }
 
-export async function getUserDetails(upn: string, output: (resp: any) => express.Response) {
+export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: string, output: (resp: any) => express.Response) {
     try {
-        var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdAccessToken, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, " + 
+        if (!isAdmin) {
+            // Non-admin users can only ask for their own info
+            if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
+                return output({code: 400, msg: 'Caller can only request own user information.'});
+            }
+            upn = upn || tokenUpn;
+        }
+        var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, " + 
                            "    p.FullName, p.FirstName, p.LastName " +
                            "FROM dbo.Users u INNER JOIN HC01Person p ON u.PersonnelNumber = p.PersonnelNumber ";
         if (upn) {                           
@@ -50,7 +57,7 @@ export async function getUserDetails(upn: string, output: (resp: any) => express
         var users = await stmt.executeImmediate();
         if (upn && users.length == 0) {
             // Try directly against the HC01Person table
-            sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdAccessToken, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, " +
+            sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, " +
                            "    FullName, FirstName, LastName " +
                            "FROM dbo.HC01Person " +
                            "WHERE EmailName = @alias";
@@ -76,28 +83,33 @@ export async function getUserDetails(upn: string, output: (resp: any) => express
 
 export async function postUserDetails(upn: string, userDetails, output: (resp: any) => express.Response) {
     try {
+        if (userDetails.UserPrincipalName && upn.toLowerCase() !== userDetails.UserPrincipalName.toLowerCase()) {
+            return output({code:400, msg: 'UserPrincipalName in payload MUST match resource name'});
+        }
         var sqlStatement = "MERGE dbo.Users " +
                            "USING (" +
-                           "    VALUES(@personnelNumber, @userPrincipalName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare)" +
-                           ") AS source(PersonnelNumber, UserPrincipalName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
+                           "    VALUES(@personnelNumber, @userPrincipalName, @untappdUserName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare)" +
+                           ") AS source(PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
                            "ON Users.PersonnelNumber = source.PersonnelNumber " +
                            "WHEN MATCHED THEN " +
-                           "    UPDATE SET UntappdAccessToken = source.UntappdAccessToken, " +
+                           "    UPDATE SET UntappdUserName = source.UntappdUserName, " +
+                           "        UntappdAccessToken = source.UntappdAccessToken, " +
                            "        CheckinFacebook = source.CheckinFacebook, " +
                            "        CheckinTwitter = source.CheckinTwitter, " +
                            "        CheckinFoursquare = source.CheckinFoursquare " +
                            "WHEN NOT MATCHED THEN " +
-                           "    INSERT (PersonnelNumber, UserPrincipalName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
-                           "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare);";
+                           "    INSERT (PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
+                           "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdUserName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare);";
         var results = await tds.default.sql(sqlStatement)
             .parameter('personnelNumber', TYPES.Int, userDetails.PersonnelNumber)
             .parameter('userPrincipalName', TYPES.NVarChar, upn)
+            .parameter('untappdUserName', TYPES.NVarChar, userDetails.UntappdUserName)
             .parameter('untappdAccessToken', TYPES.NVarChar, userDetails.UntappdAccessToken)
             .parameter('checkinFacebook', TYPES.Bit, userDetails.CheckinFacebook)
             .parameter('checkinTwitter', TYPES.Bit, userDetails.CheckinTwitter)
             .parameter('checkinFoursquare', TYPES.Bit, userDetails.CheckinFoursquare)
             .executeImmediate();
-        getUserDetails(upn, output);
+        getUserDetails(upn, false, upn, output);
     }
     catch (ex) {
         output({code: 500, msg: 'Failed to update user. Details: ' + ex});

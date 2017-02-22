@@ -82,6 +82,7 @@ INCLUDE (PourDateTime, TapId);
 CREATE TABLE dbo.Users(
   PersonnelNumber INT NOT NULL PRIMARY KEY CLUSTERED,
   UserPrincipalName NVarChar(400) NOT NULL,
+  UntappdUserName NVarChar(255),
   UntappdAccessToken NVarChar(1000),
   CheckinFacebook bit default(0),
   CheckinTwitter bit default(0),

@@ -59,21 +59,30 @@ passport.use(new BasicStrategy(async (username, password, done) => {
     }
 }));
 // OAuth bearer strategy for admin apis
-passport.use(new BearerStrategy({  
-        identityMetadata: process.env.AADMetadataEndpoint,
-        clientID: process.env.ClientId,  
-        audience: (process.env.AADAudience || "").split(';'),  
-        validateIssuer: true,  
-    }, async (token, done) => { 
+var aad_auth_options = {  
+    identityMetadata: process.env.AADMetadataEndpoint,
+    clientID: process.env.ClientId,  
+    audience: (process.env.AADAudience || "").split(';'),  
+    validateIssuer: true,  
+};
+// Strategy for any valid AAD user
+passport.use("aad-user", new BearerStrategy(aad_auth_options, async (token, done) => { 
+    token['is_admin'] = await adminUserCache.isUserAdmin(token.oid);
+    return done(null, token);
+}));
+// Strategy for valid AAD users in our admin group
+passport.use("aad-admin", new BearerStrategy(aad_auth_options, async (token, done) => { 
         // Verify that the user associated with the supplied token is a member of our specified group
         if (await adminUserCache.isUserAdmin(token.oid)) {
+            token['is_admin'] = true;
             return done(null, token);
         }
         done(null, false);
     }));
+var basicAuthStrategy = () => passport.authenticate('basic', {session: false});
+var bearerOAuthStrategy = (requireAdmin: boolean) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', {session: false});
 
 /* Setting Port to 8000 */
-
 var port = process.env.PORT || 8000;
 var router = express.Router();
 
@@ -100,15 +109,12 @@ var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>ex
     };
 };
 
-var basicAuthStrategy = () => passport.authenticate('basic', {session: false});
-var bearerOAuthStrategy = () => passport.authenticate('oauth-bearer', { session: false });
-
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
 
 router.route('/kegs')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getKeg(null, resultDispatcher)))
-    .post(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));
+    .post(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));
 
 router.route('/activity/:sessionId?')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), resultDispatcher)))
@@ -120,24 +126,11 @@ router.route('/CurrentKeg')
 //Get Current Keg for the TapId specified
 router.route('/CurrentKeg/:tap_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
-    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
+    .put(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
 
 router.route('/users/:user_id?')
-    .get(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id || req.user.upn, resultDispatcher)))
-    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id || req.user.upn, req.body, resultDispatcher)));
-
-router.route('/kegFinished/:tap_id')
-    .put(function(req, res){
-
-    });
-
-/*
-//TODO: Using the isCurrent flag for now. Need to change the query to use PourDateTime instead.
-router.route('/timeline')
-    .get(function(req, res){
-        var sqlStatement = "SELECT a.PourDateTime, b.FullName, d.Name as BeerName FROM dbo.FactDrinkers a INNER JOIN dbo.HC01Person b INNER JOIN dbo.FactKegInstall c INNER JOIN dbo.DimKeg d ON a.EmailName = b.HC01Person and a.TapId = c.TapId";
-    });
-*/
+    .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, resultDispatcher)))
+    .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.user.is_admin ? (req.params.user_id || req.user.upn) : req.user.upn, req.body, resultDispatcher)));
 
 app.use('/api', router);
 

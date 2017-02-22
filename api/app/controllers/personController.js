@@ -39,10 +39,16 @@ function getPersonByCardId(cardId, output) {
     });
 }
 exports.getPersonByCardId = getPersonByCardId;
-function getUserDetails(upn, output) {
+function getUserDetails(upn, isAdmin, tokenUpn, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdAccessToken, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, " +
+            if (!isAdmin) {
+                if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
+                    return output({ code: 400, msg: 'Caller can only request own user information.' });
+                }
+                upn = upn || tokenUpn;
+            }
+            var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, " +
                 "    p.FullName, p.FirstName, p.LastName " +
                 "FROM dbo.Users u INNER JOIN HC01Person p ON u.PersonnelNumber = p.PersonnelNumber ";
             if (upn) {
@@ -55,7 +61,7 @@ function getUserDetails(upn, output) {
             }
             var users = yield stmt.executeImmediate();
             if (upn && users.length == 0) {
-                sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdAccessToken, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, " +
+                sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, " +
                     "    FullName, FirstName, LastName " +
                     "FROM dbo.HC01Person " +
                     "WHERE EmailName = @alias";
@@ -83,28 +89,33 @@ exports.getUserDetails = getUserDetails;
 function postUserDetails(upn, userDetails, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            if (userDetails.UserPrincipalName && upn.toLowerCase() !== userDetails.UserPrincipalName.toLowerCase()) {
+                return output({ code: 400, msg: 'UserPrincipalName in payload MUST match resource name' });
+            }
             var sqlStatement = "MERGE dbo.Users " +
                 "USING (" +
-                "    VALUES(@personnelNumber, @userPrincipalName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare)" +
-                ") AS source(PersonnelNumber, UserPrincipalName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
+                "    VALUES(@personnelNumber, @userPrincipalName, @untappdUserName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare)" +
+                ") AS source(PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
                 "ON Users.PersonnelNumber = source.PersonnelNumber " +
                 "WHEN MATCHED THEN " +
-                "    UPDATE SET UntappdAccessToken = source.UntappdAccessToken, " +
+                "    UPDATE SET UntappdUserName = source.UntappdUserName, " +
+                "        UntappdAccessToken = source.UntappdAccessToken, " +
                 "        CheckinFacebook = source.CheckinFacebook, " +
                 "        CheckinTwitter = source.CheckinTwitter, " +
                 "        CheckinFoursquare = source.CheckinFoursquare " +
                 "WHEN NOT MATCHED THEN " +
-                "    INSERT (PersonnelNumber, UserPrincipalName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
-                "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare);";
+                "    INSERT (PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
+                "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdUserName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare);";
             var results = yield tds.default.sql(sqlStatement)
                 .parameter('personnelNumber', tedious_1.TYPES.Int, userDetails.PersonnelNumber)
                 .parameter('userPrincipalName', tedious_1.TYPES.NVarChar, upn)
+                .parameter('untappdUserName', tedious_1.TYPES.NVarChar, userDetails.UntappdUserName)
                 .parameter('untappdAccessToken', tedious_1.TYPES.NVarChar, userDetails.UntappdAccessToken)
                 .parameter('checkinFacebook', tedious_1.TYPES.Bit, userDetails.CheckinFacebook)
                 .parameter('checkinTwitter', tedious_1.TYPES.Bit, userDetails.CheckinTwitter)
                 .parameter('checkinFoursquare', tedious_1.TYPES.Bit, userDetails.CheckinFoursquare)
                 .executeImmediate();
-            getUserDetails(upn, output);
+            getUserDetails(upn, false, upn, output);
         }
         catch (ex) {
             output({ code: 500, msg: 'Failed to update user. Details: ' + ex });

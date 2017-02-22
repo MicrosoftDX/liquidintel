@@ -94,13 +94,8 @@ function getSessions_internal(sessionId, queryParams) {
 }
 function postNewSession(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
-        var inXact = false;
-        var connection;
-        try {
+        new tds.TdsConnection().transaction((connection) => __awaiter(this, void 0, void 0, function* () {
             let tapsInfo = yield kegController.getCurrentKeg_Internal(null);
-            let connection = new tds.TdsConnection();
-            yield connection.beginTransaction();
-            inXact = true;
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " +
                 "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
                 "SELECT Id, KegId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
@@ -136,24 +131,12 @@ function postNewSession(body, output) {
                     pourAmount: newActivity.PourAmountInML
                 });
             }));
-            yield connection.commitTransaction();
             var retval = newActivities.map(activity => { return { ActivityId: activity.Id, KegId: activity.KegId }; });
             if (untappd.isIntegrationEnabled()) {
                 postUntappdActivity(retval);
             }
             output({ code: 200, msg: retval });
-        }
-        catch (ex) {
-            if (connection && inXact) {
-                yield connection.rollbackTransaction();
-            }
-            output({ code: 500, msg: "Failed to update session activity: " + ex });
-        }
-        finally {
-            if (connection) {
-                connection.close();
-            }
-        }
+        }), null, (ex) => output({ code: 500, msg: "Failed to update session activity: " + ex }));
     });
 }
 exports.postNewSession = postNewSession;

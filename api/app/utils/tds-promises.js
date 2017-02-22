@@ -126,6 +126,33 @@ class TdsConnection {
             });
         });
     }
+    transaction(transactionBody, postCommit, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var inXact = false;
+            try {
+                yield this.open();
+                yield this.beginTransaction();
+                inXact = true;
+                yield transactionBody(this);
+                yield this.commitTransaction();
+                inXact = false;
+                if (postCommit) {
+                    postCommit();
+                }
+            }
+            catch (ex) {
+                if (inXact) {
+                    yield this.rollbackTransaction();
+                }
+                if (error) {
+                    error(ex);
+                }
+            }
+            finally {
+                this.close();
+            }
+        });
+    }
 }
 exports.TdsConnection = TdsConnection;
 class TdsStatement {
