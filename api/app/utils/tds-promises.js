@@ -33,30 +33,34 @@ class TdsConnection {
     constructor() {
     }
     open() {
-        return new Promise((resolve, reject) => {
-            TdsPromises._connectionPool.acquire((err, connection) => {
-                try {
-                    if (err) {
-                        if (connection) {
-                            connection.release();
+        if (!this._openPromise) {
+            this._openPromise = new Promise((resolve, reject) => {
+                TdsPromises._connectionPool.acquire((err, connection) => {
+                    try {
+                        if (err) {
+                            if (connection) {
+                                connection.release();
+                            }
+                            reject(err);
                         }
-                        reject(err);
+                        else {
+                            this._connection = connection;
+                            resolve();
+                        }
                     }
-                    else {
-                        this._connection = connection;
-                        resolve();
+                    catch (ex) {
+                        reject(ex);
                     }
-                }
-                catch (ex) {
-                    reject(ex);
-                }
+                });
             });
-        });
+        }
+        return this._openPromise;
     }
     close() {
         if (this._connection) {
             this._connection.release();
             this._connection = null;
+            this._openPromise = null;
         }
     }
     get connection() {

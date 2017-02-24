@@ -72,14 +72,12 @@ class SimpleGraph {
         });
     }
     userInGroups(upn, groupIds) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve, reject) => {
-                this.memberOf(upn, groupIds, (err, result) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    resolve(result);
-                });
+        return new Promise((resolve, reject) => {
+            this.memberOf(upn, groupIds, (err, result) => {
+                if (err) {
+                    return reject(err);
+                }
+                resolve(result);
             });
         });
     }
@@ -114,6 +112,9 @@ class SimpleGraph {
                 if (error) {
                     next(error, false);
                 }
+                else if (response.statusCode >= 400) {
+                    next(body.error, false);
+                }
                 else {
                     next(null, body.value.length > 0);
                 }
@@ -126,13 +127,24 @@ exports.SimpleGraph = SimpleGraph;
 class GraphGroupMembership {
     constructor(groupNames, token) {
         this.groupNames = groupNames;
-        this.graph = new SimpleGraph(token);
-        this.groupIds = this.graph.groupIdsFromNames(groupNames);
+        try {
+            this.graph = new SimpleGraph(token);
+            this.groupIds = this.graph.groupIdsFromNames(groupNames);
+        }
+        catch (ex) {
+            console.error('Failed to lookup group ids for groups: %s. Details: %s', groupNames, ex);
+        }
     }
     isUserMember(upn) {
         return __awaiter(this, void 0, void 0, function* () {
-            let groups = yield this.groupIds;
-            return this.graph.userInGroups(upn, groups);
+            try {
+                let groups = yield this.groupIds;
+                return this.graph.userInGroups(upn, groups);
+            }
+            catch (ex) {
+                console.warn('Failed to check user: %s membership. Details: %s', upn, ex);
+                throw ex;
+            }
         });
     }
 }

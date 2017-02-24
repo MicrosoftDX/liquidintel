@@ -4,12 +4,30 @@ import tds = require('../utils/tds-promises');
 import {TYPES} from 'tedious';
 import queryExpression = require('../utils/query_expression');
 import kegController = require('./kegController');
+import untappd = require('../utils/untappd');
+import {Session} from '../models/Session';
 
 export async function getSessions(sessionId: number, queryParams: queryExpression.QueryExpression, output: (resp:any) => express.Response) {
     try {
+        let sessions = await getSessions_internal(sessionId, queryParams);
+        if (sessionId != null && sessions.length == 0) {
+            return output({code: 404, msg:'Specified session not found!'});
+        }
+        else {
+            return output({ code: 200, msg: sessions});
+        }
+    }
+    catch (ex) {
+        return output({code: 500, msg:'Internal Error: ' + ex});
+    }
+}
+
+async function getSessions_internal(sessionId: number, queryParams: queryExpression.QueryExpression): Promise<Session[]> {
+    try {
         queryParams.mapping = {
             'pourtime': {sqlName:'PourDateTime', dataType: TYPES.DateTime2},
-            'pouramount': {sqlName:'PourAmountInML', dataType: TYPES.Int}
+            'pouramount': {sqlName:'PourAmountInML', dataType: TYPES.Int},
+            'activityid': {sqlName:'d.Id', dataType: TYPES.Int}
         };
         queryParams.ordering = [
             'pourtime',
@@ -43,32 +61,26 @@ export async function getSessions(sessionId: number, queryParams: queryExpressio
             queryParams.addRequestParameters(stmt);
         }
         let results = await stmt.executeImmediate();
-        if (sessionId != null && results.length == 0) {
-            return output({code: 404, msg:'Specified session not found!'});
-        }
-        else {
-            return output({ code: 200, msg: results.map(row => {
-                    return {
-                        'SessionId': row.SessionId,
-                        'PourTime': row.PourDateTime,
-                        'PourAmount': row.PourAmountInML,
-                        'BeerName': row.BeerName,
-                        'Brewery': row.Brewery,
-                        'BeerType': row.BeerType,
-                        'ABV': row.ABV,
-                        'IBU': row.IBU,
-                        'BeerDescription': row.BeerDescription,
-                        'UntappdId': row.UntappdId,
-                        'BeerImagePath': row.imagePath,
-                        'PersonnelNumber': row.PersonnelNumber,
-                        'Alias': row.EmailName,
-                        'FullName': row.FullName
-                    };
-                })});
-        }
+        return results.map(row => {
+            return {
+                SessionId: row.SessionId,
+                PourTime: row.PourDateTime,
+                PourAmount: row.PourAmountInML,
+                BeerName: row.BeerName,
+                Brewery: row.Brewery,
+                BeerType: row.BeerType,
+                ABV: row.ABV,
+                IBU: row.IBU,
+                BeerDescription: row.BeerDescription,
+                UntappdId: row.UntappdId,
+                BeerImagePath: row.imagePath,
+                PersonnelNumber: row.PersonnelNumber,
+                Alias: row.EmailName,
+                FullName: row.FullName
+            }});
     }
     catch (ex) {
-        return output({code: 500, msg:'Internal Error: ' + ex});
+        return Promise.reject(ex);
     }
 }
 
@@ -109,7 +121,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
         // Now decrement the available volume in each of our kegs
         sqlStatement = "UPDATE FactKegInstall " + 
                         "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 
-                        "WHERE KegId = @kegId";
+                        "WHERE KegId = @kegId AND isCurrent = 1";
         var updateKegVolume = await connection.sql(sqlStatement)
             .parameter('pourAmount', TYPES.Decimal, 0.0)
             .parameter('kegId', TYPES.Int, 0)
@@ -123,7 +135,12 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
 
         // commit
         await connection.commitTransaction();
-        output({code: 200, msg: newActivities.map(activity => { return {ActivityId: activity.Id, KegId: activity.KegId}; })});
+        var retval = newActivities.map(activity => { return {ActivityId: activity.Id, KegId: activity.KegId}; });
+        // Asynchronously post checkin to UntappdId
+        if (untappd.isIntegrationEnabled()) {
+            postUntappdActivity(retval);
+        }
+        output({code: 200, msg: retval});
     }
     catch (ex) {
         if (connection && inXact) {
@@ -136,4 +153,19 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
             connection.close();
         }
     }
+}
+
+function postUntappdActivity(activities: any[]): Promise<void> {
+    if (!untappd.isIntegrationEnabled()) {
+        return Promise.resolve();
+    }
+    return new Promise<void>(async (resolve, reject) => {
+        try {
+            let sessions = await getSessions_internal(null, new queryExpression.QueryExpression({activity_id: activities.map(activity => activity.ActivityId).join(',')}));
+            untappd.postSessionCheckin(sessions);
+        }
+        catch (ex) {
+            reject(ex);
+        }
+    });
 }

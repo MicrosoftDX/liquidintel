@@ -6,10 +6,10 @@ var app = express();                 // define our app using express
 import ConnectionPool = require('tedious-connection-pool');
 import tds = require('./app/utils/tds-promises');
 import {TYPES} from 'tedious';
-var bodyParser = require('body-parser');
-var passport = require('passport');
+import passport = require('passport');
 var BasicStrategy = require('passport-http').BasicStrategy;
-//var BearerStrategy = require('passport-azure-ad').BearerStrategy;
+var BearerStrategy = require('passport-azure-ad').BearerStrategy;
+var bodyParser = require('body-parser');
 var fs = require('fs'); //For SSL
 var env = require('dotenv').load();
 var moment = require('moment');
@@ -17,10 +17,7 @@ import kegController = require('./app/controllers/kegController');
 import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
 import queryExpression = require('./app/utils/query_expression');
-
-// array to hold logged in users and the current logged in user (owner)
-var users = [];
-var owner = null;
+import adminUserCache = require('./app/utils/admin_user_cache');
 
 var config = {
     userName: process.env.SqlUsername,
@@ -39,7 +36,6 @@ app.use(bodyParser.json());
 
 /* Azure AD */
 app.use(passport.initialize());
-app.use(passport.session());
 
 passport.use(new BasicStrategy(async (username, password, done) => {
     var sql = "SELECT client_id, api_key " +
@@ -62,16 +58,28 @@ passport.use(new BasicStrategy(async (username, password, done) => {
         done(ex);
     }
 }));
+// OAuth bearer strategy for admin apis
+passport.use(new BearerStrategy({  
+        identityMetadata: process.env.AADMetadataEndpoint,
+        clientID: process.env.ClientId,  
+        audience: (process.env.AADAudience || "").split(';'),  
+        validateIssuer: true,  
+    }, async (token, done) => { 
+        // Verify that the user associated with the supplied token is a member of our specified group
+        if (await adminUserCache.isUserAdmin(token.oid)) {
+            return done(null, token);
+        }
+        done(null, false);
+    }));
 
 /* Setting Port to 8000 */
 
 var port = process.env.PORT || 8000;
 var router = express.Router();
 
-router.use(passport.authenticate('basic', {session: false}), function(req, res, next) {
-    console.log('Authenticated the User/App successfully!');
+router.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cache-Control, Authorization");
     next();
 });
 
@@ -92,47 +100,33 @@ var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>ex
     };
 };
 
+var basicAuthStrategy = () => passport.authenticate('basic', {session: false});
+var bearerOAuthStrategy = () => passport.authenticate('oauth-bearer', { session: false });
+
 router.route('/isPersonValid/:card_id')
-    .get(stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
 
 router.route('/kegs')
-    .get(stdHandler((req, resultDispatcher) => kegController.getKeg(null, resultDispatcher)));
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getKeg(null, resultDispatcher)))
+    .post(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));
 
 router.route('/activity/:sessionId?')
-    .get(stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), resultDispatcher)))
-    .post(stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, resultDispatcher)));
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), resultDispatcher)))
+    .post(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, resultDispatcher)));
 
 router.route('/CurrentKeg')
-    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, resultDispatcher)));
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, resultDispatcher)));
 
 //Get Current Keg for the TapId specified
 router.route('/CurrentKeg/:tap_id')
-    .get(stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
-//TODO: Add a new Keg
-    .post(function(req, res){
-/*            if(req.body.kegId!=null){
-                var checkForKeg = "SELECT Id FROM dbo.DimKeg WHERE Id=@kegId";
-                var request = new tedious.Request(checkForKeg, function(err, rowCount, rows){
-                    if(err){
-                        console.log('Internal Error: '+err);
-                        return res.send(500, err);
-                    }
-                    else if(rowCount==0){
-                        return res.send(404, "Keg Not Found!");
-                    }
-                    else{
-                        return res.json(rows);
-                    }
-                });
-            }
-            else{
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
+    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
 
-            }
-        
-        connection.execSql(request);
-*/    });
+router.route('/users/:user_id?')
+    .get(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id || req.user.upn, resultDispatcher)))
+    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id || req.user.upn, req.body, resultDispatcher)));
 
-  router.route('/kegFinished/:tap_id')
+router.route('/kegFinished/:tap_id')
     .put(function(req, res){
 
     });
@@ -150,7 +144,5 @@ app.use('/api', router);
 app.listen(port, function () {
     console.log('Listening on port: ' + port);
 });
-
-console.log('Listening on port: ' + port);
 
 module.exports = {app};

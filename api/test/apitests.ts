@@ -1,15 +1,37 @@
 require('mocha');
-var chai = require('chai'), should = chai.should();
+import chai = require('chai');
 var chaiHttp = require('chai-http');
 var server = require('../server').app;
 chai.use(chaiHttp);
-import tedious = require('tedious');
+import request = require('request')
+var should = chai.should();
 
-before(function(done) {
-    //Ensure the database connection is done before starting
-    this.timeout(15000);
-    console.log("Tests ready to start - server listening");
-    done();
+var validBearerToken: String;
+var invalidBearerToken: string;
+
+before((done) => {
+    // Fetch bearer token using refresh token specified in env vars
+    request.post({
+        url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
+        json: true,
+        form: {
+            'grant_type': 'refresh_token',
+            'client_id': process.env.ClientId,
+            'client_secret': process.env.ClientSecret,
+            'resource': process.env.ClientId,
+            'refresh_token': process.env.RefreshToken
+        }
+    }, (err, response, body) => {
+        if (!err && response.statusCode == 200) {
+            validBearerToken = body.access_token;
+            //Ensure the database connection is done before starting
+            console.log("Tests ready to start - server listening");
+            done();
+        }
+        else {
+            throw err || body;
+        }
+    });
 });
 
 describe('testing api', function() {
@@ -19,15 +41,6 @@ describe('testing api', function() {
         .get('/')
         .end(function(err, res){
             res.should.have.status(404);
-            done();
-        })
-    });
-
-    it('should return 401 when without auth on /api GET', function(done) {
-        chai.request(server)
-        .get('/api')
-        .end(function(err, res){
-            res.should.have.status(401);
             done();
         })
     });
@@ -61,6 +74,16 @@ describe('testing api', function() {
             res.body[0].should.have.property('BeerDescription');
             res.body[0].should.have.property('UntappdId');
             res.body[0].should.have.property('imagePath');
+            done();
+        })
+    });
+
+    it('should require bearer token authentication on /api/kegs POST', function(done) {
+        chai.request(server)
+        .post('/api/kegs')
+        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+        .end(function(err, res){
+            res.should.have.status(401);
             done();
         })
     });
@@ -104,6 +127,17 @@ describe('testing api', function() {
             res.body[0].should.have.property('UntappdId');
             res.body[0].should.have.property('imagePath');
             should.not.exist(res.body[1]);
+            done();
+        })
+    });
+
+    it('should require bearer token authentication on /api/CurrentKeg/<id> PUT', function(done) {
+        chai.request(server)
+        .put('/api/CurrentKeg/1')
+        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+        .send({KegId: 6, KegSize: 17000})
+        .end(function(err, res){
+            res.should.have.status(401);
             done();
         })
     });
@@ -198,7 +232,64 @@ describe('testing api', function() {
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
         .end(function(err, res){
             res.should.have.status(404);
-            res.text.should.equal('No person found having CardId: 0000000');
+            done();
+        })
+    });
+
+    it('should 401 on invalid bearer token on /api/users GET', function(done) {
+        chai.request(server)
+        .get('/api/users')
+        .end(function(err, res){
+            res.should.have.status(401);
+            done();
+        })
+    });
+
+    it('should return user identified by access token for /api/users GET', function(done) {
+        chai.request(server)
+        .get('/api/users')
+        .set('Authorization', 'Bearer ' + validBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            done();
+        })
+    });
+
+    it('should not find specific invalid user for /api/users/:user_id GET', function(done) {
+        chai.request(server)
+        .get('/api/users/blah@microsoft.com')
+        .set('Authorization', 'Bearer ' + validBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(404);
+            done();
+        })
+    });
+
+    it('should return specific person that is a user for /api/users/:user_id GET', function(done) {
+        chai.request(server)
+        .get('/api/users/jamesbak@microsoft.com')
+        .set('Authorization', 'Bearer ' + validBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.PersonnelNumber.should.be.above(420000);
+            res.body.PersonnelNumber.should.be.below(430000);
+            should.not.equal(res.body.UntappdAccessToken, null);
+            done();
+        })
+    });
+
+    it('should return specific person that is not a user for /api/users/:user_id GET', function(done) {
+        chai.request(server)
+        .get('/api/users/OLIVERH@microsoft.com')
+        .set('Authorization', 'Bearer ' + validBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.PersonnelNumber.should.equal(52);
+            should.equal(res.body.UntappdAccessToken, null);
             done();
         })
     });
