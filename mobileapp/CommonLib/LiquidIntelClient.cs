@@ -1,15 +1,11 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Xamarin.Forms;
-using System.Net.Http.Headers;
-using System.Collections;
+using Newtonsoft.Json;
 
 namespace Elixir.Common
 {
@@ -17,7 +13,7 @@ namespace Elixir.Common
     {
         private const string BASIC_AUTH_USER = @"0001-0001";
         private const string BASIC_AUTH_PASSWORD = @"ZHhsaXF1aWQtcmFzcGJlcnJ5cGk=";
-        private static readonly string BASE_URL = $@"http://dxliquidintel.azurewebsites.net/api/";
+        private static readonly string BASE_URL = @"http://dxliquidintel.azurewebsites.net/api/";
 
         private readonly Lazy<HttpClient> _basicClient = new Lazy<HttpClient>(() =>
         {
@@ -28,8 +24,8 @@ namespace Elixir.Common
 
             byte[] byteArray = Encoding.UTF8.GetBytes(BASIC_AUTH_USER + ":" + BASIC_AUTH_PASSWORD);
             var authHeader = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
             c.DefaultRequestHeaders.Authorization = authHeader;
+
             return c;
         });
         private readonly Lazy<HttpClient> _authClient;
@@ -47,10 +43,9 @@ namespace Elixir.Common
                         BaseAddress = new Uri(BASE_URL)
                     };
 
-                    byte[] byteArray = Encoding.UTF8.GetBytes(BASIC_AUTH_USER + ":" + BASIC_AUTH_PASSWORD);
-                    var authHeader = new AuthenticationHeaderValue("Bearer", authToken);
-
+                    var authHeader = new AuthenticationHeaderValue("bearer", authToken);
                     c.DefaultRequestHeaders.Authorization = authHeader;
+
                     return c;
                 });
             }
@@ -94,12 +89,12 @@ namespace Elixir.Common
         }
 
 
-        public async Task<IEnumerable<User>> GetUsers()
+        public async Task<IEnumerable<User>> GetUsersAsync()
         {
             if (!_hasAuth)
                 throw new InvalidOperationException(@"Client must be authenticated");
 
-            var usersResponse = _authClient.Value.GetStringAsync(@"users");
+            var usersResponse = await _authClient.Value.GetStringAsync(@"users");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<User>>(usersResponse));
         }
