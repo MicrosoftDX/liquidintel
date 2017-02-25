@@ -21,7 +21,7 @@ namespace Elixir.UWP
         {
             this.InitializeComponent();
 
-            LoadApplication(new $safeprojectrootname$.App());
+            LoadApplication(new Elixir.App());
         }
     }
 }
