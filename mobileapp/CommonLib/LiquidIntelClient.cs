@@ -19,28 +19,53 @@ namespace Elixir.Common
         private const string BASIC_AUTH_PASSWORD = @"ZHhsaXF1aWQtcmFzcGJlcnJ5cGk=";
         private static readonly string BASE_URL = $@"http://dxliquidintel.azurewebsites.net/api/";
 
-        private readonly Lazy<HttpClient> _webClient = new Lazy<HttpClient>(() => new HttpClient
+        private readonly Lazy<HttpClient> _basicClient = new Lazy<HttpClient>(() =>
         {
-            BaseAddress = new Uri(BASE_URL)
-        });
+            var c = new HttpClient
+            {
+                BaseAddress = new Uri(BASE_URL)
+            };
 
-        private readonly string _authToken;
+            byte[] byteArray = Encoding.UTF8.GetBytes(BASIC_AUTH_USER + ":" + BASIC_AUTH_PASSWORD);
+            var authHeader = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+
+            c.DefaultRequestHeaders.Authorization = authHeader;
+            return c;
+        });
+        private readonly Lazy<HttpClient> _authClient;
+
+        private readonly bool _hasAuth;
 
         public LiquidIntelClient(string authToken = null)
         {
-            _authToken = authToken;
+            if (_hasAuth = !string.IsNullOrWhiteSpace(authToken))
+            {
+                _authClient = new Lazy<HttpClient>(() =>
+                {
+                    var c = new HttpClient
+                    {
+                        BaseAddress = new Uri(BASE_URL)
+                    };
+
+                    byte[] byteArray = Encoding.UTF8.GetBytes(BASIC_AUTH_USER + ":" + BASIC_AUTH_PASSWORD);
+                    var authHeader = new AuthenticationHeaderValue("Bearer", authToken);
+
+                    c.DefaultRequestHeaders.Authorization = authHeader;
+                    return c;
+                });
+            }
         }
 
         public async Task<IEnumerable<Keg>> GetKegsAsync()
         {
-            var kegsResponse = await _webClient.Value.GetStringAsync(@"kegs");
+            var kegsResponse = await _basicClient.Value.GetStringAsync(@"kegs");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<Keg>>(kegsResponse));
         }
 
         public async Task<IEnumerable<KegTap>> GetCurrentKegAsync()
         {
-            var kegResponse = await _webClient.Value.GetStringAsync(@"currentkeg");
+            var kegResponse = await _basicClient.Value.GetStringAsync(@"currentkeg");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<KegTap>>(kegResponse));
         }
@@ -49,50 +74,34 @@ namespace Elixir.Common
         {
             var currentKeg = await GetCurrentKegAsync();
 
-            var tapIdDetailResponse = await _webClient.Value.GetStringAsync($@"currentkeg/{tapId}");
+            var tapIdDetailResponse = await _basicClient.Value.GetStringAsync($@"currentkeg/{tapId}");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<KegTap>>(tapIdDetailResponse).SingleOrDefault());
         }
 
         public async Task<IEnumerable<Activity>> GetActivities()
         {
-            var activitiesResponse = await _webClient.Value.GetStringAsync(@"activity");
+            var activitiesResponse = await _basicClient.Value.GetStringAsync(@"activity");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<Activity>>(activitiesResponse));
         }
 
         public async Task<Activity> GetActivityAsync(int sessionId)
         {
-            var activityResponse = await _webClient.Value.GetStringAsync($@"activity/{sessionId}");
+            var activityResponse = await _basicClient.Value.GetStringAsync($@"activity/{sessionId}");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<Activity>>(activityResponse).SingleOrDefault());
         }
 
 
-        public async Task<List<User>> GetUsers()
+        public async Task<IEnumerable<User>> GetUsers()
         {
-            throw new NotImplementedException();
-        }
+            if (!_hasAuth)
+                throw new InvalidOperationException(@"Client must be authenticated");
 
-        private void SetBasicAuth()
-        {
-            if (_webClient.Value.DefaultRequestHeaders?.Authorization?.Scheme?.ToLower() != @"basic")
-            {
-                byte[] byteArray = Encoding.UTF8.GetBytes(BASIC_AUTH_USER + ":" + BASIC_AUTH_PASSWORD);
-                var authHeader = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+            var usersResponse = _authClient.Value.GetStringAsync(@"users");
 
-                _webClient.Value.DefaultRequestHeaders.Authorization = authHeader;
-            }
-        }
-
-        private void SetBearerAuth()
-        {
-            if (!string.IsNullOrWhiteSpace(_authToken) && _webClient.Value.DefaultRequestHeaders?.Authorization?.Scheme?.ToLower() != @"bearer")
-            {
-                var authHeader = new AuthenticationHeaderValue("Basic", _authToken);
-
-                _webClient.Value.DefaultRequestHeaders.Authorization = authHeader;
-            }
+            return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<User>>(usersResponse));
         }
 
         #region IDisposable Support
@@ -104,9 +113,9 @@ namespace Elixir.Common
             {
                 if (disposing)
                 {
-                    if (_webClient.IsValueCreated)
+                    if (_basicClient.IsValueCreated)
                     {
-                        _webClient.Value.Dispose();
+                        _basicClient.Value.Dispose();
                     }
                 }
 

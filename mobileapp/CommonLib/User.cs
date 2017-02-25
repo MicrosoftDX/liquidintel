@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Elixir.Common
 {
-    class User
+    public class User
     {
     }
 }
