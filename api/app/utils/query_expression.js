@@ -1,4 +1,5 @@
 "use strict";
+const tedious_1 = require("tedious");
 var Operators;
 (function (Operators) {
     Operators[Operators["Unknown"] = 0] = "Unknown";
@@ -92,7 +93,7 @@ class QueryExpression {
                         comparitor = "<";
                         break;
                     case Operators.Contains:
-                        return `${this.mapping[prop].sqlName} IN (SELECT value FROM string_split(@${prop}, ',')`;
+                        return `${this.mapping[prop].sqlName} IN (SELECT value FROM string_split(@${prop}, ','))`;
                     case Operators.Range:
                         return `${this.mapping[prop].sqlName} > @${prop}Low AND ` +
                             `${this.mapping[prop].sqlName} < @${prop}Hi`;
@@ -142,7 +143,7 @@ class QueryExpression {
                     stmt.parameter(prop + "Hi", this.mapping[prop].dataType, clause.valueUpper);
                 }
                 else {
-                    stmt.parameter(prop, this.mapping[prop].dataType, clause.value);
+                    stmt.parameter(prop, clause.operator == Operators.Contains ? tedious_1.TYPES.NVarChar : this.mapping[prop].dataType, clause.value);
                 }
             }
         }

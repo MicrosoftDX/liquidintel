@@ -54,10 +54,17 @@ function getCurrentKeg(tapId, outputFunc) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let results = yield getCurrentKeg_Internal(tapId);
-            if (tapId != null && results.length == 0) {
-                outputFunc({ code: 404, msg: 'Current Keg(s) Not Found!' });
+            if (tapId != null) {
+                if (results.length == 0) {
+                    outputFunc({ code: 404, msg: 'Current Keg(s) Not Found!' });
+                }
+                else {
+                    outputFunc({ code: 200, msg: results[0] });
+                }
             }
-            outputFunc({ code: 200, msg: results });
+            else {
+                outputFunc({ code: 200, msg: results });
+            }
         }
         catch (ex) {
             outputFunc({ code: 500, msg: ex });

@@ -40,8 +40,14 @@ export async function postSessionCheckin(sessions: Session[]): Promise<any[]> {
     try {
         // We need to reduce our sessions array to extract a unique list of users
         var usersList = sessions.sort((lhs: Session, rhs: Session) => lhs.PersonnelNumber === rhs.PersonnelNumber ? 0 : (lhs.PersonnelNumber < rhs.PersonnelNumber ? -1 : 1))
-            .filter((value: Session, index: number, array: Session[]) => !index || array[index - 1] != value)
+            .filter((value: Session, index: number, array: Session[]) => {
+                return !index || array[index - 1].PersonnelNumber != value.PersonnelNumber
+            })
+            .map((session: Session) => session.PersonnelNumber)
             .join(',');
+        if (!usersList) {
+            return null;
+        }
         var sqlStatement = "SELECT PersonnelNumber, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare " + 
                            "FROM dbo.Users " + 
                            "WHERE PersonnelNumber IN (SELECT value FROM string_split(@users, ',')) AND " + 
@@ -49,10 +55,10 @@ export async function postSessionCheckin(sessions: Session[]): Promise<any[]> {
         var users = await tds.default.sql(sqlStatement)
             .parameter('users', TYPES.NVarChar, usersList)
             .executeImmediate();
-        return sessions
+        return await Promise.all(sessions
             .map((session: Session) => { return {Session: session, User: users.find((user) => session.PersonnelNumber === user.PersonnelNumber)}; })
             .filter(session => session.User && session.Session.UntappdId)
-            .map(async (session) => { 
+            .map(session => { 
                 var params = {
                     client_id: process.env.UntappdClientId,
                     client_secret: process.env.UntappdClientSecret,
@@ -63,13 +69,13 @@ export async function postSessionCheckin(sessions: Session[]): Promise<any[]> {
                     twitter: session.User.CheckinTwitter,
                     foursquare: session.User.CheckinFoursquare
                 }
-                var checkIn = await request_promise.post({
+                var checkIn = request_promise.post({
                     uri: `${untappdApiRoot}checkin/add?` + Object.keys(params).map(param => `${param}=${params[param]}`).join('&'),
                     json: true
                 });
-            });
+            }));
     }
     catch (ex) {
-        return Promise.reject(ex);
+        throw ex;
     }
 }

@@ -18,6 +18,7 @@ import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
 import queryExpression = require('./app/utils/query_expression');
 import adminUserCache = require('./app/utils/admin_user_cache');
+require('./app/utils/array_async');
 
 var config = {
     userName: process.env.SqlUsername,
@@ -120,11 +121,7 @@ router.route('/activity/:sessionId?')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), resultDispatcher)))
     .post(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, resultDispatcher)));
 
-router.route('/CurrentKeg')
-    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, resultDispatcher)));
-
-//Get Current Keg for the TapId specified
-router.route('/CurrentKeg/:tap_id')
+router.route('/CurrentKeg/:tap_id?')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
     .put(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
 

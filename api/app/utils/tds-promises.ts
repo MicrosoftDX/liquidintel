@@ -138,23 +138,26 @@ export class TdsConnection {
         });
     }
 
-    async transaction(transactionBody: (connection: TdsConnection) => Promise<void>, postCommit: () => void, error: (Error) => void): Promise<void> {
+    async transaction<T>(transactionBody: (connection: TdsConnection) => Promise<T>, postCommit: (T) => void, error: (Error) => void): Promise<void> {
         var inXact = false;
         try {
             await this.open();
             await this.beginTransaction();
             inXact = true;
-            await transactionBody(this);
+            var results = await transactionBody(this);
             await this.commitTransaction();
             inXact = false;
             if (postCommit) {
-                postCommit();
+                postCommit(results);
             }
         }
         catch (ex) {
-            if (inXact) {
-                await this.rollbackTransaction();
+            try {
+                if (inXact) {
+                    await this.rollbackTransaction();
+                }
             }
+            catch (ex2) {}
             if (error) {
                 error(ex);
             }
@@ -165,25 +168,53 @@ export class TdsConnection {
     }
 }
 
+class BindablePromise<T> {
+    private _promise: Promise<T>;
+    private _resolve: (value?: T | PromiseLike<T>) => void;
+    private _reject: (reason?: any) => void;
+
+    constructor() {
+        this.reset();
+    }
+
+    get promise(): Promise<T> {
+        return this._promise;
+    }
+
+    resolve(value?: T | PromiseLike<T>) {
+        this._resolve(value);
+    }
+
+    reject(reason?: any) {
+        this._reject(reason);
+    }
+
+    reset() {
+        this._promise = new Promise<T>((resolve, reject) => {
+            this._resolve = resolve;
+            this._reject = reject;
+        });
+    }
+}
+
 export class TdsStatement {
     private _connection: TdsConnection;
     private _request: tedious.Request;
-    private _promise: Promise<any[]>;
+    private _promise: BindablePromise<any[]>;
     private _columns: { [name: string]: TdsColumn; } = {};
 
     constructor(connection: TdsConnection, sqlStatement: string) {
         this._connection = connection;
-        this._promise = new Promise<any[]>((resolve, reject) => {
-            this._request = new tedious.Request(sqlStatement, (err: Error, rowCount: number, rows: any[]) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(rows.map(row => {
-                        return this._transformRow(row);
-                    }));
-                }
-            });
+        this._promise = new BindablePromise<any[]>();
+        this._request = new tedious.Request(sqlStatement, (err: Error, rowCount: number, rows: any[]) => {
+            if (err) {
+                this._promise.reject(err);
+            }
+            else {
+                this._promise.resolve(rows.map(row => {
+                    return this._transformRow(row);
+                }));
+            }
         });
     }
 
@@ -193,8 +224,13 @@ export class TdsStatement {
     }
 
     async prepare(): Promise<TdsStatement> {
-        (await this._connection.connectionAsync()).prepare(this._request);
-        return this;
+        var openConnection = await this._connection.connectionAsync();
+        return new Promise<TdsStatement>((resolve, reject) => {
+            openConnection.prepare(this._request);
+            this._request.on('prepared', () => {
+                resolve(this);
+            });
+        });
     }
 
     executeImmediate(): Promise<any[]> {
@@ -204,13 +240,15 @@ export class TdsStatement {
     execute(releaseConnection: boolean, parameters?: {}): Promise<any[]> {
         return new Promise<any[]>(async (resolve, reject) => {
             try {
+                this._promise.reset();
+                var openConnection = await this._connection.connectionAsync();
                 if (parameters) {
-                    (await this._connection.connectionAsync()).execute(this._request, parameters);
+                    openConnection.execute(this._request, parameters);
                 }
                 else {
-                    (await this._connection.connectionAsync()).execSql(this._request);
+                    openConnection.execSql(this._request);
                 }
-                let results = await this._promise;
+                let results = await this._promise.promise;
                 resolve(results);
             }
             catch (ex) {
