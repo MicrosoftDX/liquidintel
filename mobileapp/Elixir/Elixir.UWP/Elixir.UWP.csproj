@@ -133,6 +133,12 @@
       <Name>Visual C++ 2015 Runtime for Universal Windows Platform Apps</Name>
     </SDKReference>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonLib.dnx\CommonLib.dnx.csproj">
+      <Project>{aa55fb93-e4c3-4dd0-91a8-30a68f6be092}</Project>
+      <Name>CommonLib.dnx</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\Elixir\Elixir.projitems" Label="Shared" Condition="Exists('..\Elixir\Elixir.projitems')" />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -115,7 +115,12 @@
     <AndroidResource Include="Resources\drawable-xxhdpi\profile_generic.png" />
     <AndroidResource Include="Resources\drawable-xxxhdpi\profile_generic.png" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\CommonLib.dnx\CommonLib.dnx.csproj">
+      <Project>{aa55fb93-e4c3-4dd0-91a8-30a68f6be092}</Project>
+      <Name>CommonLib.dnx</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="..\Elixir\Elixir.projitems" Label="Shared" Condition="Exists('..\Elixir\Elixir.projitems')" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\..\packages\Xamarin.Forms.2.3.3.193\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20\Xamarin.Forms.targets" Condition="Exists('..\..\packages\Xamarin.Forms.2.3.3.193\build\portable-win+net45+wp80+win81+wpa81+MonoAndroid10+Xamarin.iOS10+xamarinmac20\Xamarin.Forms.targets')" />
