@@ -13,6 +13,9 @@ IF OBJECT_ID('dbo.DimTap', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.SecurityTokens', 'U') IS NOT NULL 
   DROP TABLE dbo.SecurityTokens; 
 
+IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL 
+  DROP TABLE dbo.Users; 
+
 
 CREATE TABLE dbo.DimKeg(
  Id INT IDENTITY(1,1) NOT NULL,
@@ -76,6 +79,17 @@ CREATE NONCLUSTERED INDEX IX_FactDrinkers_PersonnelNumber
 ON dbo.FactDrinkers (PersonnelNumber)
 INCLUDE (PourDateTime, TapId);
 
+CREATE TABLE dbo.Users(
+  PersonnelNumber INT NOT NULL PRIMARY KEY CLUSTERED,
+  UserPrincipalName NVarChar(400) NOT NULL,
+  UntappdAccessToken NVarChar(1000),
+  CheckinFacebook bit default(0),
+  CheckinTwitter bit default(0),
+  CheckinFoursquare bit default(0)
+);
+
+CREATE INDEX IX_Users_UPN
+ON dbo.Users (UserPrincipalName);
 
 CREATE TABLE dbo.SecurityTokens(
  client_id nvarchar(400) not null,

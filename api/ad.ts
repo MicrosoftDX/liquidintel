@@ -66,7 +66,7 @@ export class SimpleGraph
         });
     }
 
-    public async userInGroups(upn: string, groupIds: string[]): Promise<boolean> {
+    public userInGroups(upn: string, groupIds: string[]): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => { 
             this.memberOf(upn, groupIds, (err, result) => {
                 if (err) {
@@ -111,6 +111,9 @@ export class SimpleGraph
                 if (error) {
                     next(error, false);
                 }
+                else if (response.statusCode >= 400) {
+                    next(body.error, false);
+                }
                 else {
                     next(null, (<string[]>body.value).length > 0);
                 }
@@ -123,12 +126,23 @@ export class GraphGroupMembership {
     protected groupIds: Promise<string[]>;
     
     constructor(protected groupNames: string[], token: Token) { 
-        this.graph = new SimpleGraph(token);
-        this.groupIds = this.graph.groupIdsFromNames(groupNames);
+        try {
+            this.graph = new SimpleGraph(token);
+            this.groupIds = this.graph.groupIdsFromNames(groupNames);
+        }
+        catch (ex) {
+            console.error('Failed to lookup group ids for groups: %s. Details: %s', groupNames, ex);
+        }
     }
 
     public async isUserMember(upn: string): Promise<boolean> {
-        let groups = await this.groupIds;
-        return this.graph.userInGroups(upn, groups);
+        try {
+            let groups = await this.groupIds;
+            return this.graph.userInGroups(upn, groups);
+        }
+        catch (ex) {
+            console.warn('Failed to check user: %s membership. Details: %s', upn, ex);
+            throw ex;
+        }
     }
 }
