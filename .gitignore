@@ -143,3 +143,4 @@ jspm_packages
 
 #Webapp gitignore
 webapp/tmp
+webapp/src/config/default.js
