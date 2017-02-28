@@ -90,7 +90,6 @@ namespace Elixir.Common
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<Activity>>(activityResponse).SingleOrDefault());
         }
 
-
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
             if (!_hasAuth)

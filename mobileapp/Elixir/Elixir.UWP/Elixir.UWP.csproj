@@ -134,9 +134,9 @@
     </SDKReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CommonLib.dnx\CommonLib.dnx.csproj">
-      <Project>{aa55fb93-e4c3-4dd0-91a8-30a68f6be092}</Project>
-      <Name>CommonLib.dnx</Name>
+    <ProjectReference Include="..\..\CommonLib\CommonLib.csproj">
+      <Project>{6c3df8b3-9655-46b3-a0da-016f47b6edad}</Project>
+      <Name>CommonLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\Elixir\Elixir.projitems" Label="Shared" Condition="Exists('..\Elixir\Elixir.projitems')" />
