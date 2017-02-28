@@ -67,7 +67,7 @@ CREATE TABLE dbo.FactDrinkers(
  KegId int NOT NULL,
  PourAmountInML INT NULL,
  CONSTRAINT pk_FactDrinkers PRIMARY KEY(Id),
- CONSTRAINT fk_FactDrinkers_DimTap FOREIGN KEY(TapId) REFERENCES dbo.DimTap(Id)
+ CONSTRAINT fk_FactDrinkers_DimTap FOREIGN KEY(TapId) REFERENCES dbo.DimTap(Id),
  CONSTRAINT fk_FactDrinkers_DimKeg FOREIGN KEY(KegId) REFERENCES dbo.DimKeg(Id)
 )
 
@@ -107,11 +107,13 @@ INSERT INTO dbo.DimKeg (Name, Brewery, BeerType, ABV, IBU, BeerDescription) VALU
 INSERT INTO dbo.DimKeg (Name, Brewery, BeerType, ABV, IBU, BeerDescription) VALUES ('Men''s Room Original Red', 'Elysian Brewing Company', 'Amber Ale', 5.6, 51, 'Amber in color with a light hop aroma and toasty malt finish.')
 INSERT INTO dbo.DimKeg (Name, Brewery, BeerType, ABV, IBU, BeerDescription) VALUES ('Bill Berry''s Winter Warmer', 'Zookeeper Brewery', 'Winter Ale', 8.2, 44, 'The All Grain Home Brew has it''s foundations as a clone of New Belgium''s 2 Below Winter Ale. The beer pours a dirty unfiltered and muted copper, with a frothy Antique White head; it drinks with ease.  An initial taste yields notes of pepper, damp earth, bread, toffee, butter and toasted malts.  It finishes with an almost cloying caramel sweetness and citrus overtone, while hints of fresh cut grass linger on the pallet.')
 
-
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (1, '2017-01-05 23:00:00', 1, 18928, 0, 0)
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (2, '2017-01-11 22:30:00', 2, 18928, 0, 0)
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (3, '2017-01-18 23:30:00', 1, 18928, 7030, 1)
 INSERT INTO dbo.FactKegInstall (KegId, InstallDate, TapId, kegSizeInML, currentVolumeInML, IsCurrent) VALUES (4, '2017-01-23 20:00:00', 2, 18928, 10235, 1)
 
-INSERT INTO dbo.SecurityTokens VALUES ('0001-0001', 'ZHhsaXF1aWQtcmFzcGJlcnJ5cGk=','Raspberry Pi running on the DX Kegerator')
-INSERT INTO dbo.SecurityTokens VALUES ('0001-0002', 'ZHhsaXF1aWQtZGFzaGJvYXJk','Client App for the DX Kegerator')
+INSERT INTO dbo.Users (PersonnelNumber, UserPrincipalName) VALUES (52, 'dxliquie@microsoft.com');
+INSERT INTO dbo.Users (PersonnelNumber, UserPrincipalName) VALUES (429986, 'dxliquif@microsoft.com');
+
+INSERT INTO dbo.FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) VALUES ('2017-02-14 00:35:19.0000000', 52, 1, 3, 127);
+INSERT INTO dbo.FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) VALUES ('2017-02-14 00:35:19.0000000', 52, 2, 4, 987);

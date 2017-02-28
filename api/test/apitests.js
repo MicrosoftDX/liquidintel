@@ -123,17 +123,15 @@ describe('testing api', function () {
             .end(function (err, res) {
             res.should.have.status(200);
             res.should.be.json;
-            res.body.should.be.a('array');
-            res.body[0].should.have.property('KegId');
-            res.body[0].should.have.property('Name');
-            res.body[0].should.have.property('Brewery');
-            res.body[0].should.have.property('BeerType');
-            res.body[0].should.have.property('ABV');
-            res.body[0].should.have.property('IBU');
-            res.body[0].should.have.property('BeerDescription');
-            res.body[0].should.have.property('UntappdId');
-            res.body[0].should.have.property('imagePath');
-            should.not.exist(res.body[1]);
+            res.body.should.have.property('KegId');
+            res.body.should.have.property('Name');
+            res.body.should.have.property('Brewery');
+            res.body.should.have.property('BeerType');
+            res.body.should.have.property('ABV');
+            res.body.should.have.property('IBU');
+            res.body.should.have.property('BeerDescription');
+            res.body.should.have.property('UntappdId');
+            res.body.should.have.property('imagePath');
             done();
         });
     });
@@ -174,33 +172,31 @@ describe('testing api', function () {
     });
     it('should get specific activity on /api/activity/<id> GET', function (done) {
         chai.request(server)
-            .get('/api/activity/1676')
+            .get('/api/activity/1')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
             .end(function (err, res) {
             res.should.have.status(200);
             res.should.be.json;
-            res.body.should.be.a('array');
-            res.body[0].should.have.property('SessionId');
-            res.body[0].should.have.property('PourTime');
-            res.body[0].should.have.property('PourAmount');
-            res.body[0].should.have.property('BeerName');
-            res.body[0].should.have.property('Brewery');
-            res.body[0].should.have.property('BeerType');
-            res.body[0].should.have.property('ABV');
-            res.body[0].should.have.property('IBU');
-            res.body[0].should.have.property('BeerDescription');
-            res.body[0].should.have.property('UntappdId');
-            res.body[0].should.have.property('BeerImagePath');
-            res.body[0].should.have.property('PersonnelNumber');
-            res.body[0].should.have.property('Alias');
-            res.body[0].should.have.property('FullName');
-            should.not.exist(res.body[1]);
+            res.body.should.have.property('SessionId');
+            res.body.should.have.property('PourTime');
+            res.body.should.have.property('PourAmount');
+            res.body.should.have.property('BeerName');
+            res.body.should.have.property('Brewery');
+            res.body.should.have.property('BeerType');
+            res.body.should.have.property('ABV');
+            res.body.should.have.property('IBU');
+            res.body.should.have.property('BeerDescription');
+            res.body.should.have.property('UntappdId');
+            res.body.should.have.property('BeerImagePath');
+            res.body.should.have.property('PersonnelNumber');
+            res.body.should.have.property('Alias');
+            res.body.should.have.property('FullName');
             done();
         });
     });
     it('should get valid specific person on /api/isPersonValid/<id> GET', function (done) {
         chai.request(server)
-            .get('/api/isPersonValid/1801975')
+            .get('/api/isPersonValid/1801958')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
             .end(function (err, res) {
             res.should.have.status(200);
@@ -253,6 +249,30 @@ describe('testing api', function () {
             res.body.should.be.an('array');
             res.body.should.not.be.empty;
             res.body[0].should.have.property('PersonnelNumber');
+            done();
+        });
+    });
+    it('should return user info for bearer token user to /api/users/me GET', function (done) {
+        chai.request(server)
+            .get('/api/users/me')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            res.body.PersonnelNumber.should.be.equal(Number(process.env.AdminPersonnelNumber));
+            done();
+        });
+    });
+    it('should return user info for non-admin bearer token user to /api/users/me GET', function (done) {
+        chai.request(server)
+            .get('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            res.body.PersonnelNumber.should.be.equal(Number(process.env.NonAdminPersonnelNumber));
             done();
         });
     });

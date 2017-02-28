@@ -42,7 +42,10 @@ exports.getPersonByCardId = getPersonByCardId;
 function getUserDetails(upn, isAdmin, tokenUpn, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (!isAdmin) {
+            if (upn && upn.toLowerCase() === 'me') {
+                upn = tokenUpn;
+            }
+            else if (!isAdmin) {
                 if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
                     return output({ code: 400, msg: 'Caller can only request own user information.' });
                 }

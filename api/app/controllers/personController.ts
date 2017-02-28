@@ -36,7 +36,10 @@ export async function getPersonByCardId(cardId: number, output: (resp:any) => ex
 
 export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: string, output: (resp: any) => express.Response) {
     try {
-        if (!isAdmin) {
+        if (upn && upn.toLowerCase() === 'me') {
+            upn = tokenUpn;
+        }
+        else if (!isAdmin) {
             // Non-admin users can only ask for their own info
             if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
                 return output({code: 400, msg: 'Caller can only request own user information.'});
