@@ -101,6 +101,16 @@ namespace Elixir.Common
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<List<User>>(usersResponse));
         }
 
+        public async Task<User> GetCurrentUserAsync()
+        {
+            if (!_hasAuth)
+                throw new InvalidOperationException(@"Client must be authenticated");
+
+            var usersResponse = await _authClient.Value.GetStringAsync(@"users");
+
+            return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<User>(usersResponse));
+        }
+
         #region IDisposable Support
         private bool disposedValue = false; // To detect redundant calls
 
