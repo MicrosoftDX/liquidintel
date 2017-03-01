@@ -54,10 +54,17 @@ function getCurrentKeg(tapId, outputFunc) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let results = yield getCurrentKeg_Internal(tapId);
-            if (tapId != null && results.length == 0) {
-                outputFunc({ code: 404, msg: 'Current Keg(s) Not Found!' });
+            if (tapId != null) {
+                if (results.length == 0) {
+                    outputFunc({ code: 404, msg: 'Current Keg(s) Not Found!' });
+                }
+                else {
+                    outputFunc({ code: 200, msg: results[0] });
+                }
             }
-            outputFunc({ code: 200, msg: results });
+            else {
+                outputFunc({ code: 200, msg: results });
+            }
         }
         catch (ex) {
             outputFunc({ code: 500, msg: ex });
@@ -67,13 +74,7 @@ function getCurrentKeg(tapId, outputFunc) {
 exports.getCurrentKeg = getCurrentKeg;
 function postPreviouslyInstalledKeg(kegId, tapId, kegSize, outputFunc) {
     return __awaiter(this, void 0, void 0, function* () {
-        var inXact = false;
-        var connection;
-        try {
-            connection = new tds.TdsConnection();
-            yield connection.open();
-            yield connection.beginTransaction();
-            inXact = true;
+        new tds.TdsConnection().transaction((connection) => __awaiter(this, void 0, void 0, function* () {
             var sqlStatement = "UPDATE FactKegInstall " +
                 "SET isCurrent = 0 " +
                 "WHERE TapId = @tapId";
@@ -88,21 +89,7 @@ function postPreviouslyInstalledKeg(kegId, tapId, kegSize, outputFunc) {
                 .parameter("installDate", tedious_1.TYPES.DateTime2, new Date(Date.now()))
                 .parameter("kegSize", tedious_1.TYPES.Decimal, kegSize)
                 .execute(false);
-            yield connection.commitTransaction();
-            inXact = false;
-            getCurrentKeg(tapId, outputFunc);
-        }
-        catch (ex) {
-            if (inXact) {
-                yield connection.rollbackTransaction();
-            }
-            outputFunc({ code: 500, msg: "Failed to post new keg: " + ex });
-        }
-        finally {
-            if (connection) {
-                connection.close();
-            }
-        }
+        }), () => getCurrentKeg(tapId, outputFunc), (err) => outputFunc({ code: 500, msg: "Failed to post new keg: " + err }));
     });
 }
 exports.postPreviouslyInstalledKeg = postPreviouslyInstalledKeg;
@@ -120,19 +107,30 @@ function getKeg(kegId, outputFunc) {
                 stmt.parameter('keg_id', tedious_1.TYPES.Int, kegId);
             }
             let results = yield stmt.executeImmediate();
-            return outputFunc({ code: 200, msg: results.map(row => {
-                    return {
-                        'KegId': row.Id,
-                        'Name': row.Name,
-                        'Brewery': row.Brewery,
-                        'BeerType': row.BeerType,
-                        'ABV': row.ABV,
-                        'IBU': row.IBU,
-                        'BeerDescription': row.BeerDescription,
-                        'UntappdId': row.UntappdId,
-                        'imagePath': row.imagePath
-                    };
-                }) });
+            let output = results.map((row) => {
+                return {
+                    KegId: row.Id,
+                    Name: row.Name,
+                    Brewery: row.Brewery,
+                    BeerType: row.BeerType,
+                    ABV: row.ABV,
+                    IBU: row.IBU,
+                    BeerDescription: row.BeerDescription,
+                    UntappdId: row.UntappdId,
+                    imagePath: row.imagePath
+                };
+            });
+            if (kegId) {
+                if (output.length == 0) {
+                    return outputFunc({ code: 404, msg: 'Specified keg could not be found' });
+                }
+                else {
+                    return outputFunc({ code: 200, msg: output[0] });
+                }
+            }
+            else {
+                return outputFunc({ code: 200, msg: output });
+            }
         }
         catch (ex) {
             return outputFunc({ code: 500, msg: 'Internal Error: ' + ex });
@@ -155,28 +153,25 @@ function postNewKeg(body, output) {
             }
             var sqlStatement = "INSERT INTO DimKeg " +
                 "(Name, Brewery, BeerType, ABV, IBU, BeerDescription, UntappdId, imagePath) " +
-                "VALUES (@name, @brewery, @beerType, @abv, @ibu, @beerDescription, @UntappdId, @imagePath); " +
+                "VALUES (@name, @brewery, @beerType, @abv, @ibu, @beerDescription, @untappdId, @imagePath); " +
                 "SELECT SCOPE_IDENTITY() as Id;";
             var results = yield tds.default.sql(sqlStatement)
                 .parameter("name", tedious_1.TYPES.NVarChar, body.Name)
                 .parameter("brewery", tedious_1.TYPES.NVarChar, body.Brewery)
                 .parameter("beerType", tedious_1.TYPES.NVarChar, body.BeerType)
-                .parameter("abv", tedious_1.TYPES.NVarChar, body.ABV)
-                .parameter("ibu", tedious_1.TYPES.NVarChar, body.IBU)
+                .parameter("abv", tedious_1.TYPES.Decimal, body.ABV, { scale: 1 })
+                .parameter("ibu", tedious_1.TYPES.Int, body.IBU)
                 .parameter("beerDescription", tedious_1.TYPES.NVarChar, body.BeerDescription)
-                .parameter("UntappdId", tedious_1.TYPES.Int, body.UntappdId)
+                .parameter("untappdId", tedious_1.TYPES.Int, body.UntappdId)
                 .parameter("imagePath", tedious_1.TYPES.NVarChar, body.imagePath)
                 .executeImmediate();
             getKeg(results[0].Id, output);
         }
         catch (ex) {
+            console.error('kegController.postNewKeg error: ' + ex);
             output({ code: 500, msg: 'Internal error: ' + ex });
         }
     });
 }
 exports.postNewKeg = postNewKeg;
-function putKegFinished(tapId, outputFunc) {
-    var markKegAsFinished = "UPDATE dbo.FactKegInstall SET isCurrent=0 WHERE tapId=@tap_id and isCurrent=1";
-}
-exports.putKegFinished = putKegFinished;
 //# sourceMappingURL=kegController.js.map

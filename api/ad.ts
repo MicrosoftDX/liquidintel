@@ -125,7 +125,7 @@ export class GraphGroupMembership {
     protected graph: SimpleGraph;
     protected groupIds: Promise<string[]>;
     
-    constructor(protected groupNames: string[], token: Token) { 
+    constructor(protected groupNames: string[], token: Token) {
         try {
             this.graph = new SimpleGraph(token);
             this.groupIds = this.graph.groupIdsFromNames(groupNames);

@@ -126,23 +126,72 @@ class TdsConnection {
             });
         });
     }
+    transaction(transactionBody, postCommit, error) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var inXact = false;
+            try {
+                yield this.open();
+                yield this.beginTransaction();
+                inXact = true;
+                var results = yield transactionBody(this);
+                yield this.commitTransaction();
+                inXact = false;
+                if (postCommit) {
+                    postCommit(results);
+                }
+            }
+            catch (ex) {
+                try {
+                    if (inXact) {
+                        yield this.rollbackTransaction();
+                    }
+                }
+                catch (ex2) { }
+                if (error) {
+                    error(ex);
+                }
+            }
+            finally {
+                this.close();
+            }
+        });
+    }
 }
 exports.TdsConnection = TdsConnection;
+class BindablePromise {
+    constructor() {
+        this.reset();
+    }
+    get promise() {
+        return this._promise;
+    }
+    resolve(value) {
+        this._resolve(value);
+    }
+    reject(reason) {
+        this._reject(reason);
+    }
+    reset() {
+        this._promise = new Promise((resolve, reject) => {
+            this._resolve = resolve;
+            this._reject = reject;
+        });
+    }
+}
 class TdsStatement {
     constructor(connection, sqlStatement) {
         this._columns = {};
         this._connection = connection;
-        this._promise = new Promise((resolve, reject) => {
-            this._request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
-                if (err) {
-                    reject(err);
-                }
-                else {
-                    resolve(rows.map(row => {
-                        return this._transformRow(row);
-                    }));
-                }
-            });
+        this._promise = new BindablePromise();
+        this._request = new tedious.Request(sqlStatement, (err, rowCount, rows) => {
+            if (err) {
+                this._promise.reject(err);
+            }
+            else {
+                this._promise.resolve(rows.map(row => {
+                    return this._transformRow(row);
+                }));
+            }
         });
     }
     parameter(name, type, value, options) {
@@ -151,8 +200,13 @@ class TdsStatement {
     }
     prepare() {
         return __awaiter(this, void 0, void 0, function* () {
-            (yield this._connection.connectionAsync()).prepare(this._request);
-            return this;
+            var openConnection = yield this._connection.connectionAsync();
+            return new Promise((resolve, reject) => {
+                openConnection.prepare(this._request);
+                this._request.on('prepared', () => {
+                    resolve(this);
+                });
+            });
         });
     }
     executeImmediate() {
@@ -161,13 +215,15 @@ class TdsStatement {
     execute(releaseConnection, parameters) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
+                this._promise.reset();
+                var openConnection = yield this._connection.connectionAsync();
                 if (parameters) {
-                    (yield this._connection.connectionAsync()).execute(this._request, parameters);
+                    openConnection.execute(this._request, parameters);
                 }
                 else {
-                    (yield this._connection.connectionAsync()).execSql(this._request);
+                    openConnection.execSql(this._request);
                 }
-                let results = yield this._promise;
+                let results = yield this._promise.promise;
                 resolve(results);
             }
             catch (ex) {

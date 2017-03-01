@@ -24,6 +24,7 @@ const personController = require("./app/controllers/personController");
 const sessionController = require("./app/controllers/session");
 const queryExpression = require("./app/utils/query_expression");
 const adminUserCache = require("./app/utils/admin_user_cache");
+require('./app/utils/array_async');
 var config = {
     userName: process.env.SqlUsername,
     password: process.env.SqlPassword,
@@ -59,17 +60,25 @@ passport.use(new BasicStrategy((username, password, done) => __awaiter(this, voi
         done(ex);
     }
 })));
-passport.use(new BearerStrategy({
+var aad_auth_options = {
     identityMetadata: process.env.AADMetadataEndpoint,
     clientID: process.env.ClientId,
     audience: (process.env.AADAudience || "").split(';'),
     validateIssuer: true,
-}, (token, done) => __awaiter(this, void 0, void 0, function* () {
+};
+passport.use("aad-user", new BearerStrategy(aad_auth_options, (token, done) => __awaiter(this, void 0, void 0, function* () {
+    token['is_admin'] = yield adminUserCache.isUserAdmin(token.oid);
+    return done(null, token);
+})));
+passport.use("aad-admin", new BearerStrategy(aad_auth_options, (token, done) => __awaiter(this, void 0, void 0, function* () {
     if (yield adminUserCache.isUserAdmin(token.oid)) {
+        token['is_admin'] = true;
         return done(null, token);
     }
     done(null, false);
 })));
+var basicAuthStrategy = () => passport.authenticate('basic', { session: false });
+var bearerOAuthStrategy = (requireAdmin) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', { session: false });
 var port = process.env.PORT || 8000;
 var router = express.Router();
 router.use((req, res, next) => {
@@ -92,27 +101,20 @@ var stdHandler = (handler) => {
         });
     };
 };
-var basicAuthStrategy = () => passport.authenticate('basic', { session: false });
-var bearerOAuthStrategy = () => passport.authenticate('oauth-bearer', { session: false });
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
 router.route('/kegs')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getKeg(null, resultDispatcher)))
-    .post(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));
+    .post(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));
 router.route('/activity/:sessionId?')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.getSessions(req.params.sessionId, new queryExpression.QueryExpression(req.query), resultDispatcher)))
     .post(basicAuthStrategy(), stdHandler((req, resultDispatcher) => sessionController.postNewSession(req.body, resultDispatcher)));
-router.route('/CurrentKeg')
-    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(null, resultDispatcher)));
-router.route('/CurrentKeg/:tap_id')
+router.route('/CurrentKeg/:tap_id?')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getCurrentKeg(req.params.tap_id, resultDispatcher)))
-    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
+    .put(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postPreviouslyInstalledKeg(req.body.KegId, req.params.tap_id, req.body.KegSize, resultDispatcher)));
 router.route('/users/:user_id?')
-    .get(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id || req.user.upn, resultDispatcher)))
-    .put(bearerOAuthStrategy(), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id || req.user.upn, req.body, resultDispatcher)));
-router.route('/kegFinished/:tap_id')
-    .put(function (req, res) {
-});
+    .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, resultDispatcher)))
+    .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, req.body, resultDispatcher)));
 app.use('/api', router);
 app.listen(port, function () {
     console.log('Listening on port: ' + port);

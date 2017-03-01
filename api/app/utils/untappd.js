@@ -37,8 +37,14 @@ function postSessionCheckin(sessions) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             var usersList = sessions.sort((lhs, rhs) => lhs.PersonnelNumber === rhs.PersonnelNumber ? 0 : (lhs.PersonnelNumber < rhs.PersonnelNumber ? -1 : 1))
-                .filter((value, index, array) => !index || array[index - 1] != value)
+                .filter((value, index, array) => {
+                return !index || array[index - 1].PersonnelNumber != value.PersonnelNumber;
+            })
+                .map((session) => session.PersonnelNumber)
                 .join(',');
+            if (!usersList) {
+                return null;
+            }
             var sqlStatement = "SELECT PersonnelNumber, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare " +
                 "FROM dbo.Users " +
                 "WHERE PersonnelNumber IN (SELECT value FROM string_split(@users, ',')) AND " +
@@ -46,10 +52,10 @@ function postSessionCheckin(sessions) {
             var users = yield tds.default.sql(sqlStatement)
                 .parameter('users', tedious_1.TYPES.NVarChar, usersList)
                 .executeImmediate();
-            return sessions
+            return yield Promise.all(sessions
                 .map((session) => { return { Session: session, User: users.find((user) => session.PersonnelNumber === user.PersonnelNumber) }; })
                 .filter(session => session.User && session.Session.UntappdId)
-                .map((session) => __awaiter(this, void 0, void 0, function* () {
+                .map(session => {
                 var params = {
                     client_id: process.env.UntappdClientId,
                     client_secret: process.env.UntappdClientSecret,
@@ -60,14 +66,14 @@ function postSessionCheckin(sessions) {
                     twitter: session.User.CheckinTwitter,
                     foursquare: session.User.CheckinFoursquare
                 };
-                var checkIn = yield request_promise.post({
+                var checkIn = request_promise.post({
                     uri: `${untappdApiRoot}checkin/add?` + Object.keys(params).map(param => `${param}=${params[param]}`).join('&'),
                     json: true
                 });
             }));
         }
         catch (ex) {
-            return Promise.reject(ex);
+            throw ex;
         }
     });
 }

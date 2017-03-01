@@ -16,15 +16,20 @@ function getSessions(sessionId, queryParams, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             let sessions = yield getSessions_internal(sessionId, queryParams);
-            if (sessionId != null && sessions.length == 0) {
-                return output({ code: 404, msg: 'Specified session not found!' });
+            if (sessionId != null) {
+                if (sessions.length == 0) {
+                    output({ code: 404, msg: 'Specified session not found!' });
+                }
+                else {
+                    output({ code: 200, msg: sessions[0] });
+                }
             }
             else {
-                return output({ code: 200, msg: sessions });
+                output({ code: 200, msg: sessions });
             }
         }
         catch (ex) {
-            return output({ code: 500, msg: 'Internal Error: ' + ex });
+            output({ code: 500, msg: 'Internal Error: ' + ex });
         }
     });
 }
@@ -94,16 +99,17 @@ function getSessions_internal(sessionId, queryParams) {
 }
 function postNewSession(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
-        var inXact = false;
-        var connection;
+        var tapsInfo;
         try {
-            let tapsInfo = yield kegController.getCurrentKeg_Internal(null);
-            let connection = new tds.TdsConnection();
-            yield connection.beginTransaction();
-            inXact = true;
+            tapsInfo = yield kegController.getCurrentKeg_Internal(null);
+        }
+        catch (ex) {
+            return output({ code: 500, msg: "Failed to update session activity: " + ex });
+        }
+        new tds.TdsConnection().transaction((connection) => __awaiter(this, void 0, void 0, function* () {
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " +
                 "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
-                "SELECT Id, KegId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
+                "SELECT Id, KegId, TapId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
             var insertDrinkers = yield connection.sql(sqlStatement)
                 .parameter('pourTime', tedious_1.TYPES.DateTime2, null)
                 .parameter('personnelNumber', tedious_1.TYPES.Int, null)
@@ -111,18 +117,19 @@ function postNewSession(body, output) {
                 .parameter('kegId', tedious_1.TYPES.Int, null)
                 .parameter('pourAmount', tedious_1.TYPES.Int, null)
                 .prepare();
-            var newActivities = yield Promise.all(tapsInfo
+            var newActivities = yield tapsInfo
                 .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
                 body.Taps[tapInfo.TapId.toString()].amount > 0)
-                .map((tapInfo) => __awaiter(this, void 0, void 0, function* () {
-                return yield insertDrinkers.execute(false, {
+                .mapAsync((tapInfo) => __awaiter(this, void 0, void 0, function* () {
+                let newActivity = yield insertDrinkers.execute(false, {
                     pourTime: new Date(body.sessionTime),
                     personnelNumber: body.personnelNumber,
                     tapId: tapInfo.TapId,
                     kegId: tapInfo.KegId,
-                    pourAmount: Number(body.Taps[tapInfo.TapId.toString()].amount)
-                })[0];
-            })));
+                    pourAmount: parseInt(body.Taps[tapInfo.TapId.toString()].amount)
+                });
+                return newActivity[0];
+            }));
             sqlStatement = "UPDATE FactKegInstall " +
                 "SET currentVolumeInML = currentVolumeInML - @pourAmount " +
                 "WHERE KegId = @kegId AND isCurrent = 1";
@@ -130,30 +137,30 @@ function postNewSession(body, output) {
                 .parameter('pourAmount', tedious_1.TYPES.Decimal, 0.0)
                 .parameter('kegId', tedious_1.TYPES.Int, 0)
                 .prepare();
-            newActivities.forEach((newActivity) => __awaiter(this, void 0, void 0, function* () {
+            yield newActivities.forEachAsync((newActivity) => __awaiter(this, void 0, void 0, function* () {
                 yield updateKegVolume.execute(false, {
                     kegId: newActivity.KegId,
                     pourAmount: newActivity.PourAmountInML
                 });
             }));
-            yield connection.commitTransaction();
-            var retval = newActivities.map(activity => { return { ActivityId: activity.Id, KegId: activity.KegId }; });
-            if (untappd.isIntegrationEnabled()) {
-                postUntappdActivity(retval);
-            }
+            var retval = newActivities.map(activity => {
+                return {
+                    ActivityId: activity.Id,
+                    KegId: activity.KegId,
+                    TapId: activity.TapId,
+                    amount: activity.PourAmountInML
+                };
+            });
             output({ code: 200, msg: retval });
-        }
-        catch (ex) {
-            if (connection && inXact) {
-                yield connection.rollbackTransaction();
+            return retval;
+        }), (results) => {
+            if (untappd.isIntegrationEnabled()) {
+                postUntappdActivity(results)
+                    .catch(reason => {
+                    console.error(reason);
+                });
             }
-            output({ code: 500, msg: "Failed to update session activity: " + ex });
-        }
-        finally {
-            if (connection) {
-                connection.close();
-            }
-        }
+        }, (ex) => output({ code: 500, msg: "Failed to update session activity: " + ex }));
     });
 }
 exports.postNewSession = postNewSession;
@@ -163,7 +170,7 @@ function postUntappdActivity(activities) {
     }
     return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
         try {
-            let sessions = yield getSessions_internal(null, new queryExpression.QueryExpression({ activity_id: activities.map(activity => activity.ActivityId).join(',') }));
+            let sessions = yield getSessions_internal(null, new queryExpression.QueryExpression({ activityid_in: activities.map(activity => activity.ActivityId).join(',') }));
             untappd.postSessionCheckin(sessions);
         }
         catch (ex) {
