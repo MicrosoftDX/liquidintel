@@ -127,6 +127,7 @@ exports.SimpleGraph = SimpleGraph;
 class GraphGroupMembership {
     constructor(groupNames, token) {
         this.groupNames = groupNames;
+        console.log('Group membership: ' + groupNames.join(','));
         try {
             this.graph = new SimpleGraph(token);
             this.groupIds = this.graph.groupIdsFromNames(groupNames);
