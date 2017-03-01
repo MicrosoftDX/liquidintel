@@ -127,7 +127,7 @@ router.route('/CurrentKeg/:tap_id?')
 
 router.route('/users/:user_id?')
     .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, resultDispatcher)))
-    .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.user.is_admin ? (req.params.user_id || req.user.upn) : req.user.upn, req.body, resultDispatcher)));
+    .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, req.body, resultDispatcher)));
 
 app.use('/api', router);
 

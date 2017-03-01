@@ -8,6 +8,7 @@ const request = require("request");
 var should = chai.should();
 var adminBearerToken;
 var nonAdminBearerToken;
+var newKegId;
 function getAccessToken(refreshToken, next) {
     request.post({
         url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
@@ -51,7 +52,7 @@ describe('testing api', function () {
     it('should return 404 on / GET', function (done) {
         chai.request(server)
             .get('/')
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(404);
             done();
         });
@@ -60,7 +61,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.body.should.have.property('message');
             res.body.message.should.equal('Welcome to DX Liquid Intelligence api!');
@@ -71,7 +72,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/kegs')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.be.a('array');
@@ -91,8 +92,42 @@ describe('testing api', function () {
         chai.request(server)
             .post('/api/kegs')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(401);
+            done();
+        });
+    });
+    it('should require admin bearer token authentication on /api/kegs POST', function (done) {
+        chai.request(server)
+            .post('/api/kegs')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err, res) => {
+            res.should.have.status(401);
+            done();
+        });
+    });
+    it('should add new keg with all attributes explicitly specified on /api/kegs POST', function (done) {
+        chai.request(server)
+            .post('/api/kegs')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .send({
+            Name: 'test beer',
+            Brewery: 'test brewery',
+            BeerType: 'IPA',
+            ABV: 10.5,
+            IBU: 89,
+            BeerDescription: 'This is a really nice, hoppy beer!'
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.Name.should.equal('test beer');
+            res.body.Brewery.should.equal('test brewery');
+            res.body.BeerType.should.equal('IPA');
+            res.body.ABV.should.equal(10.5);
+            res.body.IBU.should.equal(89);
+            res.body.BeerDescription.should.not.be.empty;
+            newKegId = res.body.KegId;
             done();
         });
     });
@@ -100,7 +135,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/CurrentKeg')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.be.a('array');
@@ -120,7 +155,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/CurrentKeg/1')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('KegId');
@@ -140,8 +175,42 @@ describe('testing api', function () {
             .put('/api/CurrentKeg/1')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
             .send({ KegId: 6, KegSize: 17000 })
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(401);
+            done();
+        });
+    });
+    it('should require admin bearer token authentication on /api/CurrentKeg/<id> PUT', function (done) {
+        chai.request(server)
+            .put('/api/CurrentKeg/1')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({ KegId: 6, KegSize: 17000 })
+            .end((err, res) => {
+            res.should.have.status(401);
+            done();
+        });
+    });
+    it('should make previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+        chai.request(server)
+            .put('/api/CurrentKeg/1')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .send({
+            KegId: newKegId,
+            KegSize: 17000
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.body.should.be.a('object');
+            res.body.TapId.should.equal(1);
+            res.body.KegId.should.equal(newKegId);
+            res.body.KegSize.should.equal(17000);
+            res.body.CurrentVolume.should.equal(17000);
+            res.body.Name.should.equal('test beer');
+            res.body.Brewery.should.equal('test brewery');
+            res.body.BeerType.should.equal('IPA');
+            res.body.ABV.should.equal(10.5);
+            res.body.IBU.should.equal(89);
+            res.body.BeerDescription.should.not.be.empty;
             done();
         });
     });
@@ -149,7 +218,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/activity')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.be.a('array');
@@ -174,7 +243,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/activity/1')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('SessionId');
@@ -194,11 +263,79 @@ describe('testing api', function () {
             done();
         });
     });
+    it('should add new activity on /api/activity POST', function (done) {
+        chai.request(server)
+            .post('/api/activity')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .send({
+            sessionTime: new Date().toISOString(),
+            personnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            Taps: {
+                "1": {
+                    amount: 155
+                },
+                "2": {
+                    amount: 210
+                }
+            }
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.an('array');
+            res.body.length.should.equal(2);
+            var tapOne = res.body.find(activity => activity.TapId == 1);
+            var tapTwo = res.body.find(activity => activity.TapId == 2);
+            should.not.equal(tapOne, null);
+            tapOne.should.have.property('ActivityId');
+            tapOne.should.have.property('KegId');
+            tapOne.amount.should.equal(155);
+            should.not.equal(tapTwo, null);
+            tapTwo.amount.should.equal(210);
+            done();
+        });
+    });
+    it('should add new activity but not for empty taps on /api/activity POST', function (done) {
+        chai.request(server)
+            .post('/api/activity')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .send({
+            sessionTime: new Date().toISOString(),
+            personnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            Taps: {
+                "1": {
+                    amount: 0
+                },
+                "2": {
+                    amount: 210
+                }
+            }
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.an('array');
+            res.body.length.should.equal(1);
+            res.body[0].amount.should.equal(210);
+            done();
+        });
+    });
+    it('keg volumne should have reduced with activity /api/CurrentKeg GET', function (done) {
+        chai.request(server)
+            .get('/api/CurrentKeg/1')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.body.KegSize.should.equal(17000);
+            res.body.CurrentVolume.should.equal(17000 - 155);
+            done();
+        });
+    });
     it('should get valid specific person on /api/isPersonValid/<id> GET', function (done) {
         chai.request(server)
             .get('/api/isPersonValid/1801958')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
@@ -212,7 +349,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/isPersonValid/1958144')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(200);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
@@ -226,7 +363,7 @@ describe('testing api', function () {
         chai.request(server)
             .get('/api/isPersonValid/0000000')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(404);
             done();
         });
@@ -234,7 +371,7 @@ describe('testing api', function () {
     it('should 401 on invalid bearer token on /api/users GET', function (done) {
         chai.request(server)
             .get('/api/users')
-            .end(function (err, res) {
+            .end((err, res) => {
             res.should.have.status(401);
             done();
         });
@@ -327,6 +464,86 @@ describe('testing api', function () {
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
             res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+            done();
+        });
+    });
+    it('should update own user information /api/users/me PUT', function (done) {
+        chai.request(server)
+            .put('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            UntappdUserName: 'test_user',
+            UntappdAccessToken: '123456',
+            CheckinFacebook: true,
+            CheckinTwitter: false,
+            CheckinFoursquare: true
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+            res.body.UntappdUserName.should.equal('test_user');
+            res.body.CheckinFacebook.should.equal(true);
+            res.body.CheckinTwitter.should.equal(false);
+            res.body.CheckinFoursquare.should.equal(true);
+            done();
+        });
+    });
+    it('should update own user information /api/users PUT', function (done) {
+        chai.request(server)
+            .put('/api/users')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            UntappdUserName: 'test_user',
+            UntappdAccessToken: '123456',
+            CheckinFacebook: true,
+            CheckinTwitter: false,
+            CheckinFoursquare: true
+        })
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.have.property('PersonnelNumber');
+            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+            res.body.UntappdUserName.should.equal('test_user');
+            done();
+        });
+    });
+    it('should return 400 Bad Request when update different user information for non-admin call /api/users/user_id PUT', function (done) {
+        chai.request(server)
+            .put('/api/users/blah@microsoft.com')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            UntappdUserName: 'test_user',
+            UntappdAccessToken: '123456',
+            CheckinFacebook: true,
+            CheckinTwitter: false,
+            CheckinFoursquare: true
+        })
+            .end((err, res) => {
+            res.should.have.status(400);
+            done();
+        });
+    });
+    it('should return 400 Bad Request when UserPrincipalName in body doesnt match resource in path /api/users/user_id PUT', function (done) {
+        chai.request(server)
+            .put('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+            UserPrincipalName: 'blah@microsoft.com',
+            UntappdUserName: 'test_user',
+            UntappdAccessToken: '123456',
+            CheckinFacebook: true,
+            CheckinTwitter: false,
+            CheckinFoursquare: true
+        })
+            .end((err, res) => {
+            res.should.have.status(400);
             done();
         });
     });

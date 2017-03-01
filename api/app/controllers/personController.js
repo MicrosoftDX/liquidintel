@@ -89,9 +89,18 @@ function getUserDetails(upn, isAdmin, tokenUpn, output) {
     });
 }
 exports.getUserDetails = getUserDetails;
-function postUserDetails(upn, userDetails, output) {
+function postUserDetails(upn, isAdmin, tokenUpn, userDetails, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
+            if (upn && upn.toLowerCase() === 'me') {
+                upn = tokenUpn;
+            }
+            else if (!isAdmin) {
+                if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
+                    return output({ code: 400, msg: 'Caller can only update own user information.' });
+                }
+            }
+            upn = upn || tokenUpn;
             if (userDetails.UserPrincipalName && upn.toLowerCase() !== userDetails.UserPrincipalName.toLowerCase()) {
                 return output({ code: 400, msg: 'UserPrincipalName in payload MUST match resource name' });
             }

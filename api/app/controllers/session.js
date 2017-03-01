@@ -109,7 +109,7 @@ function postNewSession(body, output) {
         new tds.TdsConnection().transaction((connection) => __awaiter(this, void 0, void 0, function* () {
             var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " +
                 "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
-                "SELECT Id, KegId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
+                "SELECT Id, KegId, TapId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
             var insertDrinkers = yield connection.sql(sqlStatement)
                 .parameter('pourTime', tedious_1.TYPES.DateTime2, null)
                 .parameter('personnelNumber', tedious_1.TYPES.Int, null)
@@ -143,7 +143,14 @@ function postNewSession(body, output) {
                     pourAmount: newActivity.PourAmountInML
                 });
             }));
-            var retval = newActivities.map(activity => { return { ActivityId: activity.Id, KegId: activity.KegId }; });
+            var retval = newActivities.map(activity => {
+                return {
+                    ActivityId: activity.Id,
+                    KegId: activity.KegId,
+                    TapId: activity.TapId,
+                    amount: activity.PourAmountInML
+                };
+            });
             output({ code: 200, msg: retval });
             return retval;
         }), (results) => {

@@ -22,7 +22,7 @@ CREATE TABLE dbo.DimKeg(
  Name nvarchar(500) NOT NULL,
  Brewery nvarchar(500) NULL,
  BeerType nvarchar(100) NULL,
- ABV decimal NULL,
+ ABV decimal(18,1) NULL,
  IBU INT NULL,
  BeerDescription nvarchar(4000) NULL,
  UntappdId INT NULL,

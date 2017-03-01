@@ -84,8 +84,18 @@ export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: st
     }
 }
 
-export async function postUserDetails(upn: string, userDetails, output: (resp: any) => express.Response) {
+export async function postUserDetails(upn: string, isAdmin: boolean, tokenUpn: string, userDetails, output: (resp: any) => express.Response) {
     try {
+        if (upn && upn.toLowerCase() === 'me') {
+            upn = tokenUpn;
+        }
+        else if (!isAdmin) {
+            // Non-admin users can only ask for their own info
+            if (upn && upn.toLowerCase() !== tokenUpn.toLowerCase()) {
+                return output({code: 400, msg: 'Caller can only update own user information.'});
+            }
+        }
+        upn = upn || tokenUpn;
         if (userDetails.UserPrincipalName && upn.toLowerCase() !== userDetails.UserPrincipalName.toLowerCase()) {
             return output({code:400, msg: 'UserPrincipalName in payload MUST match resource name'});
         }

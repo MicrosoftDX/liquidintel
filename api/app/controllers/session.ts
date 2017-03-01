@@ -102,7 +102,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
         // Add journal entries into the activities table
         var sqlStatement = "INSERT INTO FactDrinkers (PourDateTime, PersonnelNumber, TapId, KegId, PourAmountInML) " + 
                             "VALUES (@pourTime, @personnelNumber, @tapId, @kegId, @pourAmount); " +
-                            "SELECT Id, KegId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
+                            "SELECT Id, KegId, TapId, PourAmountInML FROM FactDrinkers WHERE Id = SCOPE_IDENTITY();";
         var insertDrinkers = await connection.sql(sqlStatement)
             .parameter('pourTime', TYPES.DateTime2, null)
             .parameter('personnelNumber', TYPES.Int, null)
@@ -139,7 +139,14 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 pourAmount: newActivity.PourAmountInML
             });
         });
-        var retval = newActivities.map(activity => { return {ActivityId: activity.Id, KegId: activity.KegId}; });
+        var retval = newActivities.map(activity => { 
+            return {
+                ActivityId: activity.Id, 
+                KegId: activity.KegId, 
+                TapId: activity.TapId, 
+                amount: activity.PourAmountInML
+            }; 
+        });
         output({code: 200, msg: retval});
         return retval;
     }, 

@@ -107,19 +107,30 @@ function getKeg(kegId, outputFunc) {
                 stmt.parameter('keg_id', tedious_1.TYPES.Int, kegId);
             }
             let results = yield stmt.executeImmediate();
-            return outputFunc({ code: 200, msg: results.map(row => {
-                    return {
-                        'KegId': row.Id,
-                        'Name': row.Name,
-                        'Brewery': row.Brewery,
-                        'BeerType': row.BeerType,
-                        'ABV': row.ABV,
-                        'IBU': row.IBU,
-                        'BeerDescription': row.BeerDescription,
-                        'UntappdId': row.UntappdId,
-                        'imagePath': row.imagePath
-                    };
-                }) });
+            let output = results.map((row) => {
+                return {
+                    KegId: row.Id,
+                    Name: row.Name,
+                    Brewery: row.Brewery,
+                    BeerType: row.BeerType,
+                    ABV: row.ABV,
+                    IBU: row.IBU,
+                    BeerDescription: row.BeerDescription,
+                    UntappdId: row.UntappdId,
+                    imagePath: row.imagePath
+                };
+            });
+            if (kegId) {
+                if (output.length == 0) {
+                    return outputFunc({ code: 404, msg: 'Specified keg could not be found' });
+                }
+                else {
+                    return outputFunc({ code: 200, msg: output[0] });
+                }
+            }
+            else {
+                return outputFunc({ code: 200, msg: output });
+            }
         }
         catch (ex) {
             return outputFunc({ code: 500, msg: 'Internal Error: ' + ex });
@@ -148,8 +159,8 @@ function postNewKeg(body, output) {
                 .parameter("name", tedious_1.TYPES.NVarChar, body.Name)
                 .parameter("brewery", tedious_1.TYPES.NVarChar, body.Brewery)
                 .parameter("beerType", tedious_1.TYPES.NVarChar, body.BeerType)
-                .parameter("abv", tedious_1.TYPES.NVarChar, body.ABV)
-                .parameter("ibu", tedious_1.TYPES.NVarChar, body.IBU)
+                .parameter("abv", tedious_1.TYPES.Decimal, body.ABV, { scale: 1 })
+                .parameter("ibu", tedious_1.TYPES.Int, body.IBU)
                 .parameter("beerDescription", tedious_1.TYPES.NVarChar, body.BeerDescription)
                 .parameter("untappdId", tedious_1.TYPES.Int, body.UntappdId)
                 .parameter("imagePath", tedious_1.TYPES.NVarChar, body.imagePath)
@@ -157,6 +168,7 @@ function postNewKeg(body, output) {
             getKeg(results[0].Id, output);
         }
         catch (ex) {
+            console.error('kegController.postNewKeg error: ' + ex);
             output({ code: 500, msg: 'Internal error: ' + ex });
         }
     });
