@@ -126,7 +126,6 @@ export class GraphGroupMembership {
     protected groupIds: Promise<string[]>;
     
     constructor(protected groupNames: string[], token: Token) {
-        console.log('Group membership: ' + groupNames.join(',')); 
         try {
             this.graph = new SimpleGraph(token);
             this.groupIds = this.graph.groupIdsFromNames(groupNames);

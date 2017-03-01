@@ -7,7 +7,6 @@ var cache = new Map<string, [boolean, number]>();
 
 export async function isUserAdmin(user: string): Promise<boolean> {
     user = user.toLowerCase();
-    console.log('Admin user check: ' + user);
     var cachedUser = cache.get(user);
     if (cachedUser) {
         if (cachedUser[1] > Date.now()) {

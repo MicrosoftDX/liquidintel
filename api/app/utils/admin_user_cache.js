@@ -14,7 +14,6 @@ var cache = new Map();
 function isUserAdmin(user) {
     return __awaiter(this, void 0, void 0, function* () {
         user = user.toLowerCase();
-        console.log('Admin user check: ' + user);
         var cachedUser = cache.get(user);
         if (cachedUser) {
             if (cachedUser[1] > Date.now()) {
