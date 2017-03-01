@@ -36,9 +36,11 @@ before((done) => {
     // Fetch bearer token using refresh token specified in env vars
     getAccessToken(process.env.AdminRefreshToken, (err, token) => {
         if (token) {
+            console.log('Admin token: ' + token);
             adminBearerToken = token;
             getAccessToken(process.env.NonAdminRefreshToken, (err, token) => {
                 if (token) {
+                    console.log('Non-admin token: ' + token);
                     nonAdminBearerToken = token;
                     done();
                 }
