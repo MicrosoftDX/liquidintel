@@ -97,6 +97,18 @@ describe('testing api', function() {
         })
     });
 
+    it('should list kegs with bearer token on /api/kegs GET', function(done) {
+        chai.request(server)
+        .get('/api/kegs')
+        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.a('array');
+            done();
+        })
+    });
+
     it('should require bearer token authentication on /api/kegs POST', function(done) {
         chai.request(server)
         .post('/api/kegs')

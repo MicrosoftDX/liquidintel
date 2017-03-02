@@ -77,7 +77,7 @@ passport.use("aad-admin", new BearerStrategy(aad_auth_options, (token, done) => 
     }
     done(null, false);
 })));
-var basicAuthStrategy = () => passport.authenticate('basic', { session: false });
+var basicAuthStrategy = () => passport.authenticate(['basic', 'aad-user'], { session: false });
 var bearerOAuthStrategy = (requireAdmin) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', { session: false });
 var port = process.env.PORT || 8000;
 var router = express.Router();
