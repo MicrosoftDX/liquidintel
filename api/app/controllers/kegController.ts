@@ -133,7 +133,7 @@ export async function getKeg(kegId: number, outputFunc: (resp:any) => express.Re
 export async function postNewKeg(body: any, output: (resp:any) => express.Response) {
     try {
         // If they've supplied an Untapped beer id, look this up now
-        if (body.UntappdId && untappd.isIntegrationEnabled) {
+        if (body.UntappdId && untappd.isIntegrationEnabled()) {
             var beerInfo = await untappd.getBeerInfo(body.UntappdId);
             body.Name = beerInfo.beer_name;
             body.Brewery = beerInfo.brewery_name;

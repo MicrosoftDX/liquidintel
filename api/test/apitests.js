@@ -116,7 +116,8 @@ describe('testing api', function () {
             BeerType: 'IPA',
             ABV: 10.5,
             IBU: 89,
-            BeerDescription: 'This is a really nice, hoppy beer!'
+            BeerDescription: 'This is a really nice, hoppy beer!',
+            UntappdId: 12645
         })
             .end((err, res) => {
             res.should.have.status(200);
