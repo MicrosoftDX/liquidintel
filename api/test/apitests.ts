@@ -10,7 +10,7 @@ var adminBearerToken: String;
 var nonAdminBearerToken: string;
 var newKegId: number;
 
-function getAccessToken(refreshToken: string, next: (err: any, token: string) => void) {
+function getAccessToken(refreshToken: string, next: (err: Error, errorResponse: any, token: string) => void) {
     // Fetch bearer token using refresh token specified in env vars
     request.post({
         url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
@@ -23,37 +23,41 @@ function getAccessToken(refreshToken: string, next: (err: any, token: string) =>
             'refresh_token': refreshToken
         }
     }, (err, response, body) => {
-        if (!err && response.statusCode == 200) {
-            next(null, body.access_token);
+        if (err) {
+            next(err, null, null);
+        }
+        else if (response.statusCode >= 400) {
+            next(null, body, null);
         }
         else {
-            next(err || body, null);
+            next(null, null, body.access_token);
         }
     });
 }
 
-before((done) => {
-    // Fetch bearer token using refresh token specified in env vars
-    getAccessToken(process.env.AdminRefreshToken, (err, token) => {
-        if (token) {
-            adminBearerToken = token;
-            getAccessToken(process.env.NonAdminRefreshToken, (err, token) => {
-                if (token) {
-                    nonAdminBearerToken = token;
-                    done();
-                }
-                else {
-                    done(err);
-                }
-            });
-        }
-        else {
-            done(err);
-        }
-    })
-});
-
 describe('testing api', function() {
+    this.timeout(5000);
+
+    before(done => {
+        // Fetch bearer token using refresh token specified in env vars
+        getAccessToken(process.env.AdminRefreshToken, (err, errorResponse, token) => {
+            if (token) {
+                adminBearerToken = token;
+                getAccessToken(process.env.NonAdminRefreshToken, (err, errorResponse, token) => {
+                    if (token) {
+                        nonAdminBearerToken = token;
+                        done();
+                    }
+                    else {
+                        done(err || new Error(JSON.stringify(errorResponse)));
+                    }
+                });
+            }
+            else {
+                done(err || new Error(JSON.stringify(errorResponse)));
+            }
+        })
+    });
 
     it('should return 404 on / GET', function(done) {
         chai.request(server)
