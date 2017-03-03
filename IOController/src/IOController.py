@@ -34,12 +34,13 @@ config = IOControllerConfig(args.config)
 stop_event = multiprocessing.Event()
 signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
-seenUsers = {}
 prox = PCProx()
 liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey, requestTimeout=config.apiRequestTimeout)
 kegIO = Kegerator(config.tapsConfig)
 sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout, config.inactivityTimeout)
+seenUsers = liquidApi.getValidUsersByCardId() 
 with kegIO:
+    prox.beepEndSession()
     while not stop_event.is_set():
         cardId = sessionManager.apply()
         if cardId != 0:
@@ -63,5 +64,6 @@ with kegIO:
                 time.sleep(3)
         else:
             time.sleep(1)
+    prox.beepEndSession()
 
 log.info('End IOController - due to SIGTERM')

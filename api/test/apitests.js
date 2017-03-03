@@ -368,6 +368,24 @@ describe('testing api', function () {
             done();
         });
     });
+    it('should return an array of valid users on /api/validpeople GET', function (done) {
+        this.timeout(20000);
+        chai.request(server)
+            .get('/api/validpeople')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err, res) => {
+            res.should.have.status(200);
+            res.should.be.json;
+            res.body.should.be.an('array');
+            res.body.should.not.be.empty;
+            res.body[0].should.have.property('PersonnelNumber');
+            res.body[0].should.have.property('Valid');
+            res.body[0].should.have.property('FullName');
+            res.body[0].should.have.property('CardId');
+            res.body[0].Valid.should.equal(true);
+            done();
+        });
+    });
     it('should 401 on invalid bearer token on /api/users GET', function (done) {
         chai.request(server)
             .get('/api/users')
