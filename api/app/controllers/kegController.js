@@ -141,7 +141,7 @@ exports.getKeg = getKeg;
 function postNewKeg(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            if (body.UntappdId && untappd.isIntegrationEnabled) {
+            if (body.UntappdId && untappd.isIntegrationEnabled()) {
                 var beerInfo = yield untappd.getBeerInfo(body.UntappdId);
                 body.Name = beerInfo.beer_name;
                 body.Brewery = beerInfo.brewery_name;

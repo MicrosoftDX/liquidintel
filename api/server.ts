@@ -80,7 +80,8 @@ passport.use("aad-admin", new BearerStrategy(aad_auth_options, async (token, don
         }
         done(null, false);
     }));
-var basicAuthStrategy = () => passport.authenticate('basic', {session: false});
+// Note: All routes with 'basic' auth also accept OAuth bearer as well
+var basicAuthStrategy = () => passport.authenticate(['basic', 'aad-user'], {session: false});
 var bearerOAuthStrategy = (requireAdmin: boolean) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', {session: false});
 
 /* Setting Port to 8000 */
