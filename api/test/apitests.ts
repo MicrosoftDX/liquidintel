@@ -425,7 +425,7 @@ describe('testing api', function() {
 
     it('should return an array of valid users on /api/validpeople GET', function(done) {
         // This is a LONG operation...
-        this.timeout(20000);
+        this.timeout(30000);
         chai.request(server)
         .get('/api/validpeople')
         .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
