@@ -7,7 +7,7 @@ import {Session} from '../models/Session';
 const untappdApiRoot = "https://api.untappd.com/v4/";
 
 export function isIntegrationEnabled(): boolean {
-    return process.env.UntappdIntegration;
+    return process.env.UntappdIntegration == "true";
 }
 
 export interface BeerInfo {

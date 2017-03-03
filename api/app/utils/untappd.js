@@ -12,7 +12,7 @@ const tedious_1 = require("tedious");
 const request_promise = require("request-promise");
 const untappdApiRoot = "https://api.untappd.com/v4/";
 function isIntegrationEnabled() {
-    return process.env.UntappdIntegration;
+    return process.env.UntappdIntegration == "true";
 }
 exports.isIntegrationEnabled = isIntegrationEnabled;
 function getBeerInfo(beerId) {
