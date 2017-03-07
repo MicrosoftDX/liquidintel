@@ -86,7 +86,7 @@ export default class BeerActivity extends React.Component{
                             <Col xs={12}>
                             {this.props.activity.map(function(elem,index) {
                             var relDate = moment(elem.PourTime).fromNow();
-                            return <ActivityItem key={index} itemId={elem.SessionId} unread src={elem.BeerImagePath} imgClass='border-green' name={elem.FullName} labelValue={elem.BeerType} labelClass='bg-green fg-white' description={<span> poured <strong><span>{elem.BeerName}</span></strong></span>} date={relDate}/>;
+                            return <ActivityItem key={index} itemId={elem.SessionId} unread src={elem.BeerImagePath} imgClass='border-green' name={elem.FullName} labelValue={elem.BeerType} labelClass='bg-green fg-white' description={<span> poured <strong>{elem.PourAmount} ml</strong> of <strong><span>{elem.BeerName}</span></strong></span>} date={relDate}/>;
                             })}
                             </Col>
                         </Row>
