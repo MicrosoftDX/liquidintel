@@ -47,7 +47,7 @@ class ActivityItem extends React.Component {
             <Col sm={10} xs={9}>
                 <div className='text-left'>
                     <div className='fg-darkgrayishblue75'>{this.props.name} {this.props.description}</div>
-                    <div><small><span><img src={this.props.src}  height='35' className={this.props.imgClass} /> <Badge className={this.props.labelClass} style={{marginRight: 5, display: this.props.labelValue ? 'inline':'none'}}>{this.props.labelValue}</Badge> </span></small><span className='fg-darkgray40'>{this.props.date}</span></div>
+                    <div><small><span><Badge className={this.props.labelClass} style={{marginRight: 5, display: this.props.labelValue ? 'inline':'none'}}>{this.props.labelValue}</Badge> </span></small><span className='fg-darkgray40'>{this.props.date}</span></div>
                 </div>
             </Col>
 
