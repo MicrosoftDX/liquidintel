@@ -66,8 +66,6 @@ export default class KegStatus extends React.Component {
         this.drawKnobs();
     }
     render() {
-        console.log("this.props.kegs says: ");
-        console.log(this.props.kegs);
          var keg = {
             "Name":"No name provided",
             "Level":1,
@@ -81,16 +79,7 @@ export default class KegStatus extends React.Component {
 
         }
         var kegs = [keg,Object.assign({}, keg)];
-
-        console.log("Kegs default has: ")
-        console.log(kegs);
         this.props.kegs.forEach(function(elem,index){
-            console.log("Going for round " + index);
-            console.log("elem says: ");
-            console.log(elem);
-            console.log("TapId is:" + elem.TapId);
-            console.log("And keg[elem.TapId -1] is: ");
-            console.log(elem.TapId - 1);
             if(elem.length === 0 && elem.constructor === Object){
                 return;
             }
@@ -122,9 +111,6 @@ export default class KegStatus extends React.Component {
                 kegs[elem.TapId - 1].InstallDate = moment(elem.InstallDate).fromNow;
             }
         });
-        console.log("Changing the keg array says: ");
-        console.log(kegs);
-
         return (
             <PanelContainer>
                 <PanelHeader className='bg-purple fg-white'>
@@ -139,16 +125,6 @@ export default class KegStatus extends React.Component {
                 <PanelBody>
                     <Grid>
                         <br />
-                        <Row>
-                            {kegs.map(function(elem,index,ar){
-                                var color = elem.Level > 25? (elem.level > 75 ? "#4DBD33" :  '#FFA500') : '#ffcccc';
-                                return (
-                                    <Col xs={6} className='text-center'>
-                                        <input key={index} type='text' defaultValue={elem.Level} className='dial autosize' data-width='100%' data-fgcolor={color} readOnly='readOnly' />
-                                    </Col>
-                                    );
-                            })}
-                        </Row>
                         <Row>
                             {kegs.map(function(elem,index,ar){
                                 return (
@@ -176,6 +152,16 @@ export default class KegStatus extends React.Component {
                                     );
                             })}
                         </Row>
+                        <Row>
+                            {kegs.map(function(elem,index,ar){
+                                var color = elem.Level > 25? (elem.level > 75 ? "#4DBD33" :  '#FFA500') : '#ffcccc';
+                                return (
+                                    <Col xs={6} className='text-center'>
+                                        <input key={index} type='text' value={elem.Level+"%"} className='dial autosize' data-width='100%' data-fgcolor={color} readOnly='readOnly' />
+                                    </Col>
+                                    );
+                            })}
+                        </Row>                        
                         <Row>
                             {kegs.map(function(elem,index,ar){
                                 return (
