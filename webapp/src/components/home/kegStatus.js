@@ -112,10 +112,10 @@ export default class KegStatus extends React.Component {
             if(elem.BeerType.length > 0){
                 kegs[elem.TapId - 1].BeerType = elem.BeerType;
             }
-            if(elem.ABV.length > 0 && elem.ABV != "NA"){
+            if(elem.ABV && elem.ABV != "NA"){
                 kegs[elem.TapId - 1].ABV = elem.ABV + "% ABV";
             }
-            if(elem.IBU.length > 0 && elem.IBU != "NA"){
+            if(elem.IBU && elem.IBU != "NA"){
                 kegs[elem.TapId - 1].IBU = elem.IBU +  " IBU";
             }
             if(elem.InstallDate.length > 0){
