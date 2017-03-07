@@ -29,6 +29,7 @@ export default class HomeContainer extends React.Component {
   componentDidMount() {
     //Get Keg status
     var myHeaders = new Headers();
+    var actAmount = 15;
     myHeaders.append("Accept", "application/json");
     myHeaders.append("Cache-Control", "no-cache");
     myHeaders.delete("X-Requested-With");
@@ -50,7 +51,7 @@ export default class HomeContainer extends React.Component {
       }
       });
 
-    fetch(webAppConfig.api.url+'/activity',myInit)
+    fetch(webAppConfig.api.url + '/activity?count=20',myInit)
     .then(function(response) { 
         return response.json();
     }).then(res => {
