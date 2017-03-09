@@ -6,6 +6,7 @@ import {
     Grid,
     Panel,
     Label,
+    Badge,
     PanelBody,
     PanelHeader,
     FormControl,
@@ -78,6 +79,8 @@ export default class KegStatus extends React.Component {
             "InstallDate":"2017-01-18T23:30:00.000Z"
 
         }
+
+
         var kegs = [keg,Object.assign({}, keg)];
         this.props.kegs.forEach(function(elem,index){
             if(elem.length === 0 && elem.constructor === Object){
@@ -113,7 +116,7 @@ export default class KegStatus extends React.Component {
         });
         return (
             <PanelContainer>
-                <PanelHeader className='bg-purple fg-white'>
+                <PanelHeader className='bg-blue fg-white'>
                     <Grid>
                         <Row>
                             <Col xs={12}>
@@ -137,8 +140,8 @@ export default class KegStatus extends React.Component {
                         <Row>
                             {kegs.map(function(elem,index,ar){
                                 return (
-                                    <Col xs={6} className='text-center'>
-                                        <h1>{elem.Name}</h1>
+                                    <Col xs={6} className='text-center fg-darkgrayishblue75'>
+                                        <h2>{elem.Name}</h2>
                                     </Col>
                                     );
                             })}
@@ -147,7 +150,7 @@ export default class KegStatus extends React.Component {
                             {kegs.map(function(elem,index,ar){
                                 return (
                                     <Col xs={6} className='text-center'>
-                                        <h3 key={index}>{elem.Brewery}</h3>
+                                        <h4 key={index}>{elem.Brewery}</h4>
                                     </Col>
                                     );
                             })}
@@ -164,9 +167,10 @@ export default class KegStatus extends React.Component {
                         </Row>                        
                         <Row>
                             {kegs.map(function(elem,index,ar){
+                                var badgeColor = elem.BeerType.toLowerCase().includes("red") ? "bg-red" : elem.BeerType.toLowerCase().includes("ipa") ? "bg-blue" : "bg-purple";
                                 return (
                                     <Col xs={6} className='text-center'>
-                                        <p key={index}>{elem.BeerType}</p>
+                                        <Badge key={index} className={badgeColor}  style={{marginRight: 5, display: 'inline'}}>{elem.BeerType}</Badge>
                                     </Col>
                                     );
                             })}
@@ -175,7 +179,7 @@ export default class KegStatus extends React.Component {
                             {kegs.map(function(elem,index,ar){
                                 return (
                             <Col xs={6} className='text-center'>
-                                <p><Label key={index} className='bg-darkgreen45 fg-white'>{elem.ABV}</Label> <Label className='bg-blue fg-white'>{elem.IBU}</Label></p>
+                                <p><Label key={index} className='bg-orange75 fg-white'>{elem.ABV}</Label> <Label className='bg-yellow fg-white'>{elem.IBU}</Label></p>
                             </Col>
                                     );
                             })}
