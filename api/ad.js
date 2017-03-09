@@ -55,6 +55,11 @@ class Token {
             });
         });
     }
+    bearerToken() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return "Bearer " + (yield this.accessToken());
+        });
+    }
 }
 exports.Token = Token;
 class SimpleGraph {
@@ -62,64 +67,127 @@ class SimpleGraph {
         this.accessToken = accessToken;
     }
     groupIdsFromNames(names) {
-        return new Promise((resolve, reject) => {
-            this.groupsFromNames(names, (err, groups) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(groups.map((v) => v.id));
-            });
-        });
-    }
-    userInGroups(upn, groupIds) {
-        return new Promise((resolve, reject) => {
-            this.memberOf(upn, groupIds, (err, result) => {
-                if (err) {
-                    return reject(err);
-                }
-                resolve(result);
-            });
-        });
-    }
-    groupsFromNames(names, next) {
         return __awaiter(this, void 0, void 0, function* () {
             let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');
             let url = SimpleGraph.baseUri + `groups?$filter=${predicate}&$select=id,displayName`;
-            let token = yield this.accessToken.accessToken();
-            request({
-                url: url,
-                json: true,
-                headers: { Authorization: "Bearer " + token }
-            }, (error, message, result) => {
-                if (error) {
-                    return next(error, null);
-                }
-                next(null, result.value);
+            return yield this.get({ url: url }, (body) => Promise.resolve(body.value.map(group => group.id)));
+        });
+    }
+    userInGroups(upn, groupIds) {
+        return this.post(SimpleGraph.baseUri + `users/${upn}/checkMemberGroups`, {
+            groupIds: groupIds
+        }, (body) => Promise.resolve(body.value.length > 0));
+    }
+    getUserMembers(groupIds) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var checkedGroups = new Set();
+            var uniqueUsers = new Map();
+            yield Promise.all(groupIds.map(groupId => this.groupUserMembers(groupId, uniqueUsers, checkedGroups)));
+            return Array.from(uniqueUsers.values());
+        });
+    }
+    groupUserMembers(groupId, users, groupsChecked) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.getUrl(SimpleGraph.baseUri + `groups/${groupId}/members`, (body) => __awaiter(this, void 0, void 0, function* () {
+                let members = body.value;
+                members
+                    .filter(member => {
+                    return member["@odata.type"] == '#microsoft.graph.user';
+                })
+                    .forEach(member => {
+                    users.set(member.id, {
+                        objectId: member.id,
+                        userPrincipalName: member.userPrincipalName,
+                        fullName: member.displayName
+                    });
+                });
+                yield Promise.all(members
+                    .filter(member => {
+                    return member["@odata.type"].indexOf('group') != -1 &&
+                        !groupsChecked.has(member.id);
+                })
+                    .map((member) => __awaiter(this, void 0, void 0, function* () {
+                    groupsChecked.add(member.id);
+                    return this.groupUserMembers(member.id, users, groupsChecked);
+                })));
+            }));
+        });
+    }
+    getUrl(url, processResult) {
+        return this.get_reentrant(url, null, processResult);
+    }
+    get(options, processResult) {
+        return this.get_reentrant(options.url, options, processResult);
+    }
+    get_reentrant(url, options, processResult) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!options) {
+                options = { url: url };
+            }
+            else if (url) {
+                options.url = url;
+            }
+            options.json = true;
+            if (!options.headers) {
+                options.headers = {};
+            }
+            options.headers["Authorization"] = yield this.accessToken.bearerToken();
+            return new Promise((resolve, reject) => {
+                request.get(options, (error, response, body) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        if (!this.resolveError(error, response, body, reject)) {
+                            var results = yield processResult(body);
+                            if (body.hasOwnProperty("@odata.nextLink")) {
+                                let pagedResults = yield this.get_reentrant(body["@odata.nextLink"], options, processResult);
+                                if (Array.isArray(results)) {
+                                    results = results.concat(pagedResults);
+                                }
+                            }
+                            resolve(results);
+                        }
+                    }
+                    catch (ex) {
+                        reject(ex);
+                    }
+                }));
             });
         });
     }
-    memberOf(upn, groupIds, next) {
+    post(url, body, processResult) {
         return __awaiter(this, void 0, void 0, function* () {
-            let token = yield this.accessToken.accessToken();
-            request.post({
-                url: SimpleGraph.baseUri + `users/${upn}/checkMemberGroups`,
-                json: true,
-                headers: { Authorization: "Bearer " + token },
-                body: {
-                    "groupIds": groupIds
-                }
-            }, (error, response, body) => {
-                if (error) {
-                    next(error, false);
-                }
-                else if (response.statusCode >= 400) {
-                    next(body.error, false);
-                }
-                else {
-                    next(null, body.value.length > 0);
-                }
+            let token = yield this.accessToken.bearerToken();
+            return new Promise((resolve, reject) => {
+                request.post({
+                    url: url,
+                    json: true,
+                    headers: {
+                        Authorization: token
+                    },
+                    body: body
+                }, (error, response, body) => __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        if (!this.resolveError(error, response, body, reject)) {
+                            resolve(yield processResult(body));
+                        }
+                    }
+                    catch (ex) {
+                        reject(ex);
+                    }
+                }));
             });
         });
+    }
+    resolveError(error, response, body, reject) {
+        if (error) {
+            reject(error);
+        }
+        else if (response.statusCode >= 400) {
+            reject(body.error);
+        }
+        else {
+            return false;
+        }
+        return true;
     }
 }
 SimpleGraph.baseUri = "https://graph.microsoft.com/v1.0/";
@@ -127,13 +195,11 @@ exports.SimpleGraph = SimpleGraph;
 class GraphGroupMembership {
     constructor(groupNames, token) {
         this.groupNames = groupNames;
-        try {
-            this.graph = new SimpleGraph(token);
-            this.groupIds = this.graph.groupIdsFromNames(groupNames);
-        }
-        catch (ex) {
+        this.graph = new SimpleGraph(token);
+        this.groupIds = this.graph.groupIdsFromNames(groupNames)
+            .catch(ex => {
             console.error('Failed to lookup group ids for groups: %s. Details: %s', groupNames, ex);
-        }
+        });
     }
     isUserMember(upn) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -143,6 +209,18 @@ class GraphGroupMembership {
             }
             catch (ex) {
                 console.warn('Failed to check user: %s membership. Details: %s', upn, ex);
+                throw ex;
+            }
+        });
+    }
+    getMembers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let groups = yield this.groupIds;
+                return this.graph.getUserMembers(groups);
+            }
+            catch (ex) {
+                console.warn('Failed to get user members list. Details: %s', ex);
                 throw ex;
             }
         });

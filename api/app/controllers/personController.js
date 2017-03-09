@@ -27,9 +27,9 @@ function getPersonByCardId(cardId, output) {
             else {
                 let validUser = yield groupMembership.isUserMember(`${results[0].EmailName}@${process.env.Tenant}`);
                 output({ code: 200, msg: {
-                        'PersonnelNumber': results[0].PersonnelNumber,
-                        'Valid': validUser,
-                        'FullName': results[0].FullName
+                        PersonnelNumber: results[0].PersonnelNumber,
+                        Valid: validUser,
+                        FullName: results[0].FullName
                     } });
             }
         }
@@ -39,6 +39,40 @@ function getPersonByCardId(cardId, output) {
     });
 }
 exports.getPersonByCardId = getPersonByCardId;
+function getValidPeople(cardId, output) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            let groupMembers = yield groupMembership.getMembers();
+            var sqlStatement = "dbo.GetValidPeople";
+            var tvp = {
+                name: 'EmailAliases',
+                columns: [{
+                        name: 'EmailAlias',
+                        type: tedious_1.TYPES.VarChar
+                    }],
+                rows: groupMembers.map(member => {
+                    return [member.userPrincipalName.split('@')[0]];
+                })
+            };
+            let results = yield tds.default.sql(sqlStatement)
+                .parameter('aliases', tedious_1.TYPES.TVP, tvp)
+                .execute(true, true);
+            return output({ code: 200, msg: results.map(member => {
+                    return {
+                        PersonnelNumber: member.PersonnelNumber,
+                        Valid: true,
+                        FullName: member.FullName,
+                        CardId: member.CardKeyNbr
+                    };
+                }) });
+        }
+        catch (ex) {
+            console.warn('Failed to retrieve list of valid people. Details: ' + ex);
+            return output({ code: 500, msg: 'Internal error: ' + ex });
+        }
+    });
+}
+exports.getValidPeople = getValidPeople;
 function getUserDetails(upn, isAdmin, tokenUpn, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

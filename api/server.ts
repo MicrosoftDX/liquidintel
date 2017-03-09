@@ -114,6 +114,9 @@ var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>ex
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
 
+router.route('/validpeople/:card_id?')
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getValidPeople(req.params.card_id, resultDispatcher)));
+
 router.route('/kegs')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => kegController.getKeg(null, resultDispatcher)))
     .post(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => kegController.postNewKeg(req.body, resultDispatcher)));

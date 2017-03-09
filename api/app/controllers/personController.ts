@@ -23,14 +23,49 @@ export async function getPersonByCardId(cardId: number, output: (resp:any) => ex
             // Perform an AAD lookup to determine if this user is a transitive member of any of our configured groups
             let validUser = await groupMembership.isUserMember(`${results[0].EmailName}@${process.env.Tenant}`);
             output({code: 200, msg: {
-                'PersonnelNumber': results[0].PersonnelNumber,
-                'Valid': validUser,
-                'FullName': results[0].FullName
+                PersonnelNumber: results[0].PersonnelNumber,
+                Valid: validUser,
+                FullName: results[0].FullName
             }});
         }
     }
     catch (ex) {
         return output({code: 500, msg:'Internal Error: ' + ex});
+    }
+}
+
+export async function getValidPeople(cardId: number, output: (resp:any) => express.Response) {
+    try {
+        let groupMembers = await groupMembership.getMembers();
+        // We need to go to the database to get the card #. We use a table-valued parameter to limit the email addresses
+        // & a sproc because tedious can only bind TVPs to sproc invocations.
+        var sqlStatement = "dbo.GetValidPeople";
+        var tvp = {
+            name: 'EmailAliases',
+            columns: [{
+                name: 'EmailAlias',
+                type: TYPES.VarChar
+            }],
+            rows: groupMembers.map(member => {
+                return [member.userPrincipalName.split('@')[0]];
+            })
+        };
+        let results = await tds.default.sql(sqlStatement)
+            .parameter('aliases', TYPES.TVP, tvp)
+            .execute(true, true);
+
+        return output({code:200, msg: results.map(member => {
+            return {
+                PersonnelNumber: member.PersonnelNumber,
+                Valid: true,
+                FullName: member.FullName,
+                CardId: member.CardKeyNbr
+            }
+        })});
+    }
+    catch (ex) {
+        console.warn('Failed to retrieve list of valid people. Details: ' + ex);
+        return output({code: 500, msg: 'Internal error: ' + ex});
     }
 }
 

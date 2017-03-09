@@ -234,15 +234,18 @@ export class TdsStatement {
     }
 
     executeImmediate(): Promise<any[]> {
-        return this.execute(true, null);
+        return this.execute(true, false, null);
     }
 
-    execute(releaseConnection: boolean, parameters?: {}): Promise<any[]> {
+    execute(releaseConnection: boolean, callSproc: boolean = false, parameters?: {}): Promise<any[]> {
         return new Promise<any[]>(async (resolve, reject) => {
             try {
                 this._promise.reset();
                 var openConnection = await this._connection.connectionAsync();
-                if (parameters) {
+                if (callSproc) {
+                    openConnection.callProcedure(this._request);
+                }
+                else if (parameters) {
                     openConnection.execute(this._request, parameters);
                 }
                 else {
