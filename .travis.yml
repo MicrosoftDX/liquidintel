@@ -21,7 +21,7 @@ matrix:
       # provider: azure_web_apps
       # skip_cleanup: true
       # verbose: true
-    - node_js: stable
+    - node_js: "7.7.1"
       language: node_js
       before_install:
         - cd webapp

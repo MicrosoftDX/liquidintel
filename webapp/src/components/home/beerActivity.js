@@ -12,55 +12,12 @@ import {
     PanelHeader,
     FormControl,
     PanelContainer,
+    Media,
+    Label,
     //format for the elements
     Badge,
      LoremIpsum,
 } from '@sketchpixy/rubix';
-
-@withRouter
-class ActivityItem extends React.Component {
-  handleClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    this.props.router.push('/ltr/mailbox/mail');
-  }
-  render() {
-    var classes = classNames({
-      'inbox-item': true,
-      'unread': this.props.unread
-    });
-
-    var linkProps = {
-      href: '/ltr/mailbox/mail',
-      onClick: ::this.handleClick,
-      className: classes,
-    };
-
-    return (
-      <a {...linkProps}>
-      <Row sm="12">
-        <div className='inbox-avatar'>
-            <Col sm={2} xs={3}>
-                <img src={this.props.src} width='48' className={this.props.imgClass} />
-            </Col>
-            <Col sm={10} xs={9}>
-                <div className='text-left'>
-                    <div className='fg-darkgrayishblue75'>{this.props.name} {this.props.description}</div>
-                    <div><small><span><img src={this.props.src}  height='35' className={this.props.imgClass} /> <Badge className={this.props.labelClass} style={{marginRight: 5, display: this.props.labelValue ? 'inline':'none'}}>{this.props.labelValue}</Badge> </span></small><span className='fg-darkgray40'>{this.props.date}</span></div>
-                </div>
-            </Col>
-
-        </div>
-        </Row>
-        <Row>
-            <hr align="center"/>
-        </Row>
-      </a>
-    );
-  }
-}
-
 export default class BeerActivity extends React.Component{
     constructor(props){
         super(props);
@@ -80,16 +37,14 @@ export default class BeerActivity extends React.Component{
                         </Row>
                     </Grid>
                 </PanelHeader>
-                <PanelBody className='panel-sm-12 panel-xs-12' style={{ paddingTop: 0 }}>
-                    <Grid>
-                        <Row>
-                            <Col xs={12}>
-                            {this.props.activity.map(function(elem,index) {
-                            var relDate = moment(elem.PourTime).fromNow();
-                            return <ActivityItem key={index} itemId={elem.SessionId} unread src={elem.BeerImagePath} imgClass='border-green' name={elem.FullName} labelValue={elem.BeerType} labelClass='bg-green fg-white' description={<span> poured <strong><span>{elem.BeerName}</span></strong></span>} date={relDate}/>;
-                            })}
-                            </Col>
-                        </Row>
+                <PanelBody className='panel-sm-12 panel-xs-12' style={{ paddingTop: 0, 'max-height':'75vh', 'overflow-y':'auto' }}>
+                    <Grid>                 
+                        {this.props.activity.map(function(elem,index) {
+                        var relDate = moment(elem.PourTime).fromNow();
+                        var badgeColor = elem.BeerType.toLowerCase().includes("red") ? "bg-red" : elem.BeerType.toLowerCase().includes("ipa") ? "bg-blue" : "bg-purple";
+
+                        return <Media key={index} itemId={elem.SessionId}><Media.Left><img class="border-purple" style={{ paddingTop: 0 }} height={70} src={elem.BeerImagePath} alt={elem.BeerName}/></Media.Left><Media.Body><Media.Heading>{elem.FullName}</Media.Heading><span className="fg-darkgrayishblue75">poured <strong>{elem.PourAmount} ml</strong> of <strong>{elem.BeerName}  </strong></span><small><Badge className={badgeColor}  style={{marginRight: 5, display: 'inline'}}>{elem.BeerType}</Badge></small><br/><small className='fg-darkgray40'>{relDate}</small></Media.Body><hr/></Media>;
+                        })}
                     </Grid>
                 </PanelBody>
             </PanelContainer>
