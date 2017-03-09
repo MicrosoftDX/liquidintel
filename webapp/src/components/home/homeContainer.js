@@ -27,7 +27,22 @@ export default class HomeContainer extends React.Component {
   }
 
   componentDidMount() {
-    //Get Keg status
+    //Using a polling strategy
+    this._timer = setInterval(() => this.poll(), 5000);
+
+  }
+  componentWillUnmount() {
+    const kegs =[];
+    const activity = [];
+    this.setState({kegs,activity});
+    if (this._timer) {
+      clearInterval(this._timer);
+      this._timer = null;
+    }
+  }
+
+  poll(){
+    var numberOfElems = 25;
     var myHeaders = new Headers();
     myHeaders.append("Accept", "application/json");
     myHeaders.append("Cache-Control", "no-cache");
@@ -44,24 +59,27 @@ export default class HomeContainer extends React.Component {
     }).then(res => {
       if (res.length > 0){
         const kegs = res;
-        console.log("kegs dice: ");
-        console.log(kegs);
-        this.setState({ kegs });
+        var prevKegs = this.state.kegs;
+        if(prevKegs.toString() != kegs.toString()){
+          console.log("Kegs have changed - Updating kegs")
+          this.setState({ kegs });
+        }
       }
       });
 
-    fetch(webAppConfig.api.url+'/activity',myInit)
+    fetch(webAppConfig.api.url + '/activity?count=' + numberOfElems,myInit)
     .then(function(response) { 
         return response.json();
     }).then(res => {
       if (res.length > 0){
         const activity = res;
-        console.log("Activity says: ");
-        console.log(activity);
-        this.setState({ activity });
+        var prevActivity = this.state.activity;
+        if(prevActivity.toString() != activity.toString()){
+          console.log("Activity have changed - Updating Activity")
+          this.setState({ activity });
+        }
       }
       }); 
-
   }
 
  render() {
