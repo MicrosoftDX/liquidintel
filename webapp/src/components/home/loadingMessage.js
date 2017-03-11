@@ -12,7 +12,8 @@ import {
     PanelHeader,
     PanelContainer,
     //format for the elements
-    Badge
+    Badge,
+     LoremIpsum,
 } from '@sketchpixy/rubix';
 
 
@@ -27,7 +28,7 @@ export default class ErrorMessage extends React.Component{
                     <Grid>
                         <Row>
                             <Col xs={12}>
-                                <h3>Error retrieving info...</h3>
+                                <h3>Retrieving info...</h3>
                             </Col>
                         </Row>
                     </Grid>
@@ -36,8 +37,8 @@ export default class ErrorMessage extends React.Component{
                     <Grid>
                         <Row>
                             <Col  xs={12}>
-                                <h3>Connection error</h3>
-                                <p>Somehow we couldn't retrieve information for this component, please verify the service is up and running</p>
+                                <h3>Beer in progress</h3>
+                                <p>Fermenting the malted barley... </p>
                             </Col>
                         </Row>
                     </Grid>
