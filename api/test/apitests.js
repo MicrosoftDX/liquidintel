@@ -33,7 +33,7 @@ function getAccessToken(refreshToken, next) {
     });
 }
 describe('testing api', function () {
-    this.timeout(5000);
+    this.timeout(7000);
     before(done => {
         getAccessToken(process.env.AdminRefreshToken, (err, errorResponse, token) => {
             if (token) {
@@ -395,7 +395,7 @@ describe('testing api', function () {
         });
     });
     it('should return an array of valid users on /api/validpeople GET', function (done) {
-        this.timeout(30000);
+        this.timeout(60000);
         chai.request(server)
             .get('/api/validpeople')
             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
