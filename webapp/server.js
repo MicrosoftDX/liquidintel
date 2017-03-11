@@ -54,7 +54,7 @@ require('source-map-support').install({environment: 'node'});
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';var _path=__webpack_require__(2);var _path2=_interopRequireDefault(_path);var _express=__webpack_require__(3);var _express2=_interopRequireDefault(_express);var _compression=__webpack_require__(4);var _compression2=_interopRequireDefault(_compression);var _cookieParser=__webpack_require__(5);var _cookieParser2=_interopRequireDefault(_cookieParser);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _server=__webpack_require__(7);var _server2=_interopRequireDefault(_server);var _routes=__webpack_require__(167);var _routes2=_interopRequireDefault(_routes);var _router=__webpack_require__(600);var _RubixAssetMiddleware=__webpack_require__(616);var _RubixAssetMiddleware2=_interopRequireDefault(_RubixAssetMiddleware);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var port=process.env.PORT||8080;var app=(0,_express2.default)();app.use((0,_compression2.default)());app.use((0,_cookieParser2.default)());app.use(_express2.default.static(_path2.default.join(process.cwd(),'public')));app.set('views',_path2.default.join(process.cwd(),'views'));app.set('view engine','pug');function renderHTML(req,res){(0,_router.renderHTMLString)(_routes2.default,req,function(error,redirectLocation,html){if(error){if(error.message==='Not found'){res.status(404).send(error.message);}else{res.status(500).send(error.message);}}else if(redirectLocation){res.redirect(302,redirectLocation.pathname+redirectLocation.search);}else{res.render('index',{content:html});}});}app.get('*',(0,_RubixAssetMiddleware2.default)('ltr'),function(req,res,next){renderHTML(req,res);});app.listen(port,function(){console.log('Node.js app is running at http://localhost:'+port+'/');});
+	'use strict';var _path=__webpack_require__(2);var _path2=_interopRequireDefault(_path);var _express=__webpack_require__(3);var _express2=_interopRequireDefault(_express);var _compression=__webpack_require__(4);var _compression2=_interopRequireDefault(_compression);var _cookieParser=__webpack_require__(5);var _cookieParser2=_interopRequireDefault(_cookieParser);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _server=__webpack_require__(7);var _server2=_interopRequireDefault(_server);var _routes=__webpack_require__(167);var _routes2=_interopRequireDefault(_routes);var _router=__webpack_require__(601);var _RubixAssetMiddleware=__webpack_require__(617);var _RubixAssetMiddleware2=_interopRequireDefault(_RubixAssetMiddleware);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var port=process.env.PORT||8080;var app=(0,_express2.default)();app.use((0,_compression2.default)());app.use((0,_cookieParser2.default)());app.use(_express2.default.static(_path2.default.join(process.cwd(),'public')));app.set('views',_path2.default.join(process.cwd(),'views'));app.set('view engine','pug');function renderHTML(req,res){(0,_router.renderHTMLString)(_routes2.default,req,function(error,redirectLocation,html){if(error){if(error.message==='Not found'){res.status(404).send(error.message);}else{res.status(500).send(error.message);}}else if(redirectLocation){res.redirect(302,redirectLocation.pathname+redirectLocation.search);}else{res.render('index',{content:html});}});}app.get('*',(0,_RubixAssetMiddleware2.default)('ltr'),function(req,res,next){renderHTML(req,res);});app.listen(port,function(){console.log('Node.js app is running at http://localhost:'+port+'/');});
 
 /***/ },
 /* 2 */
@@ -48067,8 +48067,8 @@ require('source-map-support').install({environment: 'node'});
 /* 595 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _kegStatus=__webpack_require__(596);var _kegStatus2=_interopRequireDefault(_kegStatus);var _beerActivity=__webpack_require__(597);var _beerActivity2=_interopRequireDefault(_beerActivity);var _errorMessage=__webpack_require__(598);var _errorMessage2=_interopRequireDefault(_errorMessage);var _default=__webpack_require__(599);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var HomeContainer=function(_React$Component){(0,_inherits3.default)(HomeContainer,_React$Component);function HomeContainer(props){(0,_classCallCheck3.default)(this,HomeContainer);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={kegs:[],activity:[]};return _this;}HomeContainer.prototype.componentDidMount=function componentDidMount(){var _this2=this;//Using a polling strategy
-	this._timer=setInterval(function(){return _this2.poll();},5000);};HomeContainer.prototype.componentWillUnmount=function componentWillUnmount(){var kegs=[];var activity=[];this.setState({kegs:kegs,activity:activity});if(this._timer){clearInterval(this._timer);this._timer=null;}};HomeContainer.prototype.poll=function poll(){var _this3=this;var numberOfElems=25;var myHeaders=new Headers();myHeaders.append("Accept","application/json");myHeaders.append("Cache-Control","no-cache");myHeaders.delete("X-Requested-With");myHeaders.append("Authorization","Basic "+btoa(_default.webAppConfig.api.username+":"+_default.webAppConfig.api.password));var myInit={method:'GET',headers:myHeaders};fetch(_default.webAppConfig.api.url+'/currentKeg',myInit).then(function(response){return response.json();}).then(function(res){if(res.length>0){var kegs=res;var prevKegs=_this3.state.kegs;if(prevKegs.toString()!=kegs.toString()){console.log("Kegs have changed - Updating kegs");_this3.setState({kegs:kegs});}}});fetch(_default.webAppConfig.api.url+'/activity?count='+numberOfElems,myInit).then(function(response){return response.json();}).then(function(res){if(res.length>0){var activity=res;var prevActivity=_this3.state.activity;if(prevActivity.toString()!=activity.toString()){console.log("Activity have changed - Updating Activity");_this3.setState({activity:activity});}}});};HomeContainer.prototype.render=function render(){return _react2.default.createElement('div',null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{sm:12,md:7},this.state.kegs.length>0?_react2.default.createElement(_kegStatus2.default,{kegs:this.state.kegs}):_react2.default.createElement(_errorMessage2.default,null)),_react2.default.createElement(_rubix.Col,{sm:12,md:5},this.state.activity.length>0?_react2.default.createElement(_beerActivity2.default,{activity:this.state.activity}):_react2.default.createElement(_errorMessage2.default,null))));};return HomeContainer;}(_react2.default.Component);exports.default=HomeContainer;
+	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _kegStatus=__webpack_require__(596);var _kegStatus2=_interopRequireDefault(_kegStatus);var _beerActivity=__webpack_require__(597);var _beerActivity2=_interopRequireDefault(_beerActivity);var _errorMessage=__webpack_require__(598);var _errorMessage2=_interopRequireDefault(_errorMessage);var _loadingMessage=__webpack_require__(599);var _loadingMessage2=_interopRequireDefault(_loadingMessage);var _default=__webpack_require__(600);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var HomeContainer=function(_React$Component){(0,_inherits3.default)(HomeContainer,_React$Component);function HomeContainer(props){(0,_classCallCheck3.default)(this,HomeContainer);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={kegs:[],activity:[]};return _this;}HomeContainer.prototype.componentDidMount=function componentDidMount(){var _this2=this;//Using a polling strategy
+	this._timer=setInterval(function(){return _this2.poll();},1000);};HomeContainer.prototype.componentWillUnmount=function componentWillUnmount(){var kegs=[];var activity=[];var kegsError=false;var activityError=false;this.setState({kegs:kegs,activity:activity});if(this._timer){clearInterval(this._timer);this._timer=null;}};HomeContainer.prototype.poll=function poll(){var _this3=this;var numberOfElems=25;var myHeaders=new Headers();myHeaders.append("Accept","application/json");myHeaders.append("Cache-Control","no-cache");myHeaders.delete("X-Requested-With");myHeaders.append("Authorization","Basic "+btoa(_default.webAppConfig.api.username+":"+_default.webAppConfig.api.password));var myInit={method:'GET',headers:myHeaders};fetch(_default.webAppConfig.api.url+'/currentKeg',myInit).then(function(res){if(res.ok){res=res.json();}else{var error=new Error(res.statusText);error.res=res;throw error;}return res;}).then(function(res){var kegs=res;var kegsError=false;var prevKegs=_this3.state.kegs;_this3.setState({kegs:kegs,kegsError:kegsError});}).catch(function(error){var kegsError=true;_this3.setState({kegsError:kegsError});console.log("Error: ");console.log(error);});fetch(_default.webAppConfig.api.url+'/activity?count='+numberOfElems,myInit).then(function(response){if(response.ok){return response.json();}else{throw Error(response.statusText);}}).then(function(res){if(res.length>0){var activity=res;var activityError=false;var prevActivity=_this3.state.activity;_this3.setState({activity:activity,activityError:activityError});}}).catch(function(error){var activityError=true;_this3.setState({activityError:activityError});console.log("Error: ");console.log(error);});};HomeContainer.prototype.render=function render(){return _react2.default.createElement('div',null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{sm:12,md:7},this.state.kegs.length>0?_react2.default.createElement(_kegStatus2.default,{kegs:this.state.kegs}):this.state.kegsError?_react2.default.createElement(_errorMessage2.default,null):_react2.default.createElement(_loadingMessage2.default,null)),_react2.default.createElement(_rubix.Col,{sm:12,md:5},this.state.activity.length>0?_react2.default.createElement(_beerActivity2.default,{activity:this.state.activity}):this.state.activityError?_react2.default.createElement(_errorMessage2.default,null):_react2.default.createElement(_loadingMessage2.default,null))));};return HomeContainer;}(_react2.default.Component);exports.default=HomeContainer;
 
 /***/ },
 /* 596 */
@@ -48080,13 +48080,13 @@ require('source-map-support').install({environment: 'node'});
 	,sat=this.startAngle// Start angle
 	,ea// Previous end angle
 	,eat=sat+a// End angle
-	,r=true;this.g.lineWidth=this.lineWidth;this.o.cursor&&(sat=eat-0.3)&&(eat=eat+0.3);if(this.o.displayPrevious){ea=this.startAngle+this.angle(this.value);this.o.cursor&&(sa=ea-0.3)&&(ea=ea+0.3);this.g.beginPath();this.g.strokeStyle=this.previousColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sa,ea,false);this.g.stroke();}this.g.beginPath();this.g.strokeStyle=r?this.o.fgColor:this.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sat,eat,false);this.g.stroke();this.g.lineWidth=2;this.g.beginPath();this.g.strokeStyle=this.o.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth+1+this.lineWidth*2/3,0,2*Math.PI,false);this.g.stroke();return false;}}});};KegStatus.prototype.componentDidMount=function componentDidMount(){this.drawKnobs();};KegStatus.prototype.render=function render(){var keg={"Name":"No name provided","Level":1,"imagePath":"https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67","BeerDescription":"No description available","Brewery":"NA","BeerType":"NA","ABV":"ABV NA","IBU":"IBU NA","InstallDate":"2017-01-18T23:30:00.000Z"};var kegs=[keg,(0,_assign2.default)({},keg)];this.props.kegs.forEach(function(elem,index){if(elem.length===0&&elem.constructor===Object){return;}if(elem.Name.length>0){kegs[elem.TapId-1].Name=elem.Name;}if(elem.CurrentVolume>0&&elem.KegSize>0){kegs[elem.TapId-1].Level=Math.round(elem.CurrentVolume/elem.KegSize*100);}if(elem.imagePath.length>0){kegs[elem.TapId-1].imagePath=elem.imagePath;}if(elem.BeerDescription.length>0){kegs[elem.TapId-1].BeerDescription=elem.BeerDescription;}if(elem.Brewery.length>0){kegs[elem.TapId-1].Brewery=elem.Brewery;}if(elem.BeerType.length>0){kegs[elem.TapId-1].BeerType=elem.BeerType;}if(elem.ABV&&elem.ABV!="NA"){kegs[elem.TapId-1].ABV=elem.ABV+"% ABV";}if(elem.IBU&&elem.IBU!="NA"){kegs[elem.TapId-1].IBU=elem.IBU+" IBU";}if(elem.InstallDate.length>0){kegs[elem.TapId-1].InstallDate=moment(elem.InstallDate).fromNow;}});return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-blue fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Keg Status'))))),_react2.default.createElement(_rubix.PanelBody,null,_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement('br',null),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center'},_react2.default.createElement('img',{key:index,src:elem.imagePath,height:'100'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center fg-darkgrayishblue75'},_react2.default.createElement('h2',null,elem.Name));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center'},_react2.default.createElement('h4',{key:index},elem.Brewery));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var color=elem.Level>25?elem.level>75?"#4DBD33":'#FFA500':'#ffcccc';return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center'},_react2.default.createElement('input',{key:index,type:'text',value:elem.Level+"%",className:'dial autosize','data-width':'100%','data-fgcolor':color,readOnly:'readOnly'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center'},_react2.default.createElement(_rubix.Badge,{key:index,className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{xs:6,className:'text-center'},_react2.default.createElement('p',null,_react2.default.createElement(_rubix.Label,{key:index,className:'bg-orange75 fg-white'},elem.ABV),' ',_react2.default.createElement(_rubix.Label,{className:'bg-yellow fg-white'},elem.IBU)));})),_react2.default.createElement('br',null))));};return KegStatus;}(_react2.default.Component);exports.default=KegStatus;
+	,r=true;this.g.lineWidth=this.lineWidth;this.o.cursor&&(sat=eat-0.3)&&(eat=eat+0.3);if(this.o.displayPrevious){ea=this.startAngle+this.angle(this.value);this.o.cursor&&(sa=ea-0.3)&&(ea=ea+0.3);this.g.beginPath();this.g.strokeStyle=this.previousColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sa,ea,false);this.g.stroke();}this.g.beginPath();this.g.strokeStyle=r?this.o.fgColor:this.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sat,eat,false);this.g.stroke();this.g.lineWidth=2;this.g.beginPath();this.g.strokeStyle=this.o.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth+1+this.lineWidth*2/3,0,2*Math.PI,false);this.g.stroke();return false;}}});};KegStatus.prototype.componentDidMount=function componentDidMount(){this.drawKnobs();};KegStatus.prototype.render=function render(){var keg={"Name":"No name provided","Level":1,"imagePath":"https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67","BeerDescription":"No description available","Brewery":"NA","BeerType":"NA","ABV":"ABV NA","IBU":"IBU NA","InstallDate":"2017-01-18T23:30:00.000Z"};var kegs=[keg,(0,_assign2.default)({},keg)];this.props.kegs.forEach(function(elem,index){if(elem.length===0&&elem.constructor===Object){return;}if(elem.Name!=null&&elem.Name.length>0){kegs[elem.TapId-1].Name=elem.Name;}if(elem.CurrentVolume>0&&elem.KegSize>0){kegs[elem.TapId-1].Level=Math.round(elem.CurrentVolume/elem.KegSize*100);}if(elem.imagePath!=null&&elem.imagePath.length>0){kegs[elem.TapId-1].imagePath=elem.imagePath;}if(elem.BeerDescription!=null&&elem.BeerDescription.length>0){kegs[elem.TapId-1].BeerDescription=elem.BeerDescription;}if(elem.Brewery!=null&&elem.Brewery.length>0){kegs[elem.TapId-1].Brewery=elem.Brewery;}if(elem.BeerType!=null&&elem.BeerType.length>0){kegs[elem.TapId-1].BeerType=elem.BeerType;}if(elem.ABV&&elem.ABV!="NA"){kegs[elem.TapId-1].ABV=elem.ABV+"% ABV";}if(elem.IBU&&elem.IBU!="NA"){kegs[elem.TapId-1].IBU=elem.IBU+" IBU";}if(elem.InstallDate!=null&&elem.InstallDate.length>0){kegs[elem.TapId-1].InstallDate=moment(elem.InstallDate).fromNow;}});return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-blue fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Keg Status'))))),_react2.default.createElement(_rubix.PanelBody,null,_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement('br',null),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-1-"+index,xs:6,className:'text-center'},_react2.default.createElement('img',{key:index,src:elem.imagePath,height:'100'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-2-"+index,xs:6,className:'text-center fg-darkgrayishblue75'},_react2.default.createElement('h2',null,elem.Name));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-3-"+index,xs:6,className:'text-center'},_react2.default.createElement('h4',{key:index},elem.Brewery));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var color=elem.Level>25?elem.level>75?"#4DBD33":'#FFA500':'#ffcccc';return _react2.default.createElement(_rubix.Col,{key:"col-4-"+index,xs:6,className:'text-center'},_react2.default.createElement('input',{key:index,type:'text',value:elem.Level+"%",className:'dial autosize','data-width':'100%','data-fgcolor':color,readOnly:'readOnly'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Col,{key:"col-5-"+index,xs:6,className:'text-center'},_react2.default.createElement(_rubix.Badge,{key:index,className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-6-"+index,xs:6,className:'text-center'},_react2.default.createElement('p',null,_react2.default.createElement(_rubix.Label,{key:index,className:'bg-orange75 fg-white'},elem.ABV),' ',_react2.default.createElement(_rubix.Label,{className:'bg-yellow fg-white'},elem.IBU)));})),_react2.default.createElement('br',null))));};return KegStatus;}(_react2.default.Component);exports.default=KegStatus;
 
 /***/ },
 /* 597 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var BeerActivity=function(_React$Component){(0,_inherits3.default)(BeerActivity,_React$Component);function BeerActivity(props){(0,_classCallCheck3.default)(this,BeerActivity);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={history:[]};return _this;}BeerActivity.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Latest beer activity...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0,'max-height':'75vh','overflow-y':'auto'}},_react2.default.createElement(_rubix.Grid,null,this.props.activity.map(function(elem,index){var relDate=moment(elem.PourTime).fromNow();var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Media,{key:index,itemId:elem.SessionId},_react2.default.createElement(_rubix.Media.Left,null,_react2.default.createElement('img',{'class':'border-purple',style:{paddingTop:0},height:70,src:elem.BeerImagePath,alt:elem.BeerName})),_react2.default.createElement(_rubix.Media.Body,null,_react2.default.createElement(_rubix.Media.Heading,null,elem.FullName),_react2.default.createElement('span',{className:'fg-darkgrayishblue75'},'poured ',_react2.default.createElement('strong',null,elem.PourAmount,' ml'),' of ',_react2.default.createElement('strong',null,elem.BeerName,'  ')),_react2.default.createElement('small',null,_react2.default.createElement(_rubix.Badge,{className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType)),_react2.default.createElement('br',null),_react2.default.createElement('small',{className:'fg-darkgray40'},relDate)),_react2.default.createElement('hr',null));}))));};return BeerActivity;}(_react2.default.Component);exports.default=BeerActivity;
+	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var BeerActivity=function(_React$Component){(0,_inherits3.default)(BeerActivity,_React$Component);function BeerActivity(props){(0,_classCallCheck3.default)(this,BeerActivity);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={history:[]};return _this;}BeerActivity.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Latest beer activity...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0,maxHeight:'75vh',overflowY:'auto'}},_react2.default.createElement(_rubix.Grid,null,this.props.activity.map(function(elem,index){var relDate=moment(elem.PourTime).fromNow();var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Media,{key:index,itemID:elem.SessionId},_react2.default.createElement(_rubix.Media.Left,null,_react2.default.createElement('img',{className:'border-purple',style:{paddingTop:0},height:70,width:70,src:elem.BeerImagePath,alt:elem.BeerName})),_react2.default.createElement(_rubix.Media.Body,null,_react2.default.createElement(_rubix.Media.Heading,null,elem.FullName),_react2.default.createElement('span',{className:'fg-darkgrayishblue75'},'poured ',_react2.default.createElement('strong',null,elem.PourAmount,' ml'),' of ',_react2.default.createElement('strong',null,elem.BeerName,'  ')),_react2.default.createElement('small',null,_react2.default.createElement(_rubix.Badge,{className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType)),_react2.default.createElement('br',null),_react2.default.createElement('small',{className:'fg-darkgray40'},relDate)));}))));};return BeerActivity;}(_react2.default.Component);exports.default=BeerActivity;
 
 /***/ },
 /* 598 */
@@ -48096,13 +48096,18 @@ require('source-map-support').install({environment: 'node'});
 
 /***/ },
 /* 599 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";exports.__esModule=true;var webAppConfig=exports.webAppConfig={api:{//url: process.env.API_URL || "http://dxliquidintel.azurewebsites.net/api", 
-	url:process.env.API_URL||"http://localhost:8000/api",username:process.env.API_USERNAME||"0001-0002",password:process.env.API_PASSWORD||"ZHhsaXF1aWQtZGFzaGJvYXJk"},untappd:{key:process.env.UNTAPPD_KEY}};
+	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var ErrorMessage=function(_React$Component){(0,_inherits3.default)(ErrorMessage,_React$Component);function ErrorMessage(props){(0,_classCallCheck3.default)(this,ErrorMessage);return(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));}ErrorMessage.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Retrieving info...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0}},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Beer in progress'),_react2.default.createElement('p',null,'Fermenting the malted barley... '))))));};return ErrorMessage;}(_react2.default.Component);exports.default=ErrorMessage;
 
 /***/ },
 /* 600 */
+/***/ function(module, exports) {
+
+	"use strict";exports.__esModule=true;var webAppConfig=exports.webAppConfig={api:{url:process.env.API_URL||"http://localhost:8000/api",username:process.env.API_USERNAME||"0001-0002",password:process.env.API_PASSWORD||"ZHhsaXF1aWQtZGFzaGJvYXJk"},untappd:{key:process.env.UNTAPPD_KEY}};
+
+/***/ },
+/* 601 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48148,17 +48153,17 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactRouter = __webpack_require__(247);
 	
-	var _reactHotLoader = __webpack_require__(601);
+	var _reactHotLoader = __webpack_require__(602);
 	
-	var _reactRouterScroll = __webpack_require__(602);
+	var _reactRouterScroll = __webpack_require__(603);
 	
 	var _reactRouterScroll2 = _interopRequireDefault(_reactRouterScroll);
 	
-	var _onRouterSetup = __webpack_require__(611);
+	var _onRouterSetup = __webpack_require__(612);
 	
 	var _onRouterSetup2 = _interopRequireDefault(_onRouterSetup);
 	
-	var _checkScroll = __webpack_require__(613);
+	var _checkScroll = __webpack_require__(614);
 	
 	var _checkScroll2 = _interopRequireDefault(_checkScroll);
 	
@@ -48244,13 +48249,13 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 601 */
+/* 602 */
 /***/ function(module, exports) {
 
 	module.exports = require("react-hot-loader");
 
 /***/ },
-/* 602 */
+/* 603 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48262,7 +48267,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _ScrollBehaviorContainer = __webpack_require__(603);
+	var _ScrollBehaviorContainer = __webpack_require__(604);
 	
 	var _ScrollBehaviorContainer2 = _interopRequireDefault(_ScrollBehaviorContainer);
 	
@@ -48285,7 +48290,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 603 */
+/* 604 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48296,7 +48301,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _ScrollBehavior = __webpack_require__(604);
+	var _ScrollBehavior = __webpack_require__(605);
 	
 	var _ScrollBehavior2 = _interopRequireDefault(_ScrollBehavior);
 	
@@ -48377,7 +48382,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 604 */
+/* 605 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48392,21 +48397,21 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _on2 = _interopRequireDefault(_on);
 	
-	var _scrollLeft = __webpack_require__(605);
+	var _scrollLeft = __webpack_require__(606);
 	
 	var _scrollLeft2 = _interopRequireDefault(_scrollLeft);
 	
-	var _scrollTop = __webpack_require__(607);
+	var _scrollTop = __webpack_require__(608);
 	
 	var _scrollTop2 = _interopRequireDefault(_scrollTop);
 	
-	var _requestAnimationFrame = __webpack_require__(608);
+	var _requestAnimationFrame = __webpack_require__(609);
 	
 	var _requestAnimationFrame2 = _interopRequireDefault(_requestAnimationFrame);
 	
-	var _Actions = __webpack_require__(609);
+	var _Actions = __webpack_require__(610);
 	
-	var _DOMStateStorage = __webpack_require__(610);
+	var _DOMStateStorage = __webpack_require__(611);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -48584,11 +48589,11 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 605 */
+/* 606 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var getWindow = __webpack_require__(606);
+	var getWindow = __webpack_require__(607);
 	
 	module.exports = function scrollTop(node, val) {
 	  var win = getWindow(node);
@@ -48599,7 +48604,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 606 */
+/* 607 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -48609,11 +48614,11 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 607 */
+/* 608 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var getWindow = __webpack_require__(606);
+	var getWindow = __webpack_require__(607);
 	
 	module.exports = function scrollTop(node, val) {
 	  var win = getWindow(node);
@@ -48624,7 +48629,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 608 */
+/* 609 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48675,7 +48680,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = compatRaf;
 
 /***/ },
-/* 609 */
+/* 610 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -48702,7 +48707,7 @@ require('source-map-support').install({environment: 'node'});
 	var POP = exports.POP = 'POP';
 
 /***/ },
-/* 610 */
+/* 611 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48792,7 +48797,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 611 */
+/* 612 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48806,7 +48811,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _isBrowser2 = _interopRequireDefault(_isBrowser);
 	
-	__webpack_require__(612);
+	__webpack_require__(613);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -48871,7 +48876,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 612 */
+/* 613 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -49098,7 +49103,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 613 */
+/* 614 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49112,11 +49117,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _isBrowser2 = _interopRequireDefault(_isBrowser);
 	
-	var _onRouterUpdate = __webpack_require__(614);
+	var _onRouterUpdate = __webpack_require__(615);
 	
 	var _onRouterUpdate2 = _interopRequireDefault(_onRouterUpdate);
 	
-	var _ga = __webpack_require__(615);
+	var _ga = __webpack_require__(616);
 	
 	var _ga2 = _interopRequireDefault(_ga);
 	
@@ -49144,7 +49149,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 614 */
+/* 615 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49190,7 +49195,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 615 */
+/* 616 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49217,7 +49222,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 616 */
+/* 617 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
