@@ -15,8 +15,7 @@ import {
     Media,
     Label,
     //format for the elements
-    Badge,
-    LoremIpsum,
+    Badge
 } from '@sketchpixy/rubix';
 export default class BeerActivity extends React.Component {
     constructor(props) {

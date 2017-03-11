@@ -12,8 +12,7 @@ import {
     PanelHeader,
     PanelContainer,
     //format for the elements
-    Badge,
-     LoremIpsum,
+    Badge
 } from '@sketchpixy/rubix';
 
 
