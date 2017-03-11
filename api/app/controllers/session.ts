@@ -115,7 +115,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                                 body.Taps[tapInfo.TapId.toString()].amount > 0)
             .mapAsync(async tapInfo => {
                 // Important we await here as we can't have multiple statements activity at once
-                let newActivity = await insertDrinkers.execute(false, {
+                let newActivity = await insertDrinkers.execute(false, false, {
                     pourTime: new Date(body.sessionTime), 
                     personnelNumber: body.personnelNumber,
                     tapId: tapInfo.TapId,
@@ -134,7 +134,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
             .parameter('kegId', TYPES.Int, 0)
             .prepare();
         await newActivities.forEachAsync(async newActivity => {
-            await updateKegVolume.execute(false, {
+            await updateKegVolume.execute(false, false, {
                 kegId: newActivity.KegId,
                 pourAmount: newActivity.PourAmountInML
             });

@@ -7,6 +7,7 @@ import sys, argparse, time, datetime, logging, logging.config, signal, multiproc
 from IOControllerConfig import IOControllerConfig
 from pcProx import PCProx
 from DXLiquidIntelApi import DXLiquidIntelApi
+from UserCache import UserCache
 from User import User
 from KegIO import Kegerator
 from BeerSession import SessionManager
@@ -34,25 +35,25 @@ config = IOControllerConfig(args.config)
 stop_event = multiprocessing.Event()
 signal.signal(signal.SIGTERM, lambda x,y: stop_event.set())
 
-seenUsers = {}
 prox = PCProx()
 liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUser, apiKey=config.apiKey, requestTimeout=config.apiRequestTimeout)
 kegIO = Kegerator(config.tapsConfig)
 sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout, config.inactivityTimeout)
-with kegIO:
+userCache = UserCache(liquidApi, config.userCacheTtl)
+with kegIO, userCache:
+    prox.beepEndSession()
     while not stop_event.is_set():
         cardId = sessionManager.apply()
         if cardId != 0:
             log.debug('Card: %d has been read from reader', cardId)
             # Check our user cache
             cardKey = str(cardId)
-            if cardKey in seenUsers and not seenUsers[cardKey].isExpired:
-                user = seenUsers[cardKey]
-            else:
+            user = userCache.lookup(cardKey)
+            if user is None or user.isExpired:
                 (userValid, personnelId, fullName) = liquidApi.isUserAuthenticated(cardId)
                 log.debug('Card: %d is associated with user: %s (%s)', cardId, str(personnelId), str(fullName))
                 user = User(personnelId, cardId, fullName, userValid, config.userCacheTtl.value)
-                seenUsers[cardKey] = user
+                userCache.add(cardKey, user)
             # Start session if the user is allowed
             if user.allowAccess:
                 log.debug('Starting beer session for: %d:%s', user.personnelId, user.fullName)
@@ -63,5 +64,6 @@ with kegIO:
                 time.sleep(3)
         else:
             time.sleep(1)
+    prox.beepEndSession()
 
 log.info('End IOController - due to SIGTERM')

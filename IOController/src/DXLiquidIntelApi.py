@@ -4,6 +4,7 @@
 
 import logging, time, datetime
 from NotifyVariable import NotifyVariable
+from User import User
 import requests
 from requests.exceptions import HTTPError
 from requests.auth import HTTPBasicAuth
@@ -21,11 +22,11 @@ class DXLiquidIntelApi(object):
         self._apiKey = apiKey
         self._requestTimeout = requestTimeout
 
-    def _retryWrapper(self, failureMessage, failResult, operation):
+    def _retryWrapper(self, failureMessage, failResult, operation, timeoutMultiplier = 1):
         retries = 3
         while retries > 0:
             try:
-                return operation(self._requestTimeout.value)
+                return operation(self._requestTimeout.value * timeoutMultiplier)
             except HTTPError as ex:
                 if ex.response.status_code == codes.not_found:
                     log.warning('%s. Received NOT_FOUND - abandoning', failureMessage)
@@ -49,6 +50,14 @@ class DXLiquidIntelApi(object):
         fullName = json.get('FullName', '')
         return (validUser, personnelId, fullName)
 
+    def _getValidUsersByCardIdImpl(self, timeout):
+        validUsersUri = URL(self.apiEndPoint.value).add_path_segment('validpeople')
+        validUsersReq = requests.get(validUsersUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), timeout=timeout)
+        validUsersReq.raise_for_status()
+        json = validUsersReq.json()
+        return {str(person['CardId']): User(person['PersonnelNumber'], person['CardId'], person['FullName'], person['Valid'], 3600 * 365) 
+            for person in json}
+
     def _sendSessionDetails(self, user, sessionTime, tapsCounters, timeout):
         sessionUri = URL(self.apiEndPoint.value).add_path_segment('activity')
         payload = {
@@ -63,6 +72,9 @@ class DXLiquidIntelApi(object):
 
     def isUserAuthenticated(self, cardId):
         return self._retryWrapper('Failed to check user validity. User card id: {0}'.format(cardId), (False, None, None), partial(self._isUserAuthenticatedImpl, cardId))
-            
+
+    def getValidUsersByCardId(self):
+        return self._retryWrapper('Failed to retrieve list of valid users', {}, self._getValidUsersByCardIdImpl, 4)
+
     def sendSessionDetails(self, user, sessionTime, tapsCounters):
         return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), False, partial(self._sendSessionDetails, user, sessionTime, tapsCounters))

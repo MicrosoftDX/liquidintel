@@ -121,7 +121,7 @@ function postNewSession(body, output) {
                 .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
                 body.Taps[tapInfo.TapId.toString()].amount > 0)
                 .mapAsync((tapInfo) => __awaiter(this, void 0, void 0, function* () {
-                let newActivity = yield insertDrinkers.execute(false, {
+                let newActivity = yield insertDrinkers.execute(false, false, {
                     pourTime: new Date(body.sessionTime),
                     personnelNumber: body.personnelNumber,
                     tapId: tapInfo.TapId,
@@ -138,7 +138,7 @@ function postNewSession(body, output) {
                 .parameter('kegId', tedious_1.TYPES.Int, 0)
                 .prepare();
             yield newActivities.forEachAsync((newActivity) => __awaiter(this, void 0, void 0, function* () {
-                yield updateKegVolume.execute(false, {
+                yield updateKegVolume.execute(false, false, {
                     kegId: newActivity.KegId,
                     pourAmount: newActivity.PourAmountInML
                 });

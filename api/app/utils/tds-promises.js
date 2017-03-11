@@ -210,14 +210,17 @@ class TdsStatement {
         });
     }
     executeImmediate() {
-        return this.execute(true, null);
+        return this.execute(true, false, null);
     }
-    execute(releaseConnection, parameters) {
+    execute(releaseConnection, callSproc = false, parameters) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             try {
                 this._promise.reset();
                 var openConnection = yield this._connection.connectionAsync();
-                if (parameters) {
+                if (callSproc) {
+                    openConnection.callProcedure(this._request);
+                }
+                else if (parameters) {
                     openConnection.execute(this._request, parameters);
                 }
                 else {

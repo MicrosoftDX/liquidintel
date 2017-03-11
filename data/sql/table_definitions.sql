@@ -16,6 +16,16 @@ IF OBJECT_ID('dbo.SecurityTokens', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL 
   DROP TABLE dbo.Users; 
 
+IF OBJECT_ID('dbo.GetValidPeople', 'U') IS NOT NULL
+  DROP PROCEDURE dbo.GetValidPeople
+
+IF TYPE_ID('dbo.EmailAliases') IS NOT NULL  
+  DROP TYPE dbo.EmailAliases;
+
+CREATE TYPE dbo.EmailAliases AS TABLE
+(
+	EmailAlias varchar(30)
+)
 
 CREATE TABLE dbo.DimKeg(
  Id INT IDENTITY(1,1) NOT NULL,
@@ -29,7 +39,6 @@ CREATE TABLE dbo.DimKeg(
  imagePath nvarchar(4000) NULL,
  CONSTRAINT pk_dimKeg PRIMARY KEY(Id)
 )
-
 
 CREATE TABLE dbo.DimTap(
  Id INT IDENTITY(1,1) NOT NULL,
@@ -98,6 +107,26 @@ CREATE TABLE dbo.SecurityTokens(
  [desc] nvarchar(2000) not null,
  CONSTRAINT pk_security PRIMARY KEY(client_id)
 )
+
+CREATE INDEX IX_CARD02CardKeyMappingS_SAPPersonnelNbr
+ON CARD02CardKeyMappingS
+(
+	SAPPersonnelNbr
+)
+INCLUDE (CardKeyNbr);
+
+CREATE PROCEDURE GetValidPeople 
+	@aliases EmailAliases readonly
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT p.[PersonnelNumber], p.[EmailName], p.[FullName], c.[CardKeyNbr]
+	FROM HC01Person p INNER JOIN CARD02CardKeyMappingS c ON p.PersonnelNumber = c.SAPPersonnelNbr
+	WHERE p.EmailName in (SELECT EmailAlias FROM @aliases);
+END
+GO
+
 
 INSERT INTO dbo.DimTap VALUES ('Left')
 INSERT INTO dbo.DimTap VALUES ('Right')
