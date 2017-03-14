@@ -70,7 +70,7 @@ export default class KegStatus extends React.Component {
          var keg = {
             "Name":"No name provided",
             "Level":1,
-            "imagePath":"https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67",
+            "imagePath":"/img/app/avatars/beer.png",
             "BeerDescription":"No description available",
             "Brewery":"NA",
             "BeerType":"NA",
