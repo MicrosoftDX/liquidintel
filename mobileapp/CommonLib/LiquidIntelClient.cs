@@ -30,7 +30,7 @@ namespace Elixir.Common
             return c;
         });
         private readonly Lazy<HttpClient> _authClient;
-        private readonly Newtonsoft.Json.Linq.JObject _authToken;
+        private readonly Dictionary<string, object> _authPayload;
 
         private readonly bool _hasAuth;
 
@@ -38,6 +38,8 @@ namespace Elixir.Common
         {
             if (_hasAuth = !string.IsNullOrWhiteSpace(authToken))
             {
+                _authPayload = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(authToken).Payload as Dictionary<string, object>;
+
                 _authClient = new Lazy<HttpClient>(() =>
                 {
                     var c = new HttpClient
@@ -108,6 +110,16 @@ namespace Elixir.Common
             var usersResponse = await _authClient.Value.GetStringAsync(@"users");
 
             return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<User>(usersResponse));
+        }
+
+        public async Task<User> GetUserAsync(string upn)
+        {
+            if (!_hasAuth)
+                throw new InvalidOperationException(@"Client must be authenticated");
+
+            var userResponse = await _authClient.Value.GetStringAsync($@"users/{upn}");
+
+            return await Task.Factory.StartNew(() => JsonConvert.DeserializeObject<User>(userResponse));
         }
 
         #region IDisposable Support
