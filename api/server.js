@@ -34,8 +34,7 @@ var config = {
         rowCollectionOnRequestCompletion: true
     }
 };
-var connStrings = process.env.Basic_Auth_Conn_String;
-var basicAuthCreds = JSON.parse(connStrings);
+var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -43,7 +42,6 @@ app.use(passport.initialize());
 passport.use(new BasicStrategy((username, password, done) => __awaiter(this, void 0, void 0, function* () {
     try {
         for (var cred in basicAuthCreds) {
-            console.log("cred: ", cred);
             if (username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key) {
                 return done(null, true);
             }

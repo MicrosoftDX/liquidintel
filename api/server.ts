@@ -31,8 +31,7 @@ var config = {
     }
 };
 
-var connStrings = process.env.Basic_Auth_Conn_String;
-var basicAuthCreds = JSON.parse(connStrings);
+var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
 
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 
@@ -45,7 +44,6 @@ app.use(passport.initialize());
 passport.use(new BasicStrategy(async (username, password, done) => {
     try {
         for(var cred in basicAuthCreds){
-            console.log("cred: ", cred);
             if(username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key){
                 return done(null, true);
             }
