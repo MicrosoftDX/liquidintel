@@ -30,6 +30,9 @@ var config = {
         rowCollectionOnRequestCompletion: true
     }
 };
+
+var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
+
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,10 +42,7 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 passport.use(new BasicStrategy(async (username, password, done) => {
-    
     try {
-        var connStrings = process.env.Basic_Auth_Conn_String;
-        var basicAuthCreds = JSON.parse(connStrings);
         for(var cred in basicAuthCreds){
             if(username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key){
                 return done(null, true);
@@ -68,13 +68,13 @@ passport.use("aad-user", new BearerStrategy(aad_auth_options, async (token, done
 }));
 // Strategy for valid AAD users in our admin group
 passport.use("aad-admin", new BearerStrategy(aad_auth_options, async (token, done) => { 
-        // Verify that the user associated with the supplied token is a member of our specified group
-        if (await adminUserCache.isUserAdmin(token.oid)) {
-            token['is_admin'] = true;
-            return done(null, token);
-        }
-        done(null, false);
-    }));
+    // Verify that the user associated with the supplied token is a member of our specified group
+    if (await adminUserCache.isUserAdmin(token.oid)) {
+        token['is_admin'] = true;
+        return done(null, token);
+    }
+    done(null, false);
+}));
 // Note: All routes with 'basic' auth also accept OAuth bearer as well
 var basicAuthStrategy = () => passport.authenticate(['basic', 'aad-user'], {session: false});
 var bearerOAuthStrategy = (requireAdmin: boolean) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', {session: false});
