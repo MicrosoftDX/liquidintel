@@ -1,0 +1,31 @@
+<div ng-form="userForm" ng-submit="updateUserInfo()">
+    <h2>Beer Drinking Analytics</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Beer Analytics</div>
+        <div class="panel-body">
+            <p>This is the 'I' in Intelligence!</p>
+            <p/>
+            <h2>Coming Soon!</h2>
+            <p>If you would like to be involved in making this feature a reality (and have fun & develop skills at the same :)), mail the team at: <a href="mailto:dxliquidintelligence@service.microsoft.com">dxliquidintelligence@service.microsoft.com</a> and join us!.
+        </div>
+        <table class="table table-striped">
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>

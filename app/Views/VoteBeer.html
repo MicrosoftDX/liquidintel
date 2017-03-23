@@ -1,0 +1,78 @@
+<div ng-form="voteForm" ng-submit="updateVotes()">
+    <h2>Beer Voting</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Votes for New Beers</div>
+        <div class="panel-body">
+            <p>Cast your vote for your favorite beer.</p>
+            <p>When a keg needs to be refilled, the beer with the most number of current votes will be selected.</p>
+            <p>Votes for the beer selected all reset when that beer is installed. All other votes remain active.</p>
+            <p>Each DX Liquid Intelligence user may have 2 'active' votes, which may be updated at any time.</p>
+        </div>
+        <table class="table table-striped">
+            <tbody>
+                <tr ng-repeat="vote in votes">
+                    <td>
+                        <div class="col-sm-2">
+                            <label class="form-control-label form-group">Beer or Brewery Name</label>
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="text"
+                                class="form-control accountName"
+                                placeholder="Beer or Brewery Name"
+                                ng-model="vote.BeerInfo"
+                                uib-typeahead="beer as beer.name for beer in searchBeers($viewValue)"
+                                typeahead-loading="loadingBeers"
+                                typeahead-no-results="noResults"
+                                typeahead-editable="false"
+                                typeahead-show-hint="true"
+                                typeahead-append-to-body="true"
+                                typeahead-min-length="3"
+                                typeahead-wait-ms="100"
+                                typeahead-input-formatter="$model.name"
+                                typeahead-template-url="typeaheadTemplate.html" />
+                            <i ng-show="loadingBeers" class="glyphicon glyphicon-refresh"></i>
+                            <div ng-show="noResults">
+                                <i class="glyphicon glyphicon-remove"></i> No Results Found
+                            </div>
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text"
+                                class="form-control accountName"
+                                ng-model="vote.BeerInfo.brewery"
+                                ng-readonly="true" />
+                        </div>
+                        <div class="col-sm-1">
+                            <button type="button" class="btn btn-default" aria-label="Clear Vote" data-ng-click="clearVote(vote)">
+                                <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>
+<script type="text/ng-template" id="typeaheadTemplate.html">
+    <a class="autocomplete-item"> 
+        <p class="beer_logo"><img ng-src="{{match.model.image}}"></p> 
+        <p class="info"> 
+            <span class="title" ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></span> 
+            <span class="sub_title" ng-bind-html="match.model.brewery | uibTypeaheadHighlight:query"></span> 
+        </p>
+    </a>
+</script>

@@ -16,6 +16,7 @@ var moment = require('moment');
 import kegController = require('./app/controllers/kegController');
 import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
+import votingController = require('./app/controllers/votingController');
 import queryExpression = require('./app/utils/query_expression');
 import adminUserCache = require('./app/utils/admin_user_cache');
 require('./app/utils/array_async');
@@ -80,11 +81,12 @@ var basicAuthStrategy = () => passport.authenticate(['basic', 'aad-user'], {sess
 var bearerOAuthStrategy = (requireAdmin: boolean) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', {session: false});
 
 /* Setting Port to 8000 */
-var port = process.env.PORT || 8000;
+var port = process.env.PORT || 8080;
 var router = express.Router();
 
 router.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET, OPTIONS, POST, PUT");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cache-Control, Authorization");
     next();
 });
@@ -105,6 +107,15 @@ var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>ex
 router.get('/', function(req, res) {
     res.json({ message: 'Welcome to DX Liquid Intelligence api!' });   
 });
+
+router.route('/appConfiguration')
+    .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => resultDispatcher({
+        code: 200, 
+        msg: {
+            UntappdClientId: process.env.UntappdClientId,
+            UntappdClientSecret: process.env.UntappdClientSecret
+        }
+    })));
 
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
@@ -127,6 +138,13 @@ router.route('/CurrentKeg/:tap_id?')
 router.route('/users/:user_id?')
     .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, resultDispatcher)))
     .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, req.body, resultDispatcher)));
+
+router.route('/votes/:user_id')
+    .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => votingController.getUserVotes(req.params.user_id, resultDispatcher)))
+    .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => votingController.putUserVotes(req.params.user_id, req.body, resultDispatcher)));
+
+router.route('/votes_tally')
+    .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => votingController.getVotesTally(resultDispatcher)))
 
 app.use('/api', router);
 

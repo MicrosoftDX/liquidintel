@@ -1,0 +1,27 @@
+{
+  "name": "dxliquidintel",
+  "version": "1.0.0",
+  "description": "[![Build Status](https://travis-ci.org/MicrosoftDX/liquidintel.svg?branch=master)](https://travis-ci.org/MicrosoftDX/liquidintel)",
+  "main": "gulpfile.js",
+  "dependencies": {},
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.4.1",
+    "gulp-typescript": "^3.1.6",
+    "gulp-webserver": "^0.9.1",
+    "typescript": "^2.2.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MicrosoftDX/liquidintel.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MicrosoftDX/liquidintel/issues"
+  },
+  "homepage": "https://github.com/MicrosoftDX/liquidintel#readme"
+}

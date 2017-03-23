@@ -13,8 +13,9 @@ export function getCurrentKeg_Internal(tapId: number): Promise<any[]> {
                             "FROM FactKegInstall i INNER JOIN DimKeg k ON i.KegId = k.Id " +
                             "WHERE i.isCurrent = 1 ";
             if (tapId != null) {
-                sqlStatement += "AND i.TapId = @tap_id"
+                sqlStatement += "AND i.TapId = @tap_id "
             }
+            sqlStatement += "ORDER BY i.TapId";
             var stmt = tds.default.sql(sqlStatement);
             if (tapId != null) {
                 stmt.parameter('tap_id', TYPES.Int, tapId);

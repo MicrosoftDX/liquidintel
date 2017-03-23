@@ -1,0 +1,63 @@
+<div ng-form="userForm" ng-submit="updateUserInfo()">
+    <h2>User Information</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Uptappd Integration</div>
+        <div class="panel-body">
+            <p>Link your <a href="https://www.untappd.com" target="untappd">https://www.untappd.com</a> account to enable checkin on Untappd every time you pour beer at the DX venue.</p>
+            <p>To link your Untappd account, click the 'Link Account' button below and then enter your Untappd user information.</p>
+            <p>To unlink your Untappd account, simply click the 'Disconnect' button.</p>
+        </div>
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="col-sm-2">
+                            <label class="form-control-label form-group">Untappd User Name:</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <input type="text"
+                                class="form-control accountName"
+                                placeholder="Untappd User Name"
+                                ng-model="systemUserInfo.UntappdUserName"
+                                ng-readonly="true" />
+                        </div>
+                        <div class="col-sm-3">
+                            <a class="btn btn-primary"
+                                ng-disabled="updateInProgress"
+                                data-ng-href="{{untappdAuthenticationUri}}">Link Account</a>
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    ng-disabled="updateInProgress || !systemUserInfo.UntappdUserName" 
+                                    data-ng-click="disconnectUntappdUser()">Disconnect</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div class="col-sm-2">
+                            <label class="form-control-label form-group">Gravitar Image:</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <img data-ng-src="{{systemUserInfo.ThumbnailImageUri}}" />
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>

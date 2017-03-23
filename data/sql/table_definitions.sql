@@ -16,6 +16,9 @@ IF OBJECT_ID('dbo.SecurityTokens', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL 
   DROP TABLE dbo.Users; 
 
+IF OBJECT_ID('dbo.UserVotes', 'U') IS NOT NULL 
+  DROP TABLE dbo.UserVotes; 
+
 IF OBJECT_ID('dbo.GetValidPeople', 'U') IS NOT NULL
   DROP PROCEDURE dbo.GetValidPeople
 
@@ -95,11 +98,28 @@ CREATE TABLE dbo.Users(
   UntappdAccessToken NVarChar(1000),
   CheckinFacebook bit default(0),
   CheckinTwitter bit default(0),
-  CheckinFoursquare bit default(0)
+  CheckinFoursquare bit default(0),
+  ThumbnailImageUri NVarChar(2048) NULL
 );
 
 CREATE INDEX IX_Users_UPN
 ON dbo.Users (UserPrincipalName);
+
+CREATE TABLE dbo.UserVotes(
+  Id INT IDENTITY(1,1) NOT NULL PRIMARY KEY CLUSTERED,
+  PersonnelNumber INT NOT NULL,
+  VoteDate datetime2 DEFAULT GetDate(),
+  UntappdId INT,
+  BeerName NVARCHAR(1024) NULL,
+  Brewery NVARCHAR(1024) NULL,
+  IsCurrent BIT DEFAULT 1
+);
+
+CREATE INDEX IX_UserVotes_PersonnelNumber
+ON dbo.UserVotes (PersonnelNumber);
+
+CREATE INDEX IX_UserVotes_UntappdId
+ON dbo.UserVotes (UntappdId);
 
 CREATE TABLE dbo.SecurityTokens(
  client_id nvarchar(400) not null,
