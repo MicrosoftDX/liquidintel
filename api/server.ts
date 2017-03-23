@@ -31,7 +31,8 @@ var config = {
     }
 };
 
-var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
+var connStrings = process.env.Basic_Auth_Conn_String;
+var basicAuthCreds = JSON.parse(connStrings);
 
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 
