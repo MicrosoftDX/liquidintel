@@ -43,6 +43,7 @@ app.use(passport.initialize());
 passport.use(new BasicStrategy((username, password, done) => __awaiter(this, void 0, void 0, function* () {
     try {
         for (var cred in basicAuthCreds) {
+            console.log("cred: ", cred);
             if (username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key) {
                 return done(null, true);
             }
