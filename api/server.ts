@@ -30,6 +30,9 @@ var config = {
         rowCollectionOnRequestCompletion: true
     }
 };
+
+var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
+
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -39,20 +42,12 @@ app.use(bodyParser.json());
 app.use(passport.initialize());
 
 passport.use(new BasicStrategy(async (username, password, done) => {
-    var sql = "SELECT client_id, api_key " +
-              "FROM SecurityTokens " +
-              "WHERE client_id = @clientId and api_key = @apiKey";
     try {
-        var results = await tds.default.sql(sql)
-            .parameter('clientId', TYPES.NVarChar, username)
-            .parameter('apiKey', TYPES.NVarChar, password)
-            .executeImmediate();
-        if (!results || results.length != 1) {
-            return done(null, false, {message: 'Invalid client_id or api_key'});
-        }
-        else if (username.valueOf() == results[0].client_id && password.valueOf() == results[0].api_key) {
-            return done(null, true);
-        }
+        for(var cred in basicAuthCreds){
+            if(username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key){
+                return done(null, true);
+            }
+        }  
         return done(null, false, {message: 'Invalid client_id or api_key'});
     }
     catch (ex) {
@@ -73,13 +68,13 @@ passport.use("aad-user", new BearerStrategy(aad_auth_options, async (token, done
 }));
 // Strategy for valid AAD users in our admin group
 passport.use("aad-admin", new BearerStrategy(aad_auth_options, async (token, done) => { 
-        // Verify that the user associated with the supplied token is a member of our specified group
-        if (await adminUserCache.isUserAdmin(token.oid)) {
-            token['is_admin'] = true;
-            return done(null, token);
-        }
-        done(null, false);
-    }));
+    // Verify that the user associated with the supplied token is a member of our specified group
+    if (await adminUserCache.isUserAdmin(token.oid)) {
+        token['is_admin'] = true;
+        return done(null, token);
+    }
+    done(null, false);
+}));
 // Note: All routes with 'basic' auth also accept OAuth bearer as well
 var basicAuthStrategy = () => passport.authenticate(['basic', 'aad-user'], {session: false});
 var bearerOAuthStrategy = (requireAdmin: boolean) => passport.authenticate(requireAdmin ? 'aad-admin' : 'aad-user', {session: false});
@@ -94,10 +89,6 @@ router.use((req, res, next) => {
     next();
 });
 
-router.get('/', function(req, res) {
-    res.json({ message: 'Welcome to DX Liquid Intelligence api!' });   
-});
-
 var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>express.Response)=>void) => {
     return (req:express.Request, res:express.Response) => {
         handler(req, resp => {
@@ -110,6 +101,10 @@ var stdHandler = (handler: (req:express.Request, resultDispatcher:(resp:any)=>ex
         });
     };
 };
+
+router.get('/', function(req, res) {
+    res.json({ message: 'Welcome to DX Liquid Intelligence api!' });   
+});
 
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
