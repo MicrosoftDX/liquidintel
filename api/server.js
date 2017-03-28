@@ -11,7 +11,6 @@ const express = require("express");
 var app = express();
 const ConnectionPool = require("tedious-connection-pool");
 const tds = require("./app/utils/tds-promises");
-const tedious_1 = require("tedious");
 const passport = require("passport");
 var BasicStrategy = require('passport-http').BasicStrategy;
 var BearerStrategy = require('passport-azure-ad').BearerStrategy;
@@ -35,24 +34,17 @@ var config = {
         rowCollectionOnRequestCompletion: true
     }
 };
+var basicAuthCreds = JSON.parse(process.env.Basic_Auth_Conn_String);
 tds.default.setConnectionPool(new ConnectionPool({}, config));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
 passport.use(new BasicStrategy((username, password, done) => __awaiter(this, void 0, void 0, function* () {
-    var sql = "SELECT client_id, api_key " +
-        "FROM SecurityTokens " +
-        "WHERE client_id = @clientId and api_key = @apiKey";
     try {
-        var results = yield tds.default.sql(sql)
-            .parameter('clientId', tedious_1.TYPES.NVarChar, username)
-            .parameter('apiKey', tedious_1.TYPES.NVarChar, password)
-            .executeImmediate();
-        if (!results || results.length != 1) {
-            return done(null, false, { message: 'Invalid client_id or api_key' });
-        }
-        else if (username.valueOf() == results[0].client_id && password.valueOf() == results[0].api_key) {
-            return done(null, true);
+        for (var cred in basicAuthCreds) {
+            if (username === basicAuthCreds[cred].username && password === basicAuthCreds[cred].key) {
+                return done(null, true);
+            }
         }
         return done(null, false, { message: 'Invalid client_id or api_key' });
     }
@@ -86,9 +78,6 @@ router.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Cache-Control, Authorization");
     next();
 });
-router.get('/', function (req, res) {
-    res.json({ message: 'Welcome to DX Liquid Intelligence api!' });
-});
 var stdHandler = (handler) => {
     return (req, res) => {
         handler(req, resp => {
@@ -101,6 +90,9 @@ var stdHandler = (handler) => {
         });
     };
 };
+router.get('/', function (req, res) {
+    res.json({ message: 'Welcome to DX Liquid Intelligence api!' });
+});
 router.route('/isPersonValid/:card_id')
     .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => personController.getPersonByCardId(req.params.card_id, resultDispatcher)));
 router.route('/validpeople/:card_id?')
