@@ -66,6 +66,12 @@ export default class KegStatus extends React.Component {
     componentDidMount() {
         this.drawKnobs();
     }
+    componentDidUpdate(prevProps, prevState) {
+        // One possible fix...
+        if (prevProps.data != this.props.kegs ) {
+            this.drawKnobs();
+        }
+    }
     render() {
         var keg = {
             "Name": "No name provided",
@@ -169,10 +175,10 @@ export default class KegStatus extends React.Component {
                         <Row className="visible-xs">
                             {kegs.map(function (elem, index, ar) {
                                 var level = elem.Level;
-                                var badgeColor = (level >= 25) ? ((level >= 75) ?  "bg-green" : "bg-orange" ) : "bg-red";
+                                var badgeColor = (level >= 25) ? ((level >= 75) ? "bg-green" : "bg-orange") : "bg-red";
                                 return (
                                     <Col key={"col-4b-" + index} xs={6} className='text-center'>
-                                        <Badge key={index + "b"} className={badgeColor}>{level}% full</Badge>
+                                        <Label key={index + "b"} className={badgeColor}>{level}% full</Label>
                                     </Col>
                                 );
                             })}
