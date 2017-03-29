@@ -18,48 +18,17 @@ export default class KegStatus extends React.Component {
         super(props);
     }
     drawKnobs() {
-        $('.dial').knob();
-        $('.knob').knob({
+        console.log("Drawing knobs");
+        $('.dial').knob({
             draw: function () {
-                // 'tron' case
-                if (this.$.data('skin') == 'tron') {
-                    var a = this.angle(this.cv)  // Angle
-                        , sa = this.startAngle          // Previous start angle
-                        , sat = this.startAngle         // Start angle
-                        , ea                            // Previous end angle
-                        , eat = sat + a                 // End angle
-                        , r = true;
-
-                    this.g.lineWidth = this.lineWidth;
-
-                    this.o.cursor
-                        && (sat = eat - 0.3)
-                        && (eat = eat + 0.3);
-
-                    if (this.o.displayPrevious) {
-                        ea = this.startAngle + this.angle(this.value);
-                        this.o.cursor
-                            && (sa = ea - 0.3)
-                            && (ea = ea + 0.3);
-                        this.g.beginPath();
-                        this.g.strokeStyle = this.previousColor;
-                        this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sa, ea, false);
-                        this.g.stroke();
-                    }
-
-                    this.g.beginPath();
-                    this.g.strokeStyle = r ? this.o.fgColor : this.fgColor;
-                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth, sat, eat, false);
-                    this.g.stroke();
-
-                    this.g.lineWidth = 2;
-                    this.g.beginPath();
-                    this.g.strokeStyle = this.o.fgColor;
-                    this.g.arc(this.xy, this.xy, this.radius - this.lineWidth + 1 + this.lineWidth * 2 / 3, 0, 2 * Math.PI, false);
-                    this.g.stroke();
-
-                    return false;
-                }
+                var color = (this.v >= 25) ? ((this.v >= 75) ? '#4DBD33' : '#FFA500') : '#ffcccc';
+                this.o.fgColor = color;
+                this.o.inputColor = color;
+            },
+            'change': function (v) {
+                var color = (v >= 25) ? ((v >= 75) ? '#4DBD33' : '#FFA500') : '#ffcccc';
+                this.o.fgColor = color;
+                this.o.inputColor = color;
             }
         });
     }
@@ -67,9 +36,14 @@ export default class KegStatus extends React.Component {
         this.drawKnobs();
     }
     componentDidUpdate(prevProps, prevState) {
-        // One possible fix...
-        if (prevProps.data != this.props.kegs ) {
-            this.drawKnobs();
+        for (var i = 0; i < 2; i++) {
+            if (this.props.kegs[i].CurrentVolume != prevProps.kegs[i].CurrentVolume) {
+                var newVol = this.props.kegs[i].KegSize > 0 ? this.props.kegs[i].CurrentVolume / this.props.kegs[i].KegSize * 100 : 0;
+                var selec = ".dial.knob-" + this.props.kegs[i].TapId;
+                $(selec)
+                    .val(newVol)
+                    .trigger('change');
+            }
         }
     }
     render() {
@@ -82,13 +56,15 @@ export default class KegStatus extends React.Component {
             "BeerType": "NA",
             "ABV": "ABV NA",
             "IBU": "IBU NA",
-            "InstallDate": "2017-01-18T23:30:00.000Z"
+            "InstallDate": "2017-01-18T23:30:00.000Z",
+            "TapId": "1"
 
         }
 
 
         var kegs = [keg, Object.assign({}, keg)];
         this.props.kegs.forEach(function (elem, index) {
+            kegs[elem.TapId - 1].TapId = elem.TapId;
             if (elem.length === 0 && elem.constructor === Object) {
                 return;
             }
@@ -164,10 +140,9 @@ export default class KegStatus extends React.Component {
                         <Row className="hidden-xs">
                             {kegs.map(function (elem, index, ar) {
                                 var level = elem.Level;
-                                var color = (level >= 25) ? ((level >= 75) ? '#4DBD33' : '#FFA500') : '#ffcccc';
                                 return (
                                     <Col key={"col-4a-" + index} xs={6} className='text-center'>
-                                        <input key={index} type='text' value={level + "%"} className='dial autosize' data-width='100%' data-fgcolor={color} readOnly='readOnly' />
+                                        <input key={index} type='text' value={level + "%"} className={"dial autosize knob-" + elem.TapId} data-width='100%' data-fcolor="" readOnly='readOnly' />
                                     </Col>
                                 );
                             })}
