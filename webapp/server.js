@@ -17712,7 +17712,7 @@ require('source-map-support').install({environment: 'node'});
 	 * @return {?DOMElement}
 	 */
 	function getActiveElement(doc) /*?DOMElement*/{
-	  doc = doc || global.document;
+	  doc = doc || (typeof document !== 'undefined' ? document : undefined);
 	  if (typeof doc === 'undefined') {
 	    return null;
 	  }

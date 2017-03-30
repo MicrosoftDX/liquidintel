@@ -18,7 +18,6 @@ export default class KegStatus extends React.Component {
         super(props);
     }
     drawKnobs() {
-        console.log("Drawing knobs");
         $('.dial').knob({
             draw: function () {
                 var color = (this.v >= 25) ? ((this.v >= 75) ? '#4DBD33' : '#FFA500') : '#ffcccc';

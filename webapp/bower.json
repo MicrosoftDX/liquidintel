@@ -1,17 +1,17 @@
 {
-  "name": "node-seed",
-  "description": "Rubix - ReactJS Admin Template",
+  "name": "liquid",
+  "description": "DX Liquid Intel app",
   "authors": [
-    "Sketchpixy <support@sketchpixy.com>"
+    "Bruno Medina"
   ],
-  "copyright": "SketchPixy LLP, email: support@sketchpixy.com",
+  "copyright": "Microsoft products and services—including images, text, and software downloads (the 'content')—are owned either by Microsoft Corporation or by third parties who have granted Microsoft permission to use the content. Microsoft cannot grant you permission for content that is owned by third parties. You may only copy, modify, distribute, display, license, or sell the content if you are granted explicit permission within the End-User License Agreement (EULA) or License Terms that accompany the content or are provided in the following guidelines. For more information, consult your copyright attorney.",
   "keywords": [
     "rubix",
     "admin",
     "sketchpixy",
     "reactjs"
   ],
-  "homepage": "http://rubix400.sketchpixy.com",
+  "homepage": "http://dx-liquid.azurewebsites.net",
   "private": true,
   "ignore": [
     "**/.*",
@@ -23,32 +23,9 @@
   "dependencies": {
     "fetch":"^2.0.2",
     "d3": "3.5.17",
-    "vex": "2.3.4",
-    "kapusta-jquery.sparkline": "^2.1.3",
-    "Chart.js": "chartjs#~1.0.2",
     "moment": "^2.14.1",
-    "switchery": "^0.8.1",
-    "eonasdan-bootstrap-datetimepicker": "^4.17.37",
-    "gmaps": "0.4.22",
-    "trumbowyg": "^2.1.0",
-    "blueimp-gallery": "^2.21.3",
-    "leaflet": "^0.7.7",
-    "c3": "^0.4.11",
-    "raphael": "^2.2.1",
-    "morris.js": "morrisjs#^0.5.1",
-    "codemirror": "^5.16.0",
-    "seiyria-bootstrap-slider": "^9.1.1",
     "jquery-knob": "^1.2.13",
-    "messenger": "^1.5.0",
-    "x-editable": "^1.5.1",
-    "typeahead.js": "^0.11.1",
     "bootstrap-sass": "^3.3.6",
-    "jquery.steps": "^1.1.0",
-    "jquery-validation": "^1.15.0",
-    "datatables": "^1.10.12",
-    "filament-tablesaw": "^2.0.3",
-    "jquery-ui": "^1.12.0",
-    "dropzone": "^4.3.0",
-    "PACE": "pace#~1.0.2"
+    "jquery-ui": "^1.12.0"
   }
 }

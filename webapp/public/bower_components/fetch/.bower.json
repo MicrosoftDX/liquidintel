@@ -11,15 +11,14 @@
     "test/"
   ],
   "homepage": "https://github.com/github/fetch",
-  "version": "2.0.2",
-  "_release": "2.0.2",
+  "version": "2.0.3",
+  "_release": "2.0.3",
   "_resolution": {
     "type": "version",
-    "tag": "v2.0.2",
-    "commit": "b337f9578fa8e21fa5c9fe8d6eb74baaa43a1c02"
+    "tag": "v2.0.3",
+    "commit": "7e7e5c5b535fdc4abb245382307c8056c1907ecf"
   },
   "_source": "https://github.com/github/fetch.git",
   "_target": "^2.0.2",
-  "_originalSource": "fetch",
-  "_direct": true
+  "_originalSource": "fetch"
 }
