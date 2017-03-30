@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outFile": "app.js",
+        "outFile": "userapp.js",
         "sourceMap": true,
         "preserveConstEnums": true,
         "module": "none",
