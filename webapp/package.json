@@ -2,8 +2,8 @@
   "private": true,
   "name": "node-seed",
   "version": "4.1.0",
-  "description": "Rubix Node Starter Kit",
-  "homepage": "https://rubix410.sketchpixy.com/",
+  "description": "DX Liquid Intel",
+  "homepage": "http://dx-liquid.azurewebsites.net",
   "watch": {
     "dev:server": "tmp/bundle.js"
   },
