@@ -523,7 +523,7 @@ describe('testing api', function() {
             res.should.have.status(200);
             res.should.be.json;
             res.body.PersonnelNumber.should.equal(52);
-            should.equal(res.body.UntappdAccessToken, undefined);
+            should.equal(res.body.UntappdAccessToken, null);
             done();
         })
     });
@@ -564,7 +564,7 @@ describe('testing api', function() {
             CheckinFoursquare: true
         })
         .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
+            res.should.have.status(201);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
             res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
@@ -589,7 +589,7 @@ describe('testing api', function() {
             CheckinFoursquare: true
         })
         .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
+            res.should.have.status(201);
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
             res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
