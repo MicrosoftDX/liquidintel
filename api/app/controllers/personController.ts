@@ -69,7 +69,7 @@ export async function getValidPeople(cardId: number, output: (resp:any) => expre
     }
 }
 
-export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: string, output: (resp: any) => express.Response) {
+export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: string, output: (resp: any) => express.Response, successResponse: number = 200) {
     try {
         if (upn && upn.toLowerCase() === 'me') {
             upn = tokenUpn;
@@ -83,7 +83,7 @@ export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: st
         }
         // Note that if an admin is asking for everyone, we don't augment correctly with the IsAdmin flag. This is to avoid the latency
         // overhead of lookup up everyone against AAD.
-        var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, u.ThumbnailImageUri, " + 
+        var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.UntappdAccessToken, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, u.ThumbnailImageUri, " + 
                            "    p.FullName, p.FirstName, p.LastName, @isAdmin AS IsAdmin " +
                            "FROM dbo.Users u INNER JOIN HC01Person p ON u.PersonnelNumber = p.PersonnelNumber ";
         if (upn) {                           
@@ -98,7 +98,7 @@ export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: st
         var users = await stmt.executeImmediate();
         if (upn && users.length == 0) {
             // Try directly against the HC01Person table
-            sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, NULL as ThumbnailImageUri, " +
+            sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, NULL as UntappdAccessToken, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, NULL as ThumbnailImageUri, " +
                            "    FullName, FirstName, LastName, @isAdmin as IsAdmin " +
                            "FROM dbo.HC01Person " +
                            "WHERE EmailName = @alias";
@@ -107,15 +107,15 @@ export async function getUserDetails(upn: string, isAdmin: boolean, tokenUpn: st
                 .parameter('alias', TYPES.VarChar, upn.split('@')[0])
                 .executeImmediate();
             if (user.length == 1) {
-                output({code:200, msg: user[0]});
+                output({code: successResponse, msg: user[0]});
             }
             output({code: 404, msg: 'User does not exist'});
         }
         else if (!upn) {
-            output({code: 200, msg: users});
+            output({code: successResponse, msg: users});
         }
         else {
-            output({code: 200, msg: users[0]});
+            output({code: successResponse, msg: users[0]});
         }
     }
     catch (ex) {
@@ -137,7 +137,7 @@ export async function postUserDetails(upn: string, isAdmin: boolean, tokenUpn: s
         }
         upn = upn || tokenUpn;
         if (userDetails.UserPrincipalName && upn.toLowerCase() !== userDetails.UserPrincipalName.toLowerCase()) {
-            return output({code:400, msg: 'UserPrincipalName in payload MUST match resource name'});
+            return output({code: 400, msg: 'UserPrincipalName in payload MUST match resource name'});
         }
         var sqlStatement = "MERGE dbo.Users " +
                            "USING (" +
@@ -164,7 +164,7 @@ export async function postUserDetails(upn: string, isAdmin: boolean, tokenUpn: s
             .parameter('checkinFoursquare', TYPES.Bit, userDetails.CheckinFoursquare)
             .parameter('thumbnailImageUri', TYPES.NVarChar, userDetails.ThumbnailImageUri)
             .executeImmediate();
-        getUserDetails(upn, false, upn, output);
+        getUserDetails(upn, false, upn, output, 201);
     }
     catch (ex) {
         console.warn('Failed to update user. Details: ' + ex);

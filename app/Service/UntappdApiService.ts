@@ -33,16 +33,22 @@ module DXLiquidIntel.App.Service {
             }
         }
 
-        public async searchBeers(searchTerm: string): Promise<any> {
+        public async searchBeers(searchTerm: string, accessToken?: string): Promise<any> {
             let appConfig = await this.configService.getConfiguration();
-            return await this.resourceClass.get({
+            var data = {
                 entity: 'search',
                 methodName: 'beer',
-                client_id: appConfig.UntappdClientId,
-                client_secret: appConfig.UntappdClientSecret,
                 q: searchTerm + '*',
                 limit: 15
-            }).$promise;
+            };
+            if (accessToken) {
+                data['access_token'] = accessToken;
+            }
+            else {
+                data['client_id'] = appConfig.UntappdClientId;
+                data['client_secret'] = appConfig.UntappdClientSecret;
+            }
+            return await this.resourceClass.get(data).$promise;
         }
     }
 }

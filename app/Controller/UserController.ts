@@ -8,23 +8,21 @@
 module DXLiquidIntel.App.Controller {
 
     export class UserController extends ControllerBase {
-        static $inject = ['$scope', '$rootScope', 'adalAuthenticationService', '$location', '$route', 'userService', 'untappdService'];
+        static $inject = ['$scope', '$rootScope', 'adalAuthenticationService', '$location', '$window', '$route', 'userService', 'untappdService'];
 
         constructor($scope: Model.IDXLiquidIntelScope,
             $rootScope: Model.IDXLiquidIntelScope,
             adalAuthenticationService,
             $location: ng.ILocationService,
+            $window: ng.IWindowService,
             $route: ng.route.IRouteService,
             userService: Service.UserService,
             protected untappdService: Service.UntappdApiService) {
 
             super($scope, $rootScope, adalAuthenticationService, $location, userService, async () => {
                 this.setTitleForRoute($route.current);
-                $scope.buttonBarButtons = [
-                    new Model.ButtonBarButton("Commit", $scope, "userForm.$valid && !updateInProgress", () => this.update(), true),
-                    new Model.ButtonBarButton("Revert", $scope, "!updateInProgress", () => this.populate(), false)
-                ];
-                $scope.untappdAuthenticationUri = await untappdService.getUntappdAuthUri($location.absUrl());
+                $scope.buttonBarButtons = [];
+                $scope.untappdAuthenticationUri = await untappdService.getUntappdAuthUri($window.location.origin);
                 $scope.disconnectUntappdUser = () => this.disconnectUser();
                 $scope.updateUserInfo = () => this.update();
                 this.populate();
@@ -48,6 +46,7 @@ module DXLiquidIntel.App.Controller {
                     if (untappdUserInfo.user_avatar) {
                         this.$scope.systemUserInfo.ThumbnailImageUri = untappdUserInfo.user_avatar; 
                     }
+                    await this.update();
                 }
                 this.setUpdateState(false);
                 this.$scope.loadingMessage = "";
@@ -75,6 +74,8 @@ module DXLiquidIntel.App.Controller {
         private disconnectUser(): void {
             this.$scope.systemUserInfo.UntappdUserName = '';
             this.$scope.systemUserInfo.UntappdAccessToken = '';
+            this.$scope.systemUserInfo.ThumbnailImageUri = '';
+            this.update();
         }
     }
 } 

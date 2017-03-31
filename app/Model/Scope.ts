@@ -13,6 +13,7 @@ module DXLiquidIntel.App.Model {
         votes: Vote[]
         votesTally: VoteTally[]
         currentTaps: TapInfo[]
+        currentActivities: Model.Activity[]
         title: string
         error: string
         error_class: string

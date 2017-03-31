@@ -33,7 +33,7 @@ module DXLiquidIntel.App.Controller {
         }
 
         private searchBeers(searchTerm: string): PromiseLike<any> {
-            return this.untappdService.searchBeers(searchTerm)
+            return this.untappdService.searchBeers(searchTerm, this.$scope.systemUserInfo.UntappdAccessToken)
                 .then((resp) => {
                     return resp.response.beers.items.map((beer) => {
                         return {
