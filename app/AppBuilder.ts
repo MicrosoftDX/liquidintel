@@ -38,6 +38,7 @@ module DXLiquidIntel.App {
                         domains: {
                             development: ['localhost'],
                             ppe: ['dx-liquidapp-staging.azurewebsites.net'],
+                            userapp: ['dx-liquidapp-userapp.azurewebsites.net'],
                             production: ['dx-liquidapp.azurewebsites.net']
                         },
                         vars: {
@@ -51,6 +52,14 @@ module DXLiquidIntel.App {
                             },
                             ppe: {
                                 apiUri: '//dxliquidintel-staging.azurewebsites.net/api',
+                                tenant: 'microsoft.com',
+                                appClientId: '35a33cfc-fc52-48cf-90f4-23ad69ef85bc',
+                                apiClientId: 'b1e80748-43c2-4450-9121-cbc0dcc98051',
+                                apiUsername: '0001-0001',
+                                apiPassword: 'ZHhsaXF1aWQtcmFzcGJlcnJ5cGk='
+                            },
+                            userapp: {
+                                apiUri: '//dxliquidintel-userapp.azurewebsites.net/api',
                                 tenant: 'microsoft.com',
                                 appClientId: '35a33cfc-fc52-48cf-90f4-23ad69ef85bc',
                                 apiClientId: 'b1e80748-43c2-4450-9121-cbc0dcc98051',
