@@ -1,6 +1,5 @@
 
 import express = require('express');
-import adal = require('adal-node');
 import tds = require('../utils/tds-promises');
 import {TYPES} from 'tedious';
 import aad = require('../utils/ad');
