@@ -748,7 +748,6 @@ describe('testing api', function() {
                             done();
                         });
                 });
-            });
         });
     });
 
@@ -954,7 +953,6 @@ describe('testing api', function() {
             });
         });
     });
-
     //TODO:
     // - Test PUT to kegFinished
 

@@ -693,181 +693,181 @@ describe('testing api', function () {
             });
         });
     });
-});
-describe('Beer voting sequence', () => {
-    var vote1Id = 0, vote2Id = 0;
-    describe('Step 1: Retrieve any existing votes', () => {
-        it('should require bearer token authentication on /api/votes/:user_id GET', (done) => {
-            chai.request(server)
-                .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
-                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                .end((err, res) => {
-                res.should.have.status(401);
-                done();
-            });
-        });
-        it('should return 404 for /api/votes/ GET', (done) => {
-            chai.request(server)
-                .get('/api/votes')
-                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                .end((err, res) => {
-                res.should.have.status(404);
-                done();
-            });
-        });
-        it('should return valid votes for /api/votes/:user_id GET', (done) => {
-            chai.request(server)
-                .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
-                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                .end((err, res) => {
-                res.should.have.status(200);
-                res.should.be.json;
-                res.body.should.be.a('array');
-                vote1Id = res.body[0] ? res.body[0].VoteId : 0;
-                vote2Id = res.body[1] ? res.body[1].VoteId : 0;
-                done();
-            });
-        });
-        describe('Step 2: Delete any existing votes', () => {
-            it('should delete existing votes /api/votes/:user_id PUT', (done) => {
+    describe('Beer voting sequence', () => {
+        var vote1Id = 0, vote2Id = 0;
+        describe('Step 1: Retrieve any existing votes', () => {
+            it('should require bearer token authentication on /api/votes/:user_id GET', (done) => {
                 chai.request(server)
-                    .put('/api/votes/' + process.env.NonAdminPersonnelNumber)
-                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                    .send([vote1Id, vote2Id]
-                    .filter(voteId => !!voteId)
-                    .map(voteId => {
-                    return {
-                        VoteId: voteId,
-                        UntappdId: 0
-                    };
-                }))
+                    .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                    .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
                     .end((err, res) => {
-                    res.should.have.status(201);
-                    res.should.be.json;
-                    res.body.should.be.a('array');
-                    res.body.should.be.empty;
+                    res.should.have.status(401);
                     done();
                 });
             });
-            describe('Step 3: Add new votes', () => {
-                it('should add 2 new votes for /api/votes/:user_id PUT', (done) => {
+            it('should return 404 for /api/votes/ GET', (done) => {
+                chai.request(server)
+                    .get('/api/votes')
+                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                    .end((err, res) => {
+                    res.should.have.status(404);
+                    done();
+                });
+            });
+            it('should return valid votes for /api/votes/:user_id GET', (done) => {
+                chai.request(server)
+                    .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                    .end((err, res) => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.be.a('array');
+                    vote1Id = res.body[0] ? res.body[0].VoteId : 0;
+                    vote2Id = res.body[1] ? res.body[1].VoteId : 0;
+                    done();
+                });
+            });
+            describe('Step 2: Delete any existing votes', () => {
+                it('should delete existing votes /api/votes/:user_id PUT', (done) => {
                     chai.request(server)
                         .put('/api/votes/' + process.env.NonAdminPersonnelNumber)
                         .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                        .send([
-                        {
-                            UntappdId: 12645,
-                            BeerName: 'Trickster',
-                            Brewery: 'Black Raven Brewing Company'
-                        },
-                        {
-                            UntappdId: 6849,
-                            BeerName: 'African Amber',
-                            Brewery: 'Mac & Jack\'s Brewing Company'
-                        }
-                    ])
+                        .send([vote1Id, vote2Id]
+                        .filter(voteId => !!voteId)
+                        .map(voteId => {
+                        return {
+                            VoteId: voteId,
+                            UntappdId: 0
+                        };
+                    }))
                         .end((err, res) => {
                         res.should.have.status(201);
                         res.should.be.json;
                         res.body.should.be.a('array');
-                        res.body.length.should.equal(2);
-                        res.body[0].VoteId.should.not.equal(0);
-                        res.body[0].PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
-                        new Date(Date.parse(res.body[0].VoteDate)).toDateString().should.equal(new Date().toDateString());
-                        res.body[0].UntappdId.should.equal(12645);
-                        res.body[0].BeerName.should.equal('Trickster');
-                        res.body[0].Brewery.should.equal('Black Raven Brewing Company');
-                        vote1Id = res.body[0].VoteId;
-                        vote2Id = res.body[1].VoteId;
+                        res.body.should.be.empty;
                         done();
                     });
                 });
-                describe('Step 4: Verify that our votes appear in the votes tally', () => {
-                    it('should return 401 with no bearer token to /api/votes_tally', (done) => {
+                describe('Step 3: Add new votes', () => {
+                    it('should add 2 new votes for /api/votes/:user_id PUT', (done) => {
                         chai.request(server)
-                            .get('/api/votes_tally')
-                            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                            .end((err, res) => {
-                            res.should.have.status(401);
-                            done();
-                        });
-                    });
-                    it('should return current vote tally including cast votes for /api/votes_tally', (done) => {
-                        chai.request(server)
-                            .get('/api/votes_tally')
+                            .put('/api/votes/' + process.env.NonAdminPersonnelNumber)
                             .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                            .send([
+                            {
+                                UntappdId: 12645,
+                                BeerName: 'Trickster',
+                                Brewery: 'Black Raven Brewing Company'
+                            },
+                            {
+                                UntappdId: 6849,
+                                BeerName: 'African Amber',
+                                Brewery: 'Mac & Jack\'s Brewing Company'
+                            }
+                        ])
                             .end((err, res) => {
-                            res.should.have.status(200);
+                            res.should.have.status(201);
                             res.should.be.json;
                             res.body.should.be.a('array');
-                            res.body.should.not.be.empty;
-                            var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
-                            tricksterVotes.should.not.be.undefined;
-                            tricksterVotes.BeerName.should.equal('Trickster');
-                            tricksterVotes.VoteCount.should.be.least(1);
-                            var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
-                            africanAmberVotes.should.not.be.undefined;
-                            africanAmberVotes.BeerName.should.equal('African Amber');
-                            africanAmberVotes.VoteCount.should.be.least(1);
+                            res.body.length.should.equal(2);
+                            res.body[0].VoteId.should.not.equal(0);
+                            res.body[0].PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+                            new Date(Date.parse(res.body[0].VoteDate)).toDateString().should.equal(new Date().toDateString());
+                            res.body[0].UntappdId.should.equal(12645);
+                            res.body[0].BeerName.should.equal('Trickster');
+                            res.body[0].Brewery.should.equal('Black Raven Brewing Company');
+                            vote1Id = res.body[0].VoteId;
+                            vote2Id = res.body[1].VoteId;
                             done();
                         });
                     });
-                    describe('Step 5: Install Trickster keg to verify that all Trickster votes are erased.', () => {
-                        it('should remove active votes when beer is installed for /api/votes_tally GET', function (done) {
+                    describe('Step 4: Verify that our votes appear in the votes tally', () => {
+                        it('should return 401 with no bearer token to /api/votes_tally', (done) => {
                             chai.request(server)
-                                .post('/api/kegs')
-                                .set('Authorization', 'Bearer ' + adminBearerToken)
-                                .send({
-                                Name: 'Trickster',
-                                Brewery: 'Black Raven Brewing Company',
-                                BeerType: 'IPA - American',
-                                ABV: 6.9,
-                                IBU: 70,
-                                BeerDescription: 'in mythology, the raven can play tricks or otherwise disobey normal rules, hence the name Trickster. this well-balanced IPA has a light fruit, citrus and piney hop aroma with a full hop flavor.',
-                                UntappdId: 12645
-                            })
+                                .get('/api/votes_tally')
+                                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                .end((err, res) => {
+                                res.should.have.status(401);
+                                done();
+                            });
+                        });
+                        it('should return current vote tally including cast votes for /api/votes_tally', (done) => {
+                            chai.request(server)
+                                .get('/api/votes_tally')
+                                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
                                 .end((err, res) => {
                                 res.should.have.status(200);
-                                var kegId = res.body.KegId;
+                                res.should.be.json;
+                                res.body.should.be.a('array');
+                                res.body.should.not.be.empty;
+                                var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
+                                tricksterVotes.should.not.be.undefined;
+                                tricksterVotes.BeerName.should.equal('Trickster');
+                                tricksterVotes.VoteCount.should.be.least(1);
+                                var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
+                                africanAmberVotes.should.not.be.undefined;
+                                africanAmberVotes.BeerName.should.equal('African Amber');
+                                africanAmberVotes.VoteCount.should.be.least(1);
+                                done();
+                            });
+                        });
+                        describe('Step 5: Install Trickster keg to verify that all Trickster votes are erased.', () => {
+                            it('should remove active votes when beer is installed for /api/votes_tally GET', function (done) {
                                 chai.request(server)
-                                    .put('/api/CurrentKeg/1')
+                                    .post('/api/kegs')
                                     .set('Authorization', 'Bearer ' + adminBearerToken)
                                     .send({
-                                    KegId: kegId,
-                                    KegSize: 19500
+                                    Name: 'Trickster',
+                                    Brewery: 'Black Raven Brewing Company',
+                                    BeerType: 'IPA - American',
+                                    ABV: 6.9,
+                                    IBU: 70,
+                                    BeerDescription: 'in mythology, the raven can play tricks or otherwise disobey normal rules, hence the name Trickster. this well-balanced IPA has a light fruit, citrus and piney hop aroma with a full hop flavor.',
+                                    UntappdId: 12645
                                 })
                                     .end((err, res) => {
                                     res.should.have.status(200);
+                                    var kegId = res.body.KegId;
                                     chai.request(server)
-                                        .get('/api/votes_tally')
-                                        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                                        .put('/api/CurrentKeg/1')
+                                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                                        .send({
+                                        KegId: kegId,
+                                        KegSize: 19500
+                                    })
                                         .end((err, res) => {
                                         res.should.have.status(200);
-                                        res.body.should.not.be.empty;
-                                        var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
-                                        expect(tricksterVotes).to.be.undefined;
-                                        var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
-                                        africanAmberVotes.should.not.be.undefined;
-                                        africanAmberVotes.BeerName.should.equal('African Amber');
-                                        africanAmberVotes.VoteCount.should.be.least(1);
-                                        done();
+                                        chai.request(server)
+                                            .get('/api/votes_tally')
+                                            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                                            .end((err, res) => {
+                                            res.should.have.status(200);
+                                            res.body.should.not.be.empty;
+                                            var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
+                                            expect(tricksterVotes).to.be.undefined;
+                                            var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
+                                            africanAmberVotes.should.not.be.undefined;
+                                            africanAmberVotes.BeerName.should.equal('African Amber');
+                                            africanAmberVotes.VoteCount.should.be.least(1);
+                                            done();
+                                        });
                                     });
                                 });
                             });
-                        });
-                        describe('Step 6: Validate that users votes for installed keg have been cleared', () => {
-                            it('should return only 1 vote for /api/votes/:user_id GET', (done) => {
-                                chai.request(server)
-                                    .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
-                                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                                    .end((err, res) => {
-                                    res.should.have.status(200);
-                                    res.should.be.json;
-                                    res.body.should.be.a('array');
-                                    res.body.should.be.lengthOf(1);
-                                    res.body[0].VoteId.should.equal(vote2Id);
-                                    res.body[0].UntappdId.should.equal(6849);
-                                    done();
+                            describe('Step 6: Validate that users votes for installed keg have been cleared', () => {
+                                it('should return only 1 vote for /api/votes/:user_id GET', (done) => {
+                                    chai.request(server)
+                                        .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                                        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                                        .end((err, res) => {
+                                        res.should.have.status(200);
+                                        res.should.be.json;
+                                        res.body.should.be.a('array');
+                                        res.body.should.be.lengthOf(1);
+                                        res.body[0].VoteId.should.equal(vote2Id);
+                                        res.body[0].UntappdId.should.equal(6849);
+                                        done();
+                                    });
                                 });
                             });
                         });
@@ -877,5 +877,4 @@ describe('Beer voting sequence', () => {
         });
     });
 });
-;
 //# sourceMappingURL=apitests.js.map
