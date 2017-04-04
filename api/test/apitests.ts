@@ -1,10 +1,10 @@
 require('mocha');
 import chai = require('chai');
-var chaiHttp = require('chai-http');
-var server = require('../server').app;
-chai.use(chaiHttp);
+chai.use(require('chai-http'));
 import request = require('request')
-var should = chai.should();
+var should = chai.should(),
+    expect = chai.expect;
+var server = require('../server').app;
 
 var adminBearerToken: String;
 var nonAdminBearerToken: string;
@@ -633,6 +633,326 @@ describe('testing api', function() {
             res.should.have.status(400);
             done();
         })
+    });
+
+    it('should require bearer token authentication on /api/appConfiguration GET', (done) => {
+        chai.request(server)
+        .get('/api/appConfiguration')
+        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(401);
+            done();
+        })
+    });
+
+    it('should return valid application configuration for /api/appConfiguration GET', (done) => {
+        chai.request(server)
+        .get('/api/appConfiguration')
+        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+        .end((err: any, res: ChaiHttp.Response) => {
+            res.should.have.status(200);
+            res.body.UntappdClientId.should.equal(process.env.UntappdClientId);
+            res.body.UntappdClientSecret.should.equal(process.env.UntappdClientSecret);
+            done();
+        })
+    });
+
+    describe('Admin api test suite', () => {
+        var originalGroups: string[];
+
+        it('should return 401 using basic auth for /api/admin/AuthorizedGroups GET', (done) => {
+            chai.request(server)
+            .get('/api/admin/AuthorizedGroups')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(401);
+                done();
+            });
+        });
+
+        it('should return 401 using non-admin bearer token for /api/admin/AuthorizedGroups GET', (done) => {
+            chai.request(server)
+            .get('/api/admin/AuthorizedGroups')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(401);
+                done();
+            });
+        });
+
+        it('should return list of authorized groups for /api/admin/AuthorizedGroups GET', (done) => {
+            chai.request(server)
+            .get('/api/admin/AuthorizedGroups')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.an('object');
+                res.body.AuthorizedGroups.should.be.a('array');
+                res.body.AuthorizedGroups[0].should.be.a('string');
+                originalGroups = res.body.AuthorizedGroups;
+                done();
+            });
+        });
+
+        it('should return list of searched groups for /api/admin/AuthorizedGroups?search=:searchTerm GET', (done) => {
+            chai.request(server)
+            .get('/api/admin/AuthorizedGroups?search=dx%20li')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.an('object');
+                res.body.count.should.at.least(1);
+                res.body.results.should.be.a('array');
+                res.body.results.should.have.deep.property('[0].displayName');
+                res.body.results.should.have.deep.property('[0].owners');
+                // Manually loop through all elements of the results. Tried chai-things here, which should meet the
+                // requirements for this, but it is incapable of shifting the assertion context by chaining in the way chai normally does.
+                // ie. this does NOT work:
+                //  res.body.results.all.property('displayName')
+                //      .that.includes('dx li');
+                for (var result of res.body.results) {
+                    result.displayName.toLowerCase().should.include('dx li');
+                }
+                done();
+            });
+        });
+
+        it('should update list of authorized groups for /api/admin/AuthorizedGroups PUT', (done) => {
+            this.timeout(15000);
+            chai.request(server)
+                .put('/api/admin/AuthorizedGroups')
+                .set('Authorization', 'Bearer ' + adminBearerToken)
+                .send({
+                    AuthorizedGroups: originalGroups.concat('test group')
+                })
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(201);
+                    res.should.be.json;
+                    res.body.should.be.an('object');
+                    res.body.AuthorizedGroups.should.be.a('array');
+                    res.body.AuthorizedGroups.length.should.be.equal(originalGroups.length + 1)
+                    res.body.AuthorizedGroups.should.include('test group');
+                    // Restore our groups
+                    chai.request(server)
+                        .put('/api/admin/AuthorizedGroups')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                            AuthorizedGroups: originalGroups
+                        })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(201);
+                            res.should.be.json;
+                            res.body.AuthorizedGroups.should.have.same.members(originalGroups);
+                            done();
+                        });
+                });
+            });
+        });
+    });
+
+    describe('Beer voting sequence', () => {
+        var vote1Id: number = 0,
+            vote2Id: number = 0;
+
+        describe('Step 1: Retrieve any existing votes', () => {
+
+            it('should require bearer token authentication on /api/votes/:user_id GET', (done) => {
+                chai.request(server)
+                .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(401);
+                    done();
+                })
+            });
+
+            it('should return 404 for /api/votes/ GET', (done) => {
+                chai.request(server)
+                .get('/api/votes')
+                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(404);
+                    done();
+                })
+            });
+
+            it('should return valid votes for /api/votes/:user_id GET', (done) => {
+                chai.request(server)
+                .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(200);
+                    res.should.be.json;
+                    res.body.should.be.a('array');
+                    vote1Id = res.body[0] ? res.body[0].VoteId : 0;
+                    vote2Id = res.body[1] ? res.body[1].VoteId : 0;
+                    done();
+                })
+            });
+
+            describe('Step 2: Delete any existing votes', () => {
+
+                it('should delete existing votes /api/votes/:user_id PUT', (done) => {
+                    chai.request(server)
+                    .put('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                    .send([vote1Id, vote2Id]
+                        .filter(voteId => !!voteId)
+                        .map(voteId => {
+                            return {
+                                VoteId: voteId,
+                                UntappdId: 0
+                            }
+                        })
+                    )
+                    .end((err: any, res: ChaiHttp.Response) => {
+                        res.should.have.status(201);
+                        res.should.be.json;
+                        res.body.should.be.a('array');
+                        res.body.should.be.empty;
+                        done();
+                    });
+                });
+
+                describe('Step 3: Add new votes', () => {
+
+                    it('should add 2 new votes for /api/votes/:user_id PUT', (done) => {
+                        chai.request(server)
+                        .put('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                        .send([
+                            {
+                                // Use real values here as we need to install this beer later & verify that our vote is cancelled
+                                UntappdId: 12645,
+                                BeerName: 'Trickster',
+                                Brewery: 'Black Raven Brewing Company'
+                            },
+                            {
+                                UntappdId: 6849,
+                                BeerName: 'African Amber',
+                                Brewery: 'Mac & Jack\'s Brewing Company'
+                            }
+                        ])
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(201);
+                            res.should.be.json;
+                            res.body.should.be.a('array');
+                            res.body.length.should.equal(2);
+                            res.body[0].VoteId.should.not.equal(0);
+                            res.body[0].PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+                            new Date(Date.parse(res.body[0].VoteDate)).toDateString().should.equal(new Date().toDateString());
+                            res.body[0].UntappdId.should.equal(12645);
+                            res.body[0].BeerName.should.equal('Trickster');
+                            res.body[0].Brewery.should.equal('Black Raven Brewing Company');
+                            // Save the ids for later test cases
+                            vote1Id = res.body[0].VoteId;
+                            vote2Id = res.body[1].VoteId;
+                            done();
+                        });
+                    });
+
+                    describe('Step 4: Verify that our votes appear in the votes tally', () => {
+
+                        it('should return 401 with no bearer token to /api/votes_tally', (done) => {
+                            chai.request(server)
+                            .get('/api/votes_tally')
+                            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                            .end((err: any, res: ChaiHttp.Response) => {
+                                res.should.have.status(401);
+                                done();
+                            })
+                        });
+
+                        it('should return current vote tally including cast votes for /api/votes_tally', (done) => {
+                            chai.request(server)
+                            .get('/api/votes_tally')
+                            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                            .end((err: any, res: ChaiHttp.Response) => {
+                                res.should.have.status(200);
+                                res.should.be.json;
+                                res.body.should.be.a('array');
+                                res.body.should.not.be.empty;
+                                var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
+                                tricksterVotes.should.not.be.undefined;
+                                tricksterVotes.BeerName.should.equal('Trickster');
+                                tricksterVotes.VoteCount.should.be.least(1);
+                                var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
+                                africanAmberVotes.should.not.be.undefined;
+                                africanAmberVotes.BeerName.should.equal('African Amber');
+                                africanAmberVotes.VoteCount.should.be.least(1);
+                                done();
+                            })
+                        });
+
+                        describe('Step 5: Install Trickster keg to verify that all Trickster votes are erased.', () => {
+                            it('should remove active votes when beer is installed for /api/votes_tally GET', function(done) {
+                                chai.request(server)
+                                .post('/api/kegs')
+                                .set('Authorization', 'Bearer ' + adminBearerToken)
+                                .send({
+                                    Name: 'Trickster',
+                                    Brewery: 'Black Raven Brewing Company',
+                                    BeerType: 'IPA - American',
+                                    ABV: 6.9,
+                                    IBU: 70,
+                                    BeerDescription: 'in mythology, the raven can play tricks or otherwise disobey normal rules, hence the name Trickster. this well-balanced IPA has a light fruit, citrus and piney hop aroma with a full hop flavor.',
+                                    UntappdId: 12645
+                                })
+                                .end((err: any, res: ChaiHttp.Response) => {
+                                    res.should.have.status(200);
+                                    // Now install the new keg on a tap
+                                    var kegId = res.body.KegId;
+                                    chai.request(server)
+                                    .put('/api/CurrentKeg/1')
+                                    .set('Authorization', 'Bearer ' + adminBearerToken)
+                                    .send({
+                                        KegId: kegId, 
+                                        KegSize: 19500
+                                    })
+                                    .end((err: any, res: ChaiHttp.Response) => {
+                                        res.should.have.status(200);
+                                        // Now validate that our previous trickster votes have been removed
+                                        chai.request(server)
+                                        .get('/api/votes_tally')
+                                        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                                        .end((err: any, res: ChaiHttp.Response) => {
+                                            res.should.have.status(200);
+                                            res.body.should.not.be.empty;
+                                            var tricksterVotes = res.body.find(tally => tally.UntappdId == 12645);
+                                            expect(tricksterVotes).to.be.undefined;
+                                            var africanAmberVotes = res.body.find(tally => tally.UntappdId == 6849);
+                                            africanAmberVotes.should.not.be.undefined;
+                                            africanAmberVotes.BeerName.should.equal('African Amber');
+                                            africanAmberVotes.VoteCount.should.be.least(1);
+                                            done();
+                                        });
+                                    });
+                                });
+                            });
+
+                            describe('Step 6: Validate that users votes for installed keg have been cleared', () => {
+                                it('should return only 1 vote for /api/votes/:user_id GET', (done) => {
+                                    chai.request(server)
+                                    .get('/api/votes/' + process.env.NonAdminPersonnelNumber)
+                                    .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                                    .end((err: any, res: ChaiHttp.Response) => {
+                                        res.should.have.status(200);
+                                        res.should.be.json;
+                                        res.body.should.be.a('array');
+                                        res.body.should.be.lengthOf(1);
+                                        res.body[0].VoteId.should.equal(vote2Id);
+                                        res.body[0].UntappdId.should.equal(6849);
+                                        done();
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 
     //TODO:

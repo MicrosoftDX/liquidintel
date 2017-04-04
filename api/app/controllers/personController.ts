@@ -2,10 +2,11 @@
 import express = require('express');
 import tds = require('../utils/tds-promises');
 import {TYPES} from 'tedious';
-import aad = require('../../ad')
+import aad = require('../utils/ad');
+import settings = require('../utils/settings_encoder');
 
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership((process.env.AuthorizedGroups || "").split(';'), token);
+var groupMembership = new aad.GraphGroupMembership(settings.decodeSettingArray(process.env.AuthorizedGroups), token);
 
 export async function getPersonByCardId(cardId: number, output: (resp:any) => express.Response) {
     try {

@@ -140,7 +140,7 @@ table tbody tr td.tableControl {
 .autocomplete-item .info {
     display: inline-block;
     vertical-align: top;
-    width: 180px;
+    width: 100%;
     padding-left: 8px;
     padding-top: 2px;
 }

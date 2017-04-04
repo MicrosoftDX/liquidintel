@@ -12,27 +12,26 @@
         <div class="panel-body">
             <p>Link your <a href="https://www.untappd.com" target="untappd">https://www.untappd.com</a> account to enable checkin on Untappd every time you pour beer at the DX venue.</p>
             <p>To link your Untappd account, click the 'Link Account' button below and then enter your Untappd user information.</p>
-            <p>To unlink your Untappd account, simply click the 'Disconnect' button.</p>
+            <p>To unlink your Untappd account, simply click the 'Disconnect Account' button.</p>
+            <div class="col-sm-2">
+                <a class="btn btn-default"
+                    ng-disabled="updateInProgress"
+                    data-ng-href="{{untappdAuthenticationUri}}">
+                    <img src="/content/untappd.jpg" height="40" />&nbsp;&nbsp;&nbsp;&nbsp;
+                    Link Account
+                </a>
+            </div>
+            <div class="col-sm-3">
+                <button type="button" 
+                        class="btn btn-default" 
+                        ng-disabled="updateInProgress || !systemUserInfo.UntappdUserName" 
+                        data-ng-click="disconnectUntappdUser()">
+                    <img height="40" />
+                    Disconnect Account
+                </button>
+            </div>
         </div>
-        <div class="col-sm-3">
-            <a class="btn btn-default"
-                ng-disabled="updateInProgress"
-                data-ng-href="{{untappdAuthenticationUri}}">
-                <img src="/content/untappd.jpg" height="40" />&nbsp;&nbsp;&nbsp;&nbsp;
-                Link Untappd Account
-            </a>
-        </div>
-        <div class="col-sm-3">
-            <button type="button" 
-                    class="btn btn-default" 
-                    ng-disabled="updateInProgress || !systemUserInfo.UntappdUserName" 
-                    data-ng-click="disconnectUntappdUser()">
-                <img height="40" />
-                Disconnect Untappd Account
-            </button>
-        </div>
-        <br/>
-        <br/>
+        <div class="panel-heading">Currently linked Uptappd Account Details</div>
         <br/>
         <table class="table table-striped">
             <tbody>

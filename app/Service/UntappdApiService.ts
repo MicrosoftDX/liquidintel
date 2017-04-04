@@ -2,6 +2,7 @@
 
 /// <reference path="../references/index.d.ts" />
 /// <reference path="./ConfigService.ts" />
+/// <reference path="../Model/BeerInfo.ts" />
 
 module DXLiquidIntel.App.Service {
 
@@ -33,7 +34,7 @@ module DXLiquidIntel.App.Service {
             }
         }
 
-        public async searchBeers(searchTerm: string, accessToken?: string): Promise<any> {
+        public async searchBeers(searchTerm: string, accessToken?: string): Promise<Model.BeerInfo[]> {
             let appConfig = await this.configService.getConfiguration();
             var data = {
                 entity: 'search',
@@ -48,7 +49,19 @@ module DXLiquidIntel.App.Service {
                 data['client_id'] = appConfig.UntappdClientId;
                 data['client_secret'] = appConfig.UntappdClientSecret;
             }
-            return await this.resourceClass.get(data).$promise;
+            var results = await this.resourceClass.get(data).$promise;
+            return results.response.beers.items.map((beer) => {
+                return {
+                    untappdId: beer.beer.bid,
+                    name: beer.beer.beer_name,
+                    beer_type: beer.beer.beer_style,
+                    ibu: beer.beer.beer_ibu,
+                    abv: beer.beer.beer_abv,
+                    description: beer.beer.beer_description,
+                    brewery: beer.brewery.brewery_name,
+                    image: beer.beer.beer_label
+                };
+            });
         }
     }
 }

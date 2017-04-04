@@ -32,24 +32,13 @@ module DXLiquidIntel.App.Controller {
             });
         }
 
-        private searchBeers(searchTerm: string): PromiseLike<any> {
-            return this.untappdService.searchBeers(searchTerm, this.$scope.systemUserInfo.UntappdAccessToken)
-                .then((resp) => {
-                    return resp.response.beers.items.map((beer) => {
-                        return {
-                            untappdId: beer.beer.bid,
-                            name: beer.beer.beer_name,
-                            ibu: beer.beer.beer_ibu,
-                            abv: beer.beer.beer_abv,
-                            description: beer.beer.beer_description,
-                            brewery: beer.brewery.brewery_name,
-                            image: beer.beer.beer_label
-                        };
-                    });
-                },
-                (reject) => {
-                    return "An error occured";
-                });
+        private async searchBeers(searchTerm: string): Promise<Model.BeerInfo[]> {
+            try {
+                return await this.untappdService.searchBeers(searchTerm, this.$scope.systemUserInfo.UntappdAccessToken);
+            }
+            catch (ex) {
+                return null;
+            }
         }
 
         private normalizeVotesArray(sourceVotes: Model.Vote[]): Model.Vote[] {

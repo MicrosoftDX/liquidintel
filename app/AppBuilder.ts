@@ -4,11 +4,17 @@
 /// <reference path="./Service/UserService.ts" />
 /// <reference path="./Service/VoteService.ts" />
 /// <reference path="./Service/DashboardService.ts" />
+/// <reference path="./Service/KegsService.ts" />
+/// <reference path="./Service/AdminService.ts" />
+/// <reference path="./Service/UntappdApiService.ts" />
+/// <reference path="./Service/ConfigService.ts" />
 /// <reference path="./Controller/UserController.ts" />
 /// <reference path="./Controller/VoteBeerController.ts" />
 /// <reference path="./Controller/VoteResultsController.ts" />
 /// <reference path="./Controller/AnalyticsController.ts" />
 /// <reference path="./Controller/HomeController.ts" />
+/// <reference path="./Controller/AuthorizedGroupsController.ts" />
+/// <reference path="./Controller/InstallKegsController.ts" />
 
 module DXLiquidIntel.App {
 
@@ -102,6 +108,22 @@ module DXLiquidIntel.App {
                                 requireADLogin: true,
                                 caseInsensitiveMatch: true,
                         })
+                        .when("/AuthorizedGroups",
+                            <adal.shared.INavRoute>{
+                                name: "AuthorizedGroups",
+                                controller: Controller.AuthorizedGroupsController,
+                                templateUrl: "/Views/AuthorizedGroups.html",
+                                requireADLogin: true,
+                                caseInsensitiveMatch: true,
+                        })
+                        .when("/InstallKegs",
+                            <adal.shared.INavRoute>{
+                                name: "InstallKegs",
+                                controller: Controller.InstallKegsController,
+                                templateUrl: "/Views/InstallKegs.html",
+                                requireADLogin: true,
+                                caseInsensitiveMatch: true,
+                        })
                         .otherwise(
                         {
                             redirectTo: "/Home"
@@ -115,7 +137,8 @@ module DXLiquidIntel.App {
                         anonymousEndpoints: [
                             envServiceProvider.read('apiUri') + '/CurrentKeg',
                             envServiceProvider.read('apiUri') + '/activity'
-                        ]
+                        ],
+                        extraQueryParameter: 'resource=https%3A%2F%2Fmanagement.core.windows.net%2F'
                     };
                     adalConfig.endpoints[envServiceProvider.read('apiUri')] = envServiceProvider.read('apiClientId');
                     adalProvider.init(adalConfig, $httpProvider);
@@ -125,6 +148,8 @@ module DXLiquidIntel.App {
             this.app.service('untappdService', Service.UntappdApiService);
             this.app.service('voteService', Service.VoteService);
             this.app.service('dashboardService', Service.DashboardService);
+            this.app.service('kegsService', Service.KegsService);
+            this.app.service('adminService', Service.AdminService);
             this.app.run(['$window', '$q', '$location', '$route', '$rootScope', ($window, $q, $location, $route, $rootScope) => {
                 // Make angular's promises the default as that will still integrate with angular's digest cycle after awaits
                 $window.Promise = $q;

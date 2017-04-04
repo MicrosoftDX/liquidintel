@@ -17,8 +17,10 @@ import kegController = require('./app/controllers/kegController');
 import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
 import votingController = require('./app/controllers/votingController');
+import adminController = require('./app/controllers/adminController');
 import queryExpression = require('./app/utils/query_expression');
 import adminUserCache = require('./app/utils/admin_user_cache');
+import settings = require('./app/utils/settings_encoder');
 require('./app/utils/array_async');
 
 var config = {
@@ -59,7 +61,7 @@ passport.use(new BasicStrategy(async (username, password, done) => {
 var aad_auth_options = {  
     identityMetadata: process.env.AADMetadataEndpoint,
     clientID: process.env.ClientId,  
-    audience: (process.env.AADAudience || "").split(';'),  
+    audience: settings.decodeSettingArray(process.env.AADAudience),  
     validateIssuer: true,  
 };
 // Strategy for any valid AAD user
@@ -145,6 +147,10 @@ router.route('/votes/:user_id')
 
 router.route('/votes_tally')
     .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => votingController.getVotesTally(resultDispatcher)))
+
+router.route('/admin/AuthorizedGroups')
+    .get(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => adminController.getAllowedGroups(req.query, resultDispatcher)))
+    .put(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => adminController.putAllowedGroups(req.body.AuthorizedGroups, req.headers.authorization, resultDispatcher)));
 
 app.use('/api', router);
 
