@@ -420,10 +420,10 @@ describe('testing api', function () {
                             personnelNumber: Number(process.env.NonAdminPersonnelNumber),
                             Taps: {
                                 "1": {
-                                    amount: 0
+                                    amount: 200
                                 },
                                 "2": {
-                                    amount: 210
+                                    amount: 0
                                 }
                             }
                         })
@@ -432,19 +432,19 @@ describe('testing api', function () {
                             res.should.be.json;
                             res.body.should.be.an('array');
                             res.body.length.should.equal(1);
-                            res.body[0].amount.should.equal(210);
+                            res.body[0].amount.should.equal(200);
                             done();
                         });
                     });
                     describe('Step 4: Validate that activity has reduced volume in keg', () => {
                         it('should have reduced keg volumne after activity /api/CurrentKeg GET', function (done) {
                             chai.request(server)
-                                .get('/api/CurrentKeg/1')
+                                .get('/api/CurrentKeg/2')
                                 .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
                                 .end((err, res) => {
                                 res.should.have.status(200);
                                 res.body.KegSize.should.equal(17000);
-                                res.body.CurrentVolume.should.equal(17000 - 155);
+                                res.body.CurrentVolume.should.equal(17000 - 210);
                                 done();
                             });
                         });
