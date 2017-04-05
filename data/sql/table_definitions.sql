@@ -10,9 +10,6 @@ IF OBJECT_ID('dbo.DimKeg', 'U') IS NOT NULL
 IF OBJECT_ID('dbo.DimTap', 'U') IS NOT NULL 
   DROP TABLE dbo.DimTap; 
 
-IF OBJECT_ID('dbo.SecurityTokens', 'U') IS NOT NULL 
-  DROP TABLE dbo.SecurityTokens; 
-
 IF OBJECT_ID('dbo.Users', 'U') IS NOT NULL 
   DROP TABLE dbo.Users; 
 
@@ -75,6 +72,9 @@ CREATE TABLE dbo.FactDrinkers(
  TapId int NOT NULL,
  KegId int NOT NULL,
  PourAmountInML INT NULL,
+ [UntappdCheckinId] int NULL,
+ [UntappdBadgeName] nvarchar(500) NULL,
+ [UntappdBadgeImageURL] nvarchar(1000) NULL,
  CONSTRAINT pk_FactDrinkers PRIMARY KEY(Id),
  CONSTRAINT fk_FactDrinkers_DimTap FOREIGN KEY(TapId) REFERENCES dbo.DimTap(Id),
  CONSTRAINT fk_FactDrinkers_DimKeg FOREIGN KEY(KegId) REFERENCES dbo.DimKeg(Id)
@@ -101,12 +101,6 @@ CREATE TABLE dbo.Users(
 CREATE INDEX IX_Users_UPN
 ON dbo.Users (UserPrincipalName);
 
-CREATE TABLE dbo.SecurityTokens(
- client_id nvarchar(400) not null,
- [api_key] nvarchar(1000) not null,
- [desc] nvarchar(2000) not null,
- CONSTRAINT pk_security PRIMARY KEY(client_id)
-)
 
 CREATE INDEX IX_CARD02CardKeyMappingS_SAPPersonnelNbr
 ON CARD02CardKeyMappingS

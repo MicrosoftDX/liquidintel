@@ -1,5 +1,5 @@
 
-export interface Session {
+export interface Activity {
     SessionId: number,
     PourTime: Date,
     PourAmount: number,
@@ -13,5 +13,8 @@ export interface Session {
     BeerImagePath?: string,
     PersonnelNumber: number,
     Alias?: string,
-    FullName?: string
+    FullName?: string,
+    UntappdCheckinId?: number,
+    UntappdBadgeName?: string,
+    UntappdBadgeImageURL?: string
 }

@@ -5,7 +5,7 @@ import {TYPES} from 'tedious';
 import queryExpression = require('../utils/query_expression');
 import kegController = require('./kegController');
 import untappd = require('../utils/untappd');
-import {Session} from '../models/Session';
+import {Activity} from '../models/Activity';
 
 export async function getSessions(sessionId: number, queryParams: queryExpression.QueryExpression, output: (resp:any) => express.Response) {
     try {
@@ -27,7 +27,7 @@ export async function getSessions(sessionId: number, queryParams: queryExpressio
     }
 }
 
-async function getSessions_internal(sessionId: number, queryParams: queryExpression.QueryExpression): Promise<Session[]> {
+async function getSessions_internal(sessionId: number, queryParams: queryExpression.QueryExpression): Promise<Activity[]> {
     try {
         queryParams.mapping = {
             'pourtime': {sqlName:'PourDateTime', dataType: TYPES.DateTime2},
@@ -81,7 +81,10 @@ async function getSessions_internal(sessionId: number, queryParams: queryExpress
                 BeerImagePath: row.imagePath,
                 PersonnelNumber: row.PersonnelNumber,
                 Alias: row.EmailName,
-                FullName: row.FullName
+                FullName: row.FullName,
+                UntappdCheckinId: row.UntappdCheckinId,
+                UntappdBadgeName: row.UntappdBadgeName,
+                UntappdBadgeImageURL: row.UntappdBadgeImageURL
             }});
     }
     catch (ex) {
@@ -124,7 +127,6 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 });
                 return newActivity[0];
             });
-
         // Now decrement the available volume in each of our kegs
         sqlStatement = "UPDATE FactKegInstall " + 
                         "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 

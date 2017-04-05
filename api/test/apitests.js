@@ -8,7 +8,9 @@ const request = require("request");
 var should = chai.should();
 var adminBearerToken;
 var nonAdminBearerToken;
-var newKegId;
+var newKegIdTapOne;
+var newKegIdTapTwo;
+var activityIds = [];
 function getAccessToken(refreshToken, next) {
     request.post({
         url: `https://login.microsoftonline.com/${process.env.Tenant}/oauth2/token`,
@@ -133,8 +135,7 @@ describe('testing api', function () {
                     BeerType: 'IPA',
                     ABV: 10.5,
                     IBU: 89,
-                    BeerDescription: 'This is a really nice, hoppy beer!',
-                    UntappdId: 12645
+                    BeerDescription: 'This is a really nice, hoppy beer!'
                 })
                     .end((err, res) => {
                     res.should.have.status(200);
@@ -145,7 +146,45 @@ describe('testing api', function () {
                     res.body.ABV.should.equal(10.5);
                     res.body.IBU.should.equal(89);
                     res.body.BeerDescription.should.not.be.empty;
-                    newKegId = res.body.KegId;
+                    newKegIdTapOne = res.body.KegId;
+                    done();
+                });
+            });
+            it('should add new keg with all attributes from Untappd regardless of what you pass into the body on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
+                    .set('Authorization', 'Bearer ' + adminBearerToken)
+                    .send({
+                    Name: 'test beer',
+                    Brewery: 'test brewery',
+                    BeerType: 'IPA',
+                    ABV: 10.5,
+                    IBU: 89,
+                    BeerDescription: 'This is a really nice, hoppy beer!',
+                    UntappdId: 12645
+                })
+                    .end((err, res) => {
+                    res.should.have.status(200);
+                    res.body.should.be.a('object');
+                    res.body.Name.should.equal('Trickster');
+                    res.body.Brewery.should.equal('Black Raven Brewing Company');
+                    res.body.BeerType.should.equal('IPA - American');
+                    res.body.ABV.should.equal(6.9);
+                    res.body.IBU.should.equal(70);
+                    res.body.BeerDescription.should.not.be.empty;
+                    newKegIdTapTwo = res.body.KegId;
+                    done();
+                });
+            });
+            it('should return a 400 error on invalid UntappdId on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
+                    .set('Authorization', 'Bearer ' + adminBearerToken)
+                    .send({
+                    UntappdId: 126131245
+                })
+                    .end((err, res) => {
+                    res.should.have.status(400);
                     done();
                 });
             });
@@ -209,19 +248,43 @@ describe('testing api', function () {
                         done();
                     });
                 });
+                it('should require adding kegSize when making previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                        KegId: newKegIdTapOne
+                    })
+                        .end((err, res) => {
+                        res.should.have.status(500);
+                        done();
+                    });
+                });
+                it('should require kegId in the body when making previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                        kegSize: 17000
+                    })
+                        .end((err, res) => {
+                        res.should.have.status(500);
+                        done();
+                    });
+                });
                 it('should make previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
                     chai.request(server)
                         .put('/api/CurrentKeg/1')
                         .set('Authorization', 'Bearer ' + adminBearerToken)
                         .send({
-                        KegId: newKegId,
+                        KegId: newKegIdTapOne,
                         KegSize: 17000
                     })
                         .end((err, res) => {
                         res.should.have.status(200);
                         res.body.should.be.a('object');
                         res.body.TapId.should.equal(1);
-                        res.body.KegId.should.equal(newKegId);
+                        res.body.KegId.should.equal(newKegIdTapOne);
                         res.body.KegSize.should.equal(17000);
                         res.body.CurrentVolume.should.equal(17000);
                         res.body.Name.should.equal('test beer');
@@ -229,6 +292,31 @@ describe('testing api', function () {
                         res.body.BeerType.should.equal('IPA');
                         res.body.ABV.should.equal(10.5);
                         res.body.IBU.should.equal(89);
+                        res.body.BeerDescription.should.not.be.empty;
+                        done();
+                    });
+                });
+                it('should make previously installed keg current for tap #2 /api/CurrentKeg/<id> PUT', function (done) {
+                    var tapId = 2;
+                    chai.request(server)
+                        .put('/api/CurrentKeg/' + tapId)
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                        KegId: newKegIdTapTwo,
+                        KegSize: 17000
+                    })
+                        .end((err, res) => {
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        res.body.TapId.should.equal(tapId);
+                        res.body.KegId.should.equal(newKegIdTapTwo);
+                        res.body.KegSize.should.equal(17000);
+                        res.body.CurrentVolume.should.equal(17000);
+                        res.body.Name.should.equal('Trickster');
+                        res.body.Brewery.should.equal('Black Raven Brewing Company');
+                        res.body.BeerType.should.equal('IPA - American');
+                        res.body.ABV.should.equal(6.9);
+                        res.body.IBU.should.equal(70);
                         res.body.BeerDescription.should.not.be.empty;
                         done();
                     });
@@ -256,6 +344,9 @@ describe('testing api', function () {
                             res.body[0].should.have.property('PersonnelNumber');
                             res.body[0].should.have.property('Alias');
                             res.body[0].should.have.property('FullName');
+                            res.body[0].should.have.property('UntappdCheckinId'),
+                                res.body[0].should.have.property('UntappdBadgeName'),
+                                res.body[0].should.have.property('UntappdBadgeImageURL');
                             done();
                         });
                     });
@@ -280,6 +371,9 @@ describe('testing api', function () {
                             res.body.should.have.property('PersonnelNumber');
                             res.body.should.have.property('Alias');
                             res.body.should.have.property('FullName');
+                            res.body.should.have.property('UntappdCheckinId'),
+                                res.body.should.have.property('UntappdBadgeName'),
+                                res.body.should.have.property('UntappdBadgeImageURL');
                             done();
                         });
                     });
@@ -289,7 +383,7 @@ describe('testing api', function () {
                             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
                             .send({
                             sessionTime: new Date().toISOString(),
-                            personnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                            personnelNumber: Number(process.env.AdminPersonnelNumber),
                             Taps: {
                                 "1": {
                                     amount: 155
@@ -312,6 +406,8 @@ describe('testing api', function () {
                             tapOne.amount.should.equal(155);
                             should.not.equal(tapTwo, null);
                             tapTwo.amount.should.equal(210);
+                            activityIds.push(tapOne.ActivityId);
+                            activityIds.push(tapTwo.ActivityId);
                             done();
                         });
                     });
@@ -349,6 +445,52 @@ describe('testing api', function () {
                                 res.should.have.status(200);
                                 res.body.KegSize.should.equal(17000);
                                 res.body.CurrentVolume.should.equal(17000 - 155);
+                                done();
+                            });
+                        });
+                    });
+                    describe('Step 5: Validate Untappd Checkin for both taps', () => {
+                        it('should only checkin with the beer that has an untappd id on /api/activity', function (done) {
+                            for (var activityid in activityIds) {
+                                chai.request(server)
+                                    .get('/api/activity/' + activityid)
+                                    .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                    .end((err, res) => {
+                                    res.should.have.status(200);
+                                    res.should.be.json;
+                                    res.body.should.have.property('UntappdId');
+                                    res.body.should.have.property('UntappdCheckinId');
+                                    if (!!res.body.UntappdId) {
+                                        should.not.equal(res.body.UntappdCheckinId, null);
+                                    }
+                                    else {
+                                        should.equal(res.body.UntappdCheckinId, null);
+                                    }
+                                });
+                            }
+                            done();
+                        });
+                        it('should not checkin with untappd when the consumption is 0 ml on /api/activity', function (done) {
+                            chai.request(server)
+                                .post('/api/activity')
+                                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                .send({
+                                sessionTime: new Date().toISOString(),
+                                personnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                                Taps: {
+                                    "1": {
+                                        amount: 0
+                                    },
+                                    "2": {
+                                        amount: 0
+                                    }
+                                }
+                            })
+                                .end((err, res) => {
+                                res.should.have.status(200);
+                                res.should.be.json;
+                                res.body.should.be.an('array');
+                                res.body.length.should.equal(0);
                                 done();
                             });
                         });
@@ -541,8 +683,8 @@ describe('testing api', function () {
             .set('Authorization', 'Bearer ' + nonAdminBearerToken)
             .send({
             PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
-            UntappdUserName: 'test_user',
-            UntappdAccessToken: '123456',
+            UntappdUserName: process.env.NonAdminAlias,
+            UntappdAccessToken: process.env.NonAdminUntappdAccessToken,
             CheckinFacebook: true,
             CheckinTwitter: false,
             CheckinFoursquare: true
@@ -552,7 +694,7 @@ describe('testing api', function () {
             res.should.be.json;
             res.body.should.have.property('PersonnelNumber');
             res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
-            res.body.UntappdUserName.should.equal('test_user');
+            res.body.UntappdUserName.should.equal(process.env.NonAdminAlias);
             done();
         });
     });
