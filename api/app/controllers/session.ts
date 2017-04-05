@@ -97,6 +97,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
     try {
         // Lookup our current keg info
         tapsInfo = await kegController.getCurrentKeg_Internal(null);
+        console.log('Got information from getCurrentKeg_Internal');
     }
     catch (ex) {
         return output({code:500, msg: "Failed to update session activity: " + ex});
@@ -127,6 +128,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 });
                 return newActivity[0];
             });
+        console.log('Filtered out activities that dont belong here.')
         // Now decrement the available volume in each of our kegs
         sqlStatement = "UPDATE FactKegInstall " + 
                         "SET currentVolumeInML = currentVolumeInML - @pourAmount " + 
@@ -149,6 +151,8 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 amount: activity.PourAmountInML
             }; 
         });
+
+        console.log('About to return a 200.');
         output({code: 200, msg: retval});
         return retval;
     }, 

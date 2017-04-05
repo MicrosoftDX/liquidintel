@@ -105,6 +105,7 @@ function postNewSession(body, output) {
         var tapsInfo;
         try {
             tapsInfo = yield kegController.getCurrentKeg_Internal(null);
+            console.log('Got information from getCurrentKeg_Internal');
         }
         catch (ex) {
             return output({ code: 500, msg: "Failed to update session activity: " + ex });
@@ -133,6 +134,7 @@ function postNewSession(body, output) {
                 });
                 return newActivity[0];
             }));
+            console.log('Filtered out activities that dont belong here.');
             sqlStatement = "UPDATE FactKegInstall " +
                 "SET currentVolumeInML = currentVolumeInML - @pourAmount " +
                 "WHERE KegId = @kegId AND isCurrent = 1";
@@ -154,6 +156,7 @@ function postNewSession(body, output) {
                     amount: activity.PourAmountInML
                 };
             });
+            console.log('About to return a 200.');
             output({ code: 200, msg: retval });
             return retval;
         }), (results) => {
