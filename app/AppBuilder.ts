@@ -146,8 +146,7 @@ module DXLiquidIntel.App {
                         anonymousEndpoints: [
                             envServiceProvider.read('apiUri') + '/CurrentKeg',
                             envServiceProvider.read('apiUri') + '/activity'
-                        ],
-                        extraQueryParameter: 'resource=https%3A%2F%2Fmanagement.core.windows.net%2F'
+                        ]
                     };
                     adalConfig.endpoints[envServiceProvider.read('apiUri')] = envServiceProvider.read('apiClientId');
                     adalProvider.init(adalConfig, $httpProvider);
