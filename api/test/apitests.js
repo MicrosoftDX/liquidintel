@@ -470,30 +470,6 @@ describe('testing api', function () {
                             }
                             done();
                         });
-                        it('should not checkin with untappd when the consumption is 0 ml on /api/activity', function (done) {
-                            chai.request(server)
-                                .post('/api/activity')
-                                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                                .send({
-                                sessionTime: new Date().toISOString(),
-                                personnelNumber: Number(process.env.NonAdminPersonnelNumber),
-                                Taps: {
-                                    "1": {
-                                        amount: 0
-                                    },
-                                    "2": {
-                                        amount: 0
-                                    }
-                                }
-                            })
-                                .end((err, res) => {
-                                res.should.have.status(200);
-                                res.should.be.json;
-                                res.body.should.be.an('array');
-                                res.body.length.should.equal(0);
-                                done();
-                            });
-                        });
                     });
                 });
             });
