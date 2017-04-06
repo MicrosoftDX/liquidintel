@@ -452,6 +452,7 @@ describe('testing api', function () {
                     describe('Step 5: Validate Untappd Checkin for both taps', () => {
                         it('should only checkin with the beer that has an untappd id on /api/activity', function (done) {
                             this.timeout(10000);
+                            var counter = 0;
                             setTimeout(() => {
                                 for (var activityId of activityIds) {
                                     chai.request(server)
@@ -468,9 +469,11 @@ describe('testing api', function () {
                                         else {
                                             should.equal(res.body.UntappdCheckinId, null);
                                         }
+                                        if (++counter >= activityIds.length) {
+                                            done();
+                                        }
                                     });
                                 }
-                                done();
                             }, 5000);
                         });
                         it('should not checkin with untappd when the consumption is 0 ml on /api/activity', function (done) {

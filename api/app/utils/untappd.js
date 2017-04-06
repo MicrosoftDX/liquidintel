@@ -78,7 +78,6 @@ function postSessionCheckin(sessions) {
                     return { activityId: session.Session.SessionId, untappdCheckin: checkinResp.response };
                 }
                 catch (ex) {
-                    console.log('Error Checking into Untappd: ', ex);
                     return null;
                 }
             }));
@@ -113,7 +112,6 @@ function postSessionCheckin(sessions) {
             }
         }
         catch (ex) {
-            console.log('Error while checking in: ', ex.toString());
             throw ex;
         }
     });

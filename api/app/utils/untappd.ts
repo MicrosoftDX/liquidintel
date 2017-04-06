@@ -1,8 +1,8 @@
 
 import tds = require('./tds-promises');
-import {TYPES} from 'tedious';
+import { TYPES } from 'tedious';
 import request_promise = require('request-promise');
-import {Activity} from '../models/Activity';
+import { Activity } from '../models/Activity';
 import moment = require('moment');
 import tz = require('moment-timezone');
 
@@ -56,20 +56,17 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
         if (!usersList) {
             return null;
         }
-    //    console.log('Getting the user information for users: ', usersList.toString());
-        var sqlStatement = "SELECT PersonnelNumber, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare " + 
-                           "FROM dbo.Users " + 
-                           "WHERE PersonnelNumber IN (SELECT value FROM string_split(@users, ',')) AND " + 
-                           "    UntappdAccessToken IS NOT NULL";
+        var sqlStatement = "SELECT PersonnelNumber, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare " +
+            "FROM dbo.Users " +
+            "WHERE PersonnelNumber IN (SELECT value FROM string_split(@users, ',')) AND " +
+            "    UntappdAccessToken IS NOT NULL";
         var users = await tds.default.sql(sqlStatement)
             .parameter('users', TYPES.NVarChar, usersList)
             .executeImmediate();
-        
-   //     console.log('Got the usersList: ', users.toString());
         var retVal = await sessions
-            .map((session: Activity) => { return {Session: session, User: users.find((user) => session.PersonnelNumber === user.PersonnelNumber)}; })
+            .map((session: Activity) => { return { Session: session, User: users.find((user) => session.PersonnelNumber === user.PersonnelNumber) }; })
             .filter(session => session.User && session.Session.UntappdId)
-            .mapAsync(async session => { 
+            .mapAsync(async session => {
                 var params = {
                     gmt_offset: new Date().getTimezoneOffset() / 60,
                     timezone: process.env.Timezone,
@@ -82,49 +79,47 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
                     foursquare: session.User.CheckinFoursquare
                 }
 
-                try{
-                   var checkin = await request_promise.post({
+                try {
+                    var checkin = await request_promise.post({
                         uri: `${untappdApiRoot}checkin/add?access_token=` + session.User.UntappdAccessToken,
                         form: params
                     });
-                   
-                   var checkinResp = JSON.parse(checkin);
-                   return {activityId: session.Session.SessionId, untappdCheckin: checkinResp.response}
+
+                    var checkinResp = JSON.parse(checkin);
+                    return { activityId: session.Session.SessionId, untappdCheckin: checkinResp.response }
                 }
-                catch(ex)
-                {
-                    console.log('Error Checking into Untappd: ', ex);
+                catch (ex) {
                     return null;
-                } 
+                }
             });
 
-        if(!!retVal && retVal.length>0){
+        if (!!retVal && retVal.length > 0) {
             sqlStatement = "UPDATE dbo.[FactDrinkers] " +
-                    "SET [UntappdCheckinId]=@checkinId, " + 
-                    "[UntappdBadgeName]=@badgeName, " + 
-                    "[UntappdBadgeImageURL]=@imageUrl " +
-                    "WHERE [Id]=@activityId";
+                "SET [UntappdCheckinId]=@checkinId, " +
+                "[UntappdBadgeName]=@badgeName, " +
+                "[UntappdBadgeImageURL]=@imageUrl " +
+                "WHERE [Id]=@activityId";
 
             var connection = new tds.TdsConnection();
             var updateUntappdCheckin = await connection.sql(sqlStatement)
                 .parameter('checkinId', TYPES.Int, null)
-                .parameter('badgeName', TYPES.NVarChar, null, {length:500})
-                .parameter('imageUrl', TYPES.NVarChar, null, {length: 1000})
+                .parameter('badgeName', TYPES.NVarChar, null, { length: 500 })
+                .parameter('imageUrl', TYPES.NVarChar, null, { length: 1000 })
                 .parameter('activityId', TYPES.Int, null)
                 .prepare();
-            
+
             await retVal.forEachAsync(async activity => {
                 var badgeName = null;
                 var imageUrl = null;
 
-                if(activity.untappdCheckin.badges.count>0){
+                if (activity.untappdCheckin.badges.count > 0) {
                     badgeName = activity.untappdCheckin.badges.items[0].badge_name;             //limiting to only the first badge
                     imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
                 }
 
                 await updateUntappdCheckin.execute(false, false, {
                     checkinId: activity.untappdCheckin.checkin_id,
-                    badgeName: badgeName,     
+                    badgeName: badgeName,
                     imageUrl: imageUrl,
                     activityId: activity.activityId
                 });
@@ -133,7 +128,6 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
         }
     }
     catch (ex) {
-        console.log('Error while checking in: ', ex.toString());
         throw ex;
     }
 }
