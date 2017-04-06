@@ -106,7 +106,24 @@ CREATE TABLE dbo.SecurityTokens(
  [api_key] nvarchar(1000) not null,
  [desc] nvarchar(2000) not null,
  CONSTRAINT pk_security PRIMARY KEY(client_id)
-)
+);
+
+CREATE TABLE dbo.PackageUpdates
+(
+	Id int NOT NULL IDENTITY (1, 1) PRIMARY KEY CLUSTERED,
+	PackageType nvarchar(50) NOT NULL,
+	PackageVersion decimal(18, 2) NOT NULL,
+	DisplayVersion nvarchar(25) NULL,
+	PackageUri nvarchar(2048) NULL,
+	Description nvarchar(MAX) NULL,
+  IsPublished bit default 0
+);
+
+CREATE UNIQUE NONCLUSTERED INDEX IX_PackageUpdates_PackageType_PackageVersion ON dbo.PackageUpdates
+(
+	PackageType,
+	PackageVersion
+) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON);
 
 CREATE INDEX IX_CARD02CardKeyMappingS_SAPPersonnelNbr
 ON CARD02CardKeyMappingS
