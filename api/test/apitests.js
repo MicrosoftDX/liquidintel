@@ -450,6 +450,29 @@ describe('testing api', function () {
                         });
                     });
                     describe('Step 5: Validate Untappd Checkin for both taps', () => {
+                        it('should only checkin with the beer that has an untappd id on /api/activity', function (done) {
+                            this.timeout(10000);
+                            setTimeout(() => {
+                                for (var activityId of activityIds) {
+                                    chai.request(server)
+                                        .get('/api/activity/' + activityId)
+                                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                        .end((err, res) => {
+                                        res.should.have.status(200);
+                                        res.should.be.json;
+                                        res.body.should.have.property('UntappdId');
+                                        res.body.should.have.property('UntappdCheckinId');
+                                        if (!!res.body.UntappdId) {
+                                            should.not.equal(res.body.UntappdCheckinId, null);
+                                        }
+                                        else {
+                                            should.equal(res.body.UntappdCheckinId, null);
+                                        }
+                                    });
+                                }
+                                done();
+                            }, 5000);
+                        });
                         it('should not checkin with untappd when the consumption is 0 ml on /api/activity', function (done) {
                             chai.request(server)
                                 .post('/api/activity/')
@@ -473,26 +496,6 @@ describe('testing api', function () {
                                 res.body.length.should.equal(0);
                                 done();
                             });
-                        });
-                        it('should only checkin with the beer that has an untappd id on /api/activity', function (done) {
-                            for (var activityid in activityIds) {
-                                chai.request(server)
-                                    .get('/api/activity/' + activityid)
-                                    .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                                    .end((err, res) => {
-                                    res.should.have.status(200);
-                                    res.should.be.json;
-                                    res.body.should.have.property('UntappdId');
-                                    res.body.should.have.property('UntappdCheckinId');
-                                    if (!!res.body.UntappdId) {
-                                        should.not.equal(res.body.UntappdCheckinId, null);
-                                    }
-                                    else {
-                                        should.equal(res.body.UntappdCheckinId, null);
-                                    }
-                                });
-                            }
-                            done();
                         });
                     });
                 });

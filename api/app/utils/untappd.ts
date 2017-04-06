@@ -56,6 +56,7 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
         if (!usersList) {
             return null;
         }
+    //    console.log('Getting the user information for users: ', usersList.toString());
         var sqlStatement = "SELECT PersonnelNumber, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare " + 
                            "FROM dbo.Users " + 
                            "WHERE PersonnelNumber IN (SELECT value FROM string_split(@users, ',')) AND " + 
@@ -63,7 +64,8 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
         var users = await tds.default.sql(sqlStatement)
             .parameter('users', TYPES.NVarChar, usersList)
             .executeImmediate();
-
+        
+   //     console.log('Got the usersList: ', users.toString());
         var retVal = await sessions
             .map((session: Activity) => { return {Session: session, User: users.find((user) => session.PersonnelNumber === user.PersonnelNumber)}; })
             .filter(session => session.User && session.Session.UntappdId)
@@ -96,40 +98,42 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
                 } 
             });
 
-        sqlStatement = "UPDATE dbo.[FactDrinkers] " +
-                       "SET [UntappdCheckinId]=@checkinId, " + 
-                       "[UntappdBadgeName]=@badgeName, " + 
-                       "[UntappdBadgeImageURL]=@imageUrl " +
-                       "WHERE [Id]=@activityId";
-        
-        var connection = new tds.TdsConnection();
-        var updateUntappdCheckin = await connection.sql(sqlStatement)
-            .parameter('checkinId', TYPES.Int, null)
-            .parameter('badgeName', TYPES.NVarChar, null, {length:500})
-            .parameter('imageUrl', TYPES.NVarChar, null, {length: 1000})
-            .parameter('activityId', TYPES.Int, null)
-            .prepare();
+        if(!!retVal && retVal.length>0){
+            sqlStatement = "UPDATE dbo.[FactDrinkers] " +
+                    "SET [UntappdCheckinId]=@checkinId, " + 
+                    "[UntappdBadgeName]=@badgeName, " + 
+                    "[UntappdBadgeImageURL]=@imageUrl " +
+                    "WHERE [Id]=@activityId";
 
-        await retVal.forEachAsync(async activity => {
-            var badgeName = null;
-            var imageUrl = null;
+            var connection = new tds.TdsConnection();
+            var updateUntappdCheckin = await connection.sql(sqlStatement)
+                .parameter('checkinId', TYPES.Int, null)
+                .parameter('badgeName', TYPES.NVarChar, null, {length:500})
+                .parameter('imageUrl', TYPES.NVarChar, null, {length: 1000})
+                .parameter('activityId', TYPES.Int, null)
+                .prepare();
+            
+            await retVal.forEachAsync(async activity => {
+                var badgeName = null;
+                var imageUrl = null;
 
-            if(activity.untappdCheckin.badges.count>0){
-                badgeName = activity.untappdCheckin.badges.items[0].badge_name;             //limiting to only the first badge
-                imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
-            }
+                if(activity.untappdCheckin.badges.count>0){
+                    badgeName = activity.untappdCheckin.badges.items[0].badge_name;             //limiting to only the first badge
+                    imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
+                }
 
-            await updateUntappdCheckin.execute(false, false, {
-                checkinId: activity.untappdCheckin.checkin_id,
-                badgeName: badgeName,     
-                imageUrl: imageUrl,
-                activityId: activity.activityId
+                await updateUntappdCheckin.execute(false, false, {
+                    checkinId: activity.untappdCheckin.checkin_id,
+                    badgeName: badgeName,     
+                    imageUrl: imageUrl,
+                    activityId: activity.activityId
+                });
             });
-        });
-
-        return await Promise.all(retVal);
+            return await Promise.all(retVal);
+        }
     }
     catch (ex) {
+        console.log('Error while checking in: ', ex.toString());
         throw ex;
     }
 }

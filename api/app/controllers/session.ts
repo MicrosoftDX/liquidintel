@@ -149,7 +149,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
                 amount: activity.PourAmountInML
             }; 
         });
-
+        
         output({code: 200, msg: retval});
         return retval;
     }, 

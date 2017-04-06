@@ -82,35 +82,38 @@ function postSessionCheckin(sessions) {
                     return null;
                 }
             }));
-            sqlStatement = "UPDATE dbo.[FactDrinkers] " +
-                "SET [UntappdCheckinId]=@checkinId, " +
-                "[UntappdBadgeName]=@badgeName, " +
-                "[UntappdBadgeImageURL]=@imageUrl " +
-                "WHERE [Id]=@activityId";
-            var connection = new tds.TdsConnection();
-            var updateUntappdCheckin = yield connection.sql(sqlStatement)
-                .parameter('checkinId', tedious_1.TYPES.Int, null)
-                .parameter('badgeName', tedious_1.TYPES.NVarChar, null, { length: 500 })
-                .parameter('imageUrl', tedious_1.TYPES.NVarChar, null, { length: 1000 })
-                .parameter('activityId', tedious_1.TYPES.Int, null)
-                .prepare();
-            yield retVal.forEachAsync((activity) => __awaiter(this, void 0, void 0, function* () {
-                var badgeName = null;
-                var imageUrl = null;
-                if (activity.untappdCheckin.badges.count > 0) {
-                    badgeName = activity.untappdCheckin.badges.items[0].badge_name;
-                    imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
-                }
-                yield updateUntappdCheckin.execute(false, false, {
-                    checkinId: activity.untappdCheckin.checkin_id,
-                    badgeName: badgeName,
-                    imageUrl: imageUrl,
-                    activityId: activity.activityId
-                });
-            }));
-            return yield Promise.all(retVal);
+            if (!!retVal && retVal.length > 0) {
+                sqlStatement = "UPDATE dbo.[FactDrinkers] " +
+                    "SET [UntappdCheckinId]=@checkinId, " +
+                    "[UntappdBadgeName]=@badgeName, " +
+                    "[UntappdBadgeImageURL]=@imageUrl " +
+                    "WHERE [Id]=@activityId";
+                var connection = new tds.TdsConnection();
+                var updateUntappdCheckin = yield connection.sql(sqlStatement)
+                    .parameter('checkinId', tedious_1.TYPES.Int, null)
+                    .parameter('badgeName', tedious_1.TYPES.NVarChar, null, { length: 500 })
+                    .parameter('imageUrl', tedious_1.TYPES.NVarChar, null, { length: 1000 })
+                    .parameter('activityId', tedious_1.TYPES.Int, null)
+                    .prepare();
+                yield retVal.forEachAsync((activity) => __awaiter(this, void 0, void 0, function* () {
+                    var badgeName = null;
+                    var imageUrl = null;
+                    if (activity.untappdCheckin.badges.count > 0) {
+                        badgeName = activity.untappdCheckin.badges.items[0].badge_name;
+                        imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
+                    }
+                    yield updateUntappdCheckin.execute(false, false, {
+                        checkinId: activity.untappdCheckin.checkin_id,
+                        badgeName: badgeName,
+                        imageUrl: imageUrl,
+                        activityId: activity.activityId
+                    });
+                }));
+                return yield Promise.all(retVal);
+            }
         }
         catch (ex) {
+            console.log('Error while checking in: ', ex.toString());
             throw ex;
         }
     });
