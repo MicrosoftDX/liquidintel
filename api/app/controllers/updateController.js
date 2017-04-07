@@ -15,31 +15,87 @@ var packageTypeUris = new Map(Object.keys(_tmp)
     .map((packageType) => [packageType.toLowerCase(), _tmp[packageType]]));
 var xml2jsOptions = xml2js.defaults['0.2'];
 xml2jsOptions.explicitArray = false;
+function updateUrl(baseUrl, path, filename) {
+    var urlCopy = Object.assign({}, baseUrl);
+    var pathSegments = urlCopy.pathname.split('/');
+    pathSegments = pathSegments.concat(path.split('/'));
+    if (filename) {
+        pathSegments.push(filename);
+    }
+    urlCopy.path = urlCopy.pathname = '/' + pathSegments
+        .filter(segment => !!segment)
+        .join('/');
+    urlCopy.href = '';
+    return urlCopy;
+}
+function transformXmlResponse(body) {
+    var transformedResult;
+    xml2js.parseString(body, xml2jsOptions, (err, result) => {
+        transformedResult = result;
+    });
+    return transformedResult;
+}
 function getAvailableUpdates(packageType, queryParams, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             packageType = packageType.toLowerCase();
             if (!packageTypeUris.has(packageType)) {
-                return output({ code: 400, msg: 'Package update feature has not be enabled on this server.' });
+                return output({ code: 404, msg: 'Package type not found.' });
             }
             var packageRepoUri = url.parse(packageTypeUris.get(packageType), true);
-            packageRepoUri.query.restype = 'container';
-            packageRepoUri.query.comp = 'list';
-            packageRepoUri.query.delimiter = '/';
-            packageRepoUri.query.include = 'metadata';
-            packageRepoUri.search = undefined;
+            var packageListUri = Object.assign({}, packageRepoUri);
+            packageListUri.query.restype = 'container';
+            packageListUri.query.comp = 'list';
+            packageListUri.query.delimiter = '/';
+            packageListUri.query.include = 'metadata';
+            packageListUri.search = undefined;
             let dirList = yield request_promise({
-                uri: url.format(packageRepoUri),
-                transform: (body, response) => {
-                    var transformedResult;
-                    xml2js.parseString(body, xml2jsOptions, (err, result) => {
-                        transformedResult = result;
-                    });
-                    return transformedResult;
-                },
+                uri: url.format(packageListUri),
+                transform: transformXmlResponse,
                 transform2xxOnly: true
             }).promise();
-            console.log(dirList.EnumerationResults.Blobs);
+            var manifestList = yield Promise.all(dirList.EnumerationResults.Blobs.BlobPrefix
+                .map(dirName => {
+                return request_promise.get({
+                    uri: url.format(updateUrl(packageRepoUri, dirName.Name, 'package.manifest')),
+                    json: true
+                })
+                    .then(value => {
+                    return {
+                        VersionNumber: value.versionNumber || 0.0,
+                        Version: value.version,
+                        Description: value.description,
+                        IsPublished: !!value.isPublished,
+                        PackageUri: url.format(updateUrl(packageRepoUri, dirName.Name, value.packageFile)),
+                        Configuration: value.configuration
+                    };
+                })
+                    .catch(reason => {
+                    if (reason.statusCode != 404) {
+                        console.warn(`Failed to get contents for package type: ${packageType}, path: ${dirName}. Details: ${reason.message}`);
+                    }
+                    return null;
+                });
+            }));
+            var includeUnpublished = queryParams.params['include-unpublished'] ? Boolean(JSON.parse(queryParams.params['include-unpublished'].value)) : false;
+            var retval = manifestList
+                .filter((manifest) => manifest &&
+                manifest.VersionNumber >= Number(queryParams.params['min-version'] ? queryParams.params['min-version'].value : 0.0) &&
+                (includeUnpublished ? true : manifest.IsPublished))
+                .sort((lhs, rhs) => lhs.VersionNumber < rhs.VersionNumber ? -1 : lhs.VersionNumber == rhs.VersionNumber ? 0 : 1)
+                .map((manifest) => {
+                var retval = {
+                    Version: manifest.Version,
+                    Description: manifest.Description,
+                    PackageUri: manifest.PackageUri,
+                    Configuration: manifest.Configuration
+                };
+                if (includeUnpublished) {
+                    retval["IsPublished"] = manifest.IsPublished;
+                }
+                return retval;
+            });
+            output({ code: 200, msg: retval });
         }
         catch (ex) {
             var message = `Failed to enumerate update repository for package type: ${packageType}. Details: ${ex}`;

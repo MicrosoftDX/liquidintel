@@ -591,5 +591,86 @@ describe('testing api', function () {
             done();
         });
     });
+    describe('Package server tests', function () {
+        it('should return 401 with no auth for /api/updates/iocontroller GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/iocontroller')
+                .end((err, res) => {
+                res.should.have.status(401);
+                done();
+            });
+        });
+        it('should return 404 with unknown package for /api/updates/foobar GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/foobar')
+                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                .end((err, res) => {
+                res.should.have.status(404);
+                done();
+            });
+        });
+        it('should return full list of published packages for /api/updates/IOController GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController')
+                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                .end((err, res) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                res.body.length.should.be.equal(2);
+                res.body.should.have.deep.property('[0].Version', 'v0.1');
+                res.body.should.have.deep.property('[1].Version', 'v0.3');
+                res.body.should.have.deep.property('[1].Configuration');
+                res.body.should.have.deep.property('[1].PackageUri')
+                    .that.includes('https://dxliquidintelupdate.blob.core.windows.net/iocontroller-test/v0.3/IOController.tar.gz');
+                done();
+            });
+        });
+        it('should return full list of published and unpublished packages for /api/updates/IOController?include-unpublished=true GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController?include-unpublished=true')
+                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                .end((err, res) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                res.body.length.should.be.equal(3);
+                res.body.should.have.deep.property('[0].IsPublished', true);
+                res.body.should.have.deep.property('[2].Version', 'v0.4');
+                res.body.should.have.deep.property('[2].IsPublished', false);
+                done();
+            });
+        });
+        it('should return minimal list of published packages for /api/updates/IOController?min-version=0.2&include-unpublished=false GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController?min-version=0.2&include-unpublished=false')
+                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                .end((err, res) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                res.body.length.should.be.equal(1);
+                res.body.should.have.deep.property('[0].Version', 'v0.3');
+                res.body.should.not.have.deep.property('[0].IsPublished');
+                done();
+            });
+        });
+        it('should return minimal list of published and unpublished packages for /api/updates/IOController?include-unpublished=true&min-version=0.2 GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController?include-unpublished=true&min-version=0.2')
+                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                .end((err, res) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                res.body.length.should.be.equal(2);
+                res.body.should.have.deep.property('[0].Version', 'v0.3');
+                res.body.should.have.deep.property('[0].IsPublished', true);
+                res.body.should.have.deep.property('[1].Version', 'v0.4');
+                res.body.should.have.deep.property('[1].IsPublished', false);
+                done();
+            });
+        });
+    });
 });
 //# sourceMappingURL=apitests.js.map
