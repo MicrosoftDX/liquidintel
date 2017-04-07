@@ -720,7 +720,7 @@ describe('testing api', function() {
                     done();
                 })
         });
-    }
+    });
 
     //TODO:
     // - Test PUT to kegFinished

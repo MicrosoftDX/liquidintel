@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 require('mocha');
 const chai = require("chai");
 var chaiHttp = require('chai-http');
