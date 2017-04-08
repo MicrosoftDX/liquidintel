@@ -673,7 +673,7 @@ describe('testing api', function() {
                 })
         });
         
-        it('should return full list of published and unpublished packages for /api/updates/IOController?include-unpublished=true GET', (done) => {
+        it('should return full list of published and unpublished packages for /api/updates/IOController GET', (done) => {
             chai.request(server)
                 .get('/api/updates/IOController?include-unpublished=true')
                 .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
@@ -689,7 +689,7 @@ describe('testing api', function() {
                 })
         });
 
-        it('should return minimal list of published packages for /api/updates/IOController?min-version=0.2&include-unpublished=false GET', (done) => {
+        it('should return minimal list of published packages for /api/updates/IOController GET', (done) => {
             chai.request(server)
                 .get('/api/updates/IOController?min-version=0.2&include-unpublished=false')
                 .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
@@ -704,7 +704,7 @@ describe('testing api', function() {
                 })
         });
 
-        it('should return minimal list of published and unpublished packages for /api/updates/IOController?include-unpublished=true&min-version=0.2 GET', (done) => {
+        it('should return minimal list of published and unpublished packages for /api/updates/IOController GET', (done) => {
             chai.request(server)
                 .get('/api/updates/IOController?include-unpublished=true&min-version=0.2')
                 .set('Authorization', 'Bearer ' + nonAdminBearerToken)
@@ -717,6 +717,38 @@ describe('testing api', function() {
                     res.body.should.have.deep.property('[0].IsPublished', true);
                     res.body.should.have.deep.property('[1].Version', 'v0.4');
                     res.body.should.have.deep.property('[1].IsPublished', false);
+                    done();
+                })
+        });
+
+        it('should return list of published and unpublished packages filtered by semver for /api/updates/IOController GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController?include-unpublished=true&min-version=v0.2')
+                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(200);
+                    res.should.be.json
+                    res.body.should.be.a('array');
+                    res.body.length.should.be.equal(2);
+                    res.body.should.have.deep.property('[0].Version', 'v0.3');
+                    res.body.should.have.deep.property('[0].IsPublished', true);
+                    res.body.should.have.deep.property('[1].Version', 'v0.4');
+                    res.body.should.have.deep.property('[1].IsPublished', false);
+                    done();
+                })
+        });
+
+        it('should return list of published and unpublished packages greater than specified semver for /api/updates/IOController GET', (done) => {
+            chai.request(server)
+                .get('/api/updates/IOController?include-unpublished=true&min-version_gt=0.3')
+                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                .end((err: any, res: ChaiHttp.Response) => {
+                    res.should.have.status(200);
+                    res.should.be.json
+                    res.body.should.be.a('array');
+                    res.body.length.should.be.equal(1);
+                    res.body.should.have.deep.property('[0].Version', 'v0.4');
+                    res.body.should.have.deep.property('[0].IsPublished', false);
                     done();
                 })
         });

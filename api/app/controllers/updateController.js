@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+const queryExpression = require("../utils/query_expression");
 const request_promise = require("request-promise");
 const url = require("url");
 const xml2js = require("xml2js");
@@ -78,9 +79,27 @@ function getAvailableUpdates(packageType, queryParams, output) {
                 });
             }));
             var includeUnpublished = queryParams.params['include-unpublished'] ? Boolean(JSON.parse(queryParams.params['include-unpublished'].value)) : false;
+            var minVersionExpr = 'true';
+            var minVersionParam = queryParams.params['min-version'];
+            if (minVersionParam) {
+                var minVersionValue = minVersionParam.value;
+                if (minVersionValue[0] == 'v') {
+                    minVersionValue = minVersionValue.slice(1);
+                }
+                var comparitor = '>=';
+                switch (minVersionParam.operator) {
+                    case queryExpression.Operators.GreaterThan:
+                        comparitor = ">";
+                        break;
+                    case queryExpression.Operators.LessThan:
+                        comparitor = "<";
+                        break;
+                }
+                minVersionExpr = `manifest.VersionNumber ${comparitor} ${minVersionValue}`;
+            }
             var retval = manifestList
                 .filter((manifest) => manifest &&
-                manifest.VersionNumber >= Number(queryParams.params['min-version'] ? queryParams.params['min-version'].value : 0.0) &&
+                eval(minVersionExpr) &&
                 (includeUnpublished ? true : manifest.IsPublished))
                 .sort((lhs, rhs) => lhs.VersionNumber < rhs.VersionNumber ? -1 : lhs.VersionNumber == rhs.VersionNumber ? 0 : 1)
                 .map((manifest) => {

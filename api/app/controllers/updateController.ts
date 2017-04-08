@@ -88,9 +88,31 @@ export async function getAvailableUpdates(packageType: string, queryParams: quer
                 });
             }));
         var includeUnpublished = queryParams.params['include-unpublished'] ? Boolean(JSON.parse(queryParams.params['include-unpublished'].value)) : false;
+        var minVersionExpr = 'true';
+        var minVersionParam = queryParams.params['min-version'];
+        if (minVersionParam) {
+            // The value is specified as a semantic version string (eg. v1.3). Convert this to a number for comparison against
+            // manifest version numbers.
+            var minVersionValue: string = minVersionParam.value;
+            if (minVersionValue[0] == 'v') {
+                minVersionValue = minVersionValue.slice(1);
+            }
+            // Default is GreaterThanOrEqual
+            var comparitor = '>=';
+            switch (minVersionParam.operator) {
+                case queryExpression.Operators.GreaterThan:
+                    comparitor = ">";
+                    break;
+
+                case queryExpression.Operators.LessThan:
+                    comparitor = "<";
+                    break;
+            }
+            minVersionExpr = `manifest.VersionNumber ${comparitor} ${minVersionValue}`;
+        }
         var retval = manifestList
             .filter((manifest: Manifest) => manifest && 
-                                            manifest.VersionNumber >= Number(queryParams.params['min-version'] ? queryParams.params['min-version'].value : 0.0) &&
+                                            eval(minVersionExpr) &&
                                             (includeUnpublished ? true : manifest.IsPublished))
             .sort((lhs: Manifest, rhs: Manifest) => lhs.VersionNumber < rhs.VersionNumber ? -1 : lhs.VersionNumber == rhs.VersionNumber ? 0 : 1)
             .map((manifest: Manifest) => {
