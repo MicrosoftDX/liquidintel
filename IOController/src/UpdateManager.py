@@ -1,5 +1,6 @@
 
 import os, sys, logging, threading, tempfile, shutil, tarfile, inspect
+from ConfigParser import RawConfigParser
 import requests
 from DXLiquidIntelApi import DXLiquidIntelApi
 
@@ -56,6 +57,24 @@ class UpdateManager:
                     if os.path.exists(currentSymlink):
                         os.remove(currentSymlink)
                     os.symlink(newInstallDir, currentSymlink)
+                # Check if this version has any configuration that we need to apply locally
+                if 'Configuration' in installPackage and installPackage['Configuration']:
+                    configFile = os.path.join(newInstallDir, 'IOController.cfg')
+                    log.info('Writing version-specific configuration to: %s', configFile)
+                    config = RawConfigParser()
+                    # Convert from JSON form to .INI form by intepreting all object values as sections
+                    # and all others as primitive values in the parent section
+                    # Top level should be section names with values
+                    for (section, values) in installPackage['Configuration'].items():
+                        if not isinstance(values, dict):
+                            log.warning('Package configuration for keg/section: %s does not contain an object. Non-objects are not supported.', section);
+                        else:
+                            config.add_section(section)
+                            for (setting, value) in values.items():
+                                config.set(section, setting, value)
+                    with open(configFile, 'w') as fd:
+                        config.write(fd)
+
                 self._restartRequired = True
                 # No need to restart the timer as we're bailing on the next main loop iteration
                 restartTimer = False
