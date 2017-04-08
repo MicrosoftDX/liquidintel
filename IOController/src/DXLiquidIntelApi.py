@@ -70,6 +70,16 @@ class DXLiquidIntelApi(object):
         log.info('Session info for user: %d:%s added with activities: %s', user.personnelId, user.fullName, str([activity['ActivityId'] for activity in userReq.json()]))
         return True
 
+    def _getInstallationPackages(self, currentVersion, packageType, checkUnpublished, timeout):
+        packagesUri = URL(self.apiEndPoint.value)   \
+            .add_path_segment('updates')    \
+            .add_path_segment(packageType)  \
+            .append_query_param('min-version_gt', currentVersion)   \
+            .append_query_param('include-unpublished', 'true' if checkUnpublished else 'false')
+        availablePackages = requests.get(packagesUri.as_string(), auth=HTTPBasicAuth(self._apiUser.value, self._apiKey.value), timeout=timeout)
+        availablePackages.raise_for_status()
+        return availablePackages.json()
+
     def isUserAuthenticated(self, cardId):
         return self._retryWrapper('Failed to check user validity. User card id: {0}'.format(cardId), (False, None, None), partial(self._isUserAuthenticatedImpl, cardId))
 
@@ -78,3 +88,6 @@ class DXLiquidIntelApi(object):
 
     def sendSessionDetails(self, user, sessionTime, tapsCounters):
         return self._retryWrapper('Failed to write session details to service. User: {0}:{1}'.format(user.personnelId, user.fullName), False, partial(self._sendSessionDetails, user, sessionTime, tapsCounters))
+
+    def getInstallationPackages(self, currentVersion, packageType, checkUnpublished):
+        return self._retryWrapper('Failed to retrieve list of installation packages', None, partial(self._getInstallationPackages, currentVersion, packageType, checkUnpublished))

@@ -39,9 +39,6 @@ class PCProx(object):
         def endSession(self):
             # Return LED control back to automatic & beep the end of the session
             self._pcProx._Z23setLEDCtrl_bAppCtrlsLEDs(0)
-            self._pcProx._Z20setLEDCtrl_bVolatiles(0)
-            self._pcProx._Z23setLEDCtrl_iRedLEDStates(0)
-            self._pcProx._Z23setLEDCtrl_iGrnLEDStates(0)
             self.beepEndSession()
             return 0
             
