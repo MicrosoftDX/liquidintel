@@ -8,7 +8,7 @@
         <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
     </div>
     <div class="panel panel-default">
-        <div class="panel-heading">Uptappd Integration</div>
+        <div class="panel-heading">Untappd Integration</div>
         <div class="panel-body">
             <p>Link your <a href="https://www.untappd.com" target="untappd">https://www.untappd.com</a> account to enable checkin on Untappd every time you pour beer at the DX venue.</p>
             <p>To link your Untappd account, click the 'Link Account' button below and then enter your Untappd user information.</p>
@@ -31,10 +31,33 @@
                 </button>
             </div>
         </div>
-        <div class="panel-heading">Currently linked Uptappd Account Details</div>
+        <div class="panel-heading">Currently linked Untappd Account Details</div>
         <br/>
         <table class="table table-striped">
             <tbody>
+                <tr>
+                    <td>
+                        <div class="col-sm-2">
+                            <label class="form-control-label form-group">Post to Networks:</label>
+                        </div>
+                        <div class="col-sm-7">
+                            <label class="checkbox-inline">
+                                <input type="checkbox" 
+                                       ng-model="systemUserInfo.CheckinFacebook" 
+                                       ng-disabled="updateInProgress || !systemUserInfo || !systemUserInfo.UntappdUserName"> Facebook
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" 
+                                       ng-model="systemUserInfo.CheckinTwitter"
+                                       ng-disabled="updateInProgress || !systemUserInfo || !systemUserInfo.UntappdUserName"> Twitter
+                            </label>
+                            <label class="checkbox-inline">
+                                <input type="checkbox" 
+                                       ng-model="systemUserInfo.CheckinFoursquare"
+                                       ng-disabled="updateInProgress || !systemUserInfo || !systemUserInfo.UntappdUserName"> Foursquare
+                            </label>                        
+                        </div>
+                    </td>
                 <tr>
                     <td>
                         <div class="col-sm-2">
