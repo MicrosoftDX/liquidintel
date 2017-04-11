@@ -11,11 +11,13 @@ from UserCache import UserCache
 from User import User
 from KegIO import Kegerator
 from BeerSession import SessionManager
+from UpdateManager import UpdateManager
 
 argsparser = argparse.ArgumentParser()
 argsparser.add_argument('-c', '--config', action='append')
 argsparser.add_argument('-l', '--logConfig')
 argsparser.add_argument('-L', '--loglevel', default='INFO')
+argsparser.add_argument('--installDir', default='')
 args = argsparser.parse_args()
 
 # Configure logging - either from a config file or manually
@@ -29,7 +31,7 @@ else:
     lh.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
     log.addHandler(lh)
 
-log.info('Start IOController process.')
+log.info('Booting IOController process.')
 config = IOControllerConfig(args.config)
 
 stop_event = multiprocessing.Event()
@@ -40,9 +42,11 @@ liquidApi = DXLiquidIntelApi(apiEndPoint=config.apiBaseUri, apiUser=config.apiUs
 kegIO = Kegerator(config.tapsConfig)
 sessionManager = SessionManager(prox, kegIO, liquidApi, config.sessionTimeout, config.inactivityTimeout)
 userCache = UserCache(liquidApi, config.userCacheTtl)
-with kegIO, userCache:
+updateManager = UpdateManager(liquidApi, config.installPackageType, config.installPrereleasePackages, config.packageCheckInterval, args.installDir)
+log.info('Running IOController version: %s.', updateManager.semanticVersion)
+with kegIO, userCache, updateManager:
     prox.beepEndSession()
-    while not stop_event.is_set():
+    while not stop_event.is_set() and not updateManager.restartRequired:
         cardId = sessionManager.apply()
         if cardId != 0:
             log.debug('Card: %d has been read from reader', cardId)
@@ -66,4 +70,4 @@ with kegIO, userCache:
             time.sleep(1)
     prox.beepEndSession()
 
-log.info('End IOController - due to SIGTERM')
+log.info('End IOController - normal shutdown')

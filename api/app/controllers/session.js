@@ -119,7 +119,7 @@ function postNewSession(body, output) {
                 .prepare();
             var newActivities = yield tapsInfo
                 .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
-                body.Taps[tapInfo.TapId.toString()].amount > 0)
+                body.Taps[tapInfo.TapId.toString()].amount > 20)
                 .mapAsync((tapInfo) => __awaiter(this, void 0, void 0, function* () {
                 let newActivity = yield insertDrinkers.execute(false, false, {
                     pourTime: new Date(body.sessionTime),

@@ -1,0 +1,1990 @@
+﻿<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="3/7/2017 12:15:41 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="JAMESBAK14"
+  DTS:CreatorName="REDMOND\jamesbak"
+  DTS:DelayValidation="True"
+  DTS:Description="SSIS Package Description"
+  DTS:DTSID="{DA8EEBB7-E174-44CB-B346-5670E2B7F799}"
+  DTS:EnableConfig="True"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="13.0.2165.0"
+  DTS:LocaleID="1033"
+  DTS:MaxErrorCount="0"
+  DTS:ObjectName="CardMappingAndPeople"
+  DTS:VersionBuild="32"
+  DTS:VersionGUID="{8B8A2801-6BF4-473C-ABA2-73265ECDF48E}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{BCE0499E-2EC9-40D1-9FDB-146B4A40608D}"
+      DTS:ObjectName="DestinationConnectionOLEDB">
+      <DTS:PropertyExpression
+        DTS:Name="InitialCatalog">@[User::Destination_Database]</DTS:PropertyExpression>
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=dxliquidintel.database.windows.net;User ID=azuresub;Initial Catalog=dxliquidintel-test;Provider=SQLOLEDB.1;Persist Security Info=True;Application Name=SSIS-CardMappingAndPeople-{BCE0499E-2EC9-40D1-9FDB-146B4A40608D}DestinationConnectionOLEDB;">
+          <DTS:Password
+            DTS:Name="Password"
+            Sensitive="1"
+            Encrypted="1">AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAHVMxCvmEzESKFi+5imTmvQAAAAAIAAAARABUAFMAAAADZgAAwAAAABAAAACxuk99xJSe6x9VHB4/lkd4AAAAAASAAACgAAAAEAAAAAWkpRQcy1Zte+GRvnKXPY8YAAAAfqulheoiktwAFGz50PH5K2ShC2UOwgFKFAAAANKaYu1x0wmlkKKyu7x+bsFvVOEL</DTS:Password>
+        </DTS:ConnectionManager>
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[package.log]"
+      DTS:CreationName="FILE"
+      DTS:DTSID="{517A9DD1-C120-456E-967B-41FA04D915E2}"
+      DTS:ObjectName="package.log">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString=".\package.log" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[SourceConnectionOLEDB]"
+      DTS:CreationName="OLEDB"
+      DTS:DTSID="{07691D03-CDEE-4D2A-9705-EE9A09047B5C}"
+      DTS:ObjectName="SourceConnectionOLEDB">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=(local);Initial Catalog=DataMallClient;Provider=SQLNCLI11;Integrated Security=SSPI;Auto Translate=false;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:LogProviders>
+    <DTS:LogProvider
+      DTS:ConfigString="package.log"
+      DTS:CreationName="Microsoft.LogProviderTextFile"
+      DTS:Description="Writes log entries for events to a CSV file"
+      DTS:DTSID="{EFE6BE86-2ABE-427E-8AD8-97628E873E64}"
+      DTS:ObjectName="SSIS log provider for Text files">
+      <DTS:ObjectData>
+        <InnerObject />
+      </DTS:ObjectData>
+    </DTS:LogProvider>
+  </DTS:LogProviders>
+  <DTS:Variables>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{B832CF24-AA6D-4D59-A656-A4074BD3875B}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="Destination_Database">
+      <DTS:VariableValue
+        DTS:DataType="8">dxliquidintel-test</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable
+      DTS:CreationName=""
+      DTS:DTSID="{B6C1FE08-8049-48CC-B82D-190C6FEBC88D}"
+      DTS:IncludeInDebugDump="2345"
+      DTS:Namespace="User"
+      DTS:ObjectName="Perform_Sync">
+      <DTS:VariableValue
+        DTS:DataType="11">-1</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:LoggingOptions
+    DTS:FilterKind="0"
+    DTS:LoggingMode="1">
+    <DTS:SelectedLogProviders>
+      <DTS:SelectedLogProvider
+        DTS:InstanceID="{EFE6BE86-2ABE-427E-8AD8-97628E873E64}" />
+    </DTS:SelectedLogProviders>
+  </DTS:LoggingOptions>
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Copy Data to Staging Tables"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:DelayValidation="True"
+      DTS:DTSID="{5775CEB4-27F0-4F53-B5B3-ED92784330B0}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:FailPackageOnFailure="True"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Copy Data to Staging Tables"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:LoggingOptions
+        DTS:FilterKind="0" />
+      <DTS:ObjectData>
+        <pipeline
+          defaultBufferSize="3145728"
+          version="1">
+          <components>
+            <component
+              refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Destination - CARD02CardKeyMappingStaging"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[CARD02CardKeyMappingStaging]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].Columns[CardKeyNbr]"
+                      cachedDataType="i4"
+                      cachedName="CardKeyNbr"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[CardKeyNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[CardKeyNbr]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].Columns[RegistrarId]"
+                      cachedDataType="i4"
+                      cachedName="RegistrarId"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[RegistrarId]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[RegistrarId]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].Columns[SAPPersonnelNbr]"
+                      cachedDataType="i4"
+                      cachedName="SAPPersonnelNbr"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[SAPPersonnelNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[SAPPersonnelNbr]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[CardKeyNbr]"
+                      dataType="i4"
+                      name="CardKeyNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[RegistrarId]"
+                      dataType="i4"
+                      name="RegistrarId" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input].ExternalColumns[SAPPersonnelNbr]"
+                      dataType="i4"
+                      name="SAPPersonnelNbr" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging"
+              componentClassID="Microsoft.OLEDBDestination"
+              contactInfo="OLE DB Destination;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;4"
+              description="OLE DB Destination"
+              name="Destination 1 - HC01PersonStaging"
+              usesDispositions="true"
+              version="4">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HC01PersonStaging]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">3</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the values supplied for identity columns will be copied to the destination. If false, values for identity columns will be auto-generated at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepIdentity">false</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Indicates whether the columns containing null will have null inserted in the destination. If false, columns containing null will have their default values inserted at the destination. Applies only if fast load is turned on."
+                  name="FastLoadKeepNulls">false</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies options to be used with fast load.  Applies only if fast load is turned on."
+                  name="FastLoadOptions">TABLOCK,CHECK_CONSTRAINTS</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies when commits are issued during data insertion.  A value of 0 specifies that one commit will be issued at the end of data insertion.  Applies only if fast load is turned on."
+                  name="FastLoadMaxInsertCommitSize">2147483647</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[DestinationConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input]"
+                  errorOrTruncationOperation="Insert"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[PersonnelNumber]"
+                      cachedDataType="i4"
+                      cachedName="PersonnelNumber"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelNumber]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelNumber]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[AddressBookDifferentiatorName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="AddressBookDifferentiatorName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AddressBookDifferentiatorName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookDifferentiatorName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[AddressBookTitleDesc]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="AddressBookTitleDesc"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AddressBookTitleDesc]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookTitleDesc]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[BuildingID]"
+                      cachedDataType="i4"
+                      cachedName="BuildingID"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BuildingID]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BuildingID]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[EmailName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="EmailName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[EmailName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[EmailName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[FirstName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="FirstName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[FirstName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FirstName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[FullName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="93"
+                      cachedName="FullName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[FullName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FullName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LastName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="LastName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LastName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[MiddleName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="10"
+                      cachedName="MiddleName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[MiddleName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MiddleName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[PersonnelAreaCode]"
+                      cachedDataType="i4"
+                      cachedName="PersonnelAreaCode"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelAreaCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelAreaCode]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[PersonnelSubAreaCode]"
+                      cachedDataType="i4"
+                      cachedName="PersonnelSubAreaCode"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelSubAreaCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelSubAreaCode]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[PersonStatusCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="1"
+                      cachedName="PersonStatusCode"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonStatusCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonStatusCode]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[PreferredFirstName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="PreferredFirstName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PreferredFirstName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PreferredFirstName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[RoomNumber]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="6"
+                      cachedName="RoomNumber"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[RoomNumber]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[RoomNumber]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[SecondLastName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="SecondLastName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[SecondLastName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SecondLastName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[SuffixName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="15"
+                      cachedName="SuffixName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[SuffixName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SuffixName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[WorkFaxNbr]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="WorkFaxNbr"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[WorkFaxNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkFaxNbr]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[WorkPhoneNbr]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="WorkPhoneNbr"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[WorkPhoneNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkPhoneNbr]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LastUpdatedDate]"
+                      cachedDataType="dbTimeStamp"
+                      cachedName="LastUpdatedDate"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LastUpdatedDate]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastUpdatedDate]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[MobileBldgAssociationID]"
+                      cachedDataType="i4"
+                      cachedName="MobileBldgAssociationID"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[MobileBldgAssociationID]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MobileBldgAssociationID]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[BusinessFullName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="93"
+                      cachedName="BusinessFullName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BusinessFullName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessFullName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[BusinessLastName]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="40"
+                      cachedName="BusinessLastName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BusinessLastName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessLastName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[UseBusinessLastNameInd]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="1"
+                      cachedName="UseBusinessLastNameInd"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[UseBusinessLastNameInd]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[UseBusinessLastNameInd]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[OrgProject]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="OrgProject"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[OrgProject]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[OrgProject]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LocationAreaCode]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="3"
+                      cachedName="LocationAreaCode"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationAreaCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaCode]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LocationAreaDetail]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="20"
+                      cachedName="LocationAreaDetail"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationAreaDetail]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaDetail]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LocationCity]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="LocationCity"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationCity]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationCity]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LocalLanguageFirstName]"
+                      cachedDataType="wstr"
+                      cachedLength="40"
+                      cachedName="LocalLanguageFirstName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocalLanguageFirstName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageFirstName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[LocalLanguageLastName]"
+                      cachedDataType="wstr"
+                      cachedLength="40"
+                      cachedName="LocalLanguageLastName"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocalLanguageLastName]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageLastName]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[AlternateEmail]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="AlternateEmail"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AlternateEmail]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AlternateEmail]" />
+                    <inputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].Columns[AcquiredCompanyPersonID]"
+                      cachedCodepage="1252"
+                      cachedDataType="str"
+                      cachedLength="30"
+                      cachedName="AcquiredCompanyPersonID"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AcquiredCompanyPersonID]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AcquiredCompanyPersonID]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelNumber]"
+                      dataType="i4"
+                      name="PersonnelNumber" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AddressBookDifferentiatorName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="AddressBookDifferentiatorName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AddressBookTitleDesc]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AddressBookTitleDesc" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BuildingID]"
+                      dataType="i4"
+                      name="BuildingID" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[EmailName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="EmailName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[FirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="FirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[FullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      name="FullName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="LastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[MiddleName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MiddleName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelAreaCode]"
+                      dataType="i4"
+                      name="PersonnelAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonnelSubAreaCode]"
+                      dataType="i4"
+                      name="PersonnelSubAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PersonStatusCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      name="PersonStatusCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[PreferredFirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="PreferredFirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[RoomNumber]"
+                      codePage="1252"
+                      dataType="str"
+                      length="6"
+                      name="RoomNumber" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[SecondLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="SecondLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[SuffixName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="15"
+                      name="SuffixName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[WorkFaxNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="WorkFaxNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[WorkPhoneNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="WorkPhoneNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LastUpdatedDate]"
+                      dataType="dbTimeStamp"
+                      name="LastUpdatedDate" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[MobileBldgAssociationID]"
+                      dataType="i4"
+                      name="MobileBldgAssociationID" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BusinessFullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      name="BusinessFullName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[BusinessLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="BusinessLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[UseBusinessLastNameInd]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      name="UseBusinessLastNameInd" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[OrgProject]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="OrgProject" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationAreaCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="3"
+                      name="LocationAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationAreaDetail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="20"
+                      name="LocationAreaDetail" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocationCity]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="LocationCity" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocalLanguageFirstName]"
+                      dataType="wstr"
+                      length="40"
+                      name="LocalLanguageFirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[LocalLanguageLastName]"
+                      dataType="wstr"
+                      length="40"
+                      name="LocalLanguageLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AlternateEmail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AlternateEmail" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input].ExternalColumns[AcquiredCompanyPersonID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AcquiredCompanyPersonID" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Outputs[OLE DB Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="OLE DB Destination Error Output"
+                  synchronousInputId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Outputs[OLE DB Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Source - CARD02CardKeyMappingS"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[CARD02CardKeyMappingS]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[CardKeyNbr]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[CardKeyNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[CardKeyNbr]"
+                      name="CardKeyNbr"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[RegistrarId]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[RegistrarId]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[RegistrarId]"
+                      name="RegistrarId"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[SAPPersonnelNbr]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[SAPPersonnelNbr]"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].Columns[SAPPersonnelNbr]"
+                      name="SAPPersonnelNbr"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[CardKeyNbr]"
+                      dataType="i4"
+                      name="CardKeyNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[RegistrarId]"
+                      dataType="i4"
+                      name="RegistrarId" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output].ExternalColumns[SAPPersonnelNbr]"
+                      dataType="i4"
+                      name="SAPPersonnelNbr" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[CardKeyNbr]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[CardKeyNbr]"
+                      name="CardKeyNbr" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[RegistrarId]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[RegistrarId]"
+                      name="RegistrarId" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[SAPPersonnelNbr]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[SAPPersonnelNbr]"
+                      name="SAPPersonnelNbr" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person"
+              componentClassID="Microsoft.OLEDBSource"
+              contactInfo="OLE DB Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;7"
+              description="OLE DB Source"
+              name="Source 1 - HC01Person"
+              usesDispositions="true"
+              version="7">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">[dbo].[HC01Person]</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the column code page to use when code page information is unavailable from the data source."
+                  name="DefaultCodePage">1252</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Forces the use of the DefaultCodePage property value when describing character data."
+                  name="AlwaysUseDefaultCodePage">false</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.String"
+                  description="The mappings between the parameters in the SQL command and variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  connectionManagerRefId="Package.ConnectionManagers[SourceConnectionOLEDB]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output]"
+                  name="OLE DB Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelNumber]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelNumber]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelNumber]"
+                      name="PersonnelNumber"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookDifferentiatorName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AddressBookDifferentiatorName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookDifferentiatorName]"
+                      name="AddressBookDifferentiatorName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookTitleDesc]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AddressBookTitleDesc]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AddressBookTitleDesc]"
+                      name="AddressBookTitleDesc"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BuildingID]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BuildingID]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BuildingID]"
+                      name="BuildingID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[EmailName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[EmailName]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[EmailName]"
+                      name="EmailName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[FirstName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FirstName]"
+                      name="FirstName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FullName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[FullName]"
+                      length="93"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[FullName]"
+                      name="FullName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LastName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastName]"
+                      name="LastName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MiddleName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[MiddleName]"
+                      length="10"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MiddleName]"
+                      name="MiddleName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelAreaCode]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelAreaCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelAreaCode]"
+                      name="PersonnelAreaCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelSubAreaCode]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelSubAreaCode]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonnelSubAreaCode]"
+                      name="PersonnelSubAreaCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonStatusCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonStatusCode]"
+                      length="1"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PersonStatusCode]"
+                      name="PersonStatusCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PreferredFirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PreferredFirstName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[PreferredFirstName]"
+                      name="PreferredFirstName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[RoomNumber]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[RoomNumber]"
+                      length="6"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[RoomNumber]"
+                      name="RoomNumber"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SecondLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[SecondLastName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SecondLastName]"
+                      name="SecondLastName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SuffixName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[SuffixName]"
+                      length="15"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[SuffixName]"
+                      name="SuffixName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkFaxNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[WorkFaxNbr]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkFaxNbr]"
+                      name="WorkFaxNbr"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkPhoneNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[WorkPhoneNbr]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[WorkPhoneNbr]"
+                      name="WorkPhoneNbr"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastUpdatedDate]"
+                      dataType="dbTimeStamp"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LastUpdatedDate]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LastUpdatedDate]"
+                      name="LastUpdatedDate"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MobileBldgAssociationID]"
+                      dataType="i4"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[MobileBldgAssociationID]"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[MobileBldgAssociationID]"
+                      name="MobileBldgAssociationID"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessFullName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BusinessFullName]"
+                      length="93"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessFullName]"
+                      name="BusinessFullName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BusinessLastName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[BusinessLastName]"
+                      name="BusinessLastName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[UseBusinessLastNameInd]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[UseBusinessLastNameInd]"
+                      length="1"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[UseBusinessLastNameInd]"
+                      name="UseBusinessLastNameInd"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[OrgProject]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[OrgProject]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[OrgProject]"
+                      name="OrgProject"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaCode]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationAreaCode]"
+                      length="3"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaCode]"
+                      name="LocationAreaCode"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaDetail]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationAreaDetail]"
+                      length="20"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationAreaDetail]"
+                      name="LocationAreaDetail"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationCity]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationCity]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocationCity]"
+                      name="LocationCity"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageFirstName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocalLanguageFirstName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageFirstName]"
+                      name="LocalLanguageFirstName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageLastName]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocalLanguageLastName]"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[LocalLanguageLastName]"
+                      name="LocalLanguageLastName"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AlternateEmail]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AlternateEmail]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AlternateEmail]"
+                      name="AlternateEmail"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AcquiredCompanyPersonID]"
+                      codePage="1252"
+                      dataType="str"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AcquiredCompanyPersonID]"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].Columns[AcquiredCompanyPersonID]"
+                      name="AcquiredCompanyPersonID"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelNumber]"
+                      dataType="i4"
+                      name="PersonnelNumber" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AddressBookDifferentiatorName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="AddressBookDifferentiatorName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AddressBookTitleDesc]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AddressBookTitleDesc" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BuildingID]"
+                      dataType="i4"
+                      name="BuildingID" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[EmailName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="EmailName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[FirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="FirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[FullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      name="FullName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="LastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[MiddleName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      name="MiddleName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelAreaCode]"
+                      dataType="i4"
+                      name="PersonnelAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonnelSubAreaCode]"
+                      dataType="i4"
+                      name="PersonnelSubAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PersonStatusCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      name="PersonStatusCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[PreferredFirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="PreferredFirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[RoomNumber]"
+                      codePage="1252"
+                      dataType="str"
+                      length="6"
+                      name="RoomNumber" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[SecondLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="SecondLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[SuffixName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="15"
+                      name="SuffixName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[WorkFaxNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="WorkFaxNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[WorkPhoneNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="WorkPhoneNbr" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LastUpdatedDate]"
+                      dataType="dbTimeStamp"
+                      name="LastUpdatedDate" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[MobileBldgAssociationID]"
+                      dataType="i4"
+                      name="MobileBldgAssociationID" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BusinessFullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      name="BusinessFullName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[BusinessLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      name="BusinessLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[UseBusinessLastNameInd]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      name="UseBusinessLastNameInd" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[OrgProject]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="OrgProject" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationAreaCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="3"
+                      name="LocationAreaCode" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationAreaDetail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="20"
+                      name="LocationAreaDetail" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocationCity]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="LocationCity" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocalLanguageFirstName]"
+                      dataType="wstr"
+                      length="40"
+                      name="LocalLanguageFirstName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[LocalLanguageLastName]"
+                      dataType="wstr"
+                      length="40"
+                      name="LocalLanguageLastName" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AlternateEmail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AlternateEmail" />
+                    <externalMetadataColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output].ExternalColumns[AcquiredCompanyPersonID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      name="AcquiredCompanyPersonID" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output]"
+                  isErrorOut="true"
+                  name="OLE DB Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelNumber]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelNumber]"
+                      name="PersonnelNumber" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AddressBookDifferentiatorName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AddressBookDifferentiatorName]"
+                      name="AddressBookDifferentiatorName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AddressBookTitleDesc]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AddressBookTitleDesc]"
+                      name="AddressBookTitleDesc" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BuildingID]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BuildingID]"
+                      name="BuildingID" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[EmailName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[EmailName]"
+                      name="EmailName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[FirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[FirstName]"
+                      name="FirstName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[FullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[FullName]"
+                      name="FullName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LastName]"
+                      name="LastName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[MiddleName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="10"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[MiddleName]"
+                      name="MiddleName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelAreaCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelAreaCode]"
+                      name="PersonnelAreaCode" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelSubAreaCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonnelSubAreaCode]"
+                      name="PersonnelSubAreaCode" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonStatusCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PersonStatusCode]"
+                      name="PersonStatusCode" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PreferredFirstName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[PreferredFirstName]"
+                      name="PreferredFirstName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[RoomNumber]"
+                      codePage="1252"
+                      dataType="str"
+                      length="6"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[RoomNumber]"
+                      name="RoomNumber" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[SecondLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[SecondLastName]"
+                      name="SecondLastName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[SuffixName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="15"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[SuffixName]"
+                      name="SuffixName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[WorkFaxNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[WorkFaxNbr]"
+                      name="WorkFaxNbr" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[WorkPhoneNbr]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[WorkPhoneNbr]"
+                      name="WorkPhoneNbr" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LastUpdatedDate]"
+                      dataType="dbTimeStamp"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LastUpdatedDate]"
+                      name="LastUpdatedDate" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[MobileBldgAssociationID]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[MobileBldgAssociationID]"
+                      name="MobileBldgAssociationID" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BusinessFullName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="93"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BusinessFullName]"
+                      name="BusinessFullName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BusinessLastName]"
+                      codePage="1252"
+                      dataType="str"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[BusinessLastName]"
+                      name="BusinessLastName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[UseBusinessLastNameInd]"
+                      codePage="1252"
+                      dataType="str"
+                      length="1"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[UseBusinessLastNameInd]"
+                      name="UseBusinessLastNameInd" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[OrgProject]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[OrgProject]"
+                      name="OrgProject" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationAreaCode]"
+                      codePage="1252"
+                      dataType="str"
+                      length="3"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationAreaCode]"
+                      name="LocationAreaCode" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationAreaDetail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="20"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationAreaDetail]"
+                      name="LocationAreaDetail" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationCity]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocationCity]"
+                      name="LocationCity" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocalLanguageFirstName]"
+                      dataType="wstr"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocalLanguageFirstName]"
+                      name="LocalLanguageFirstName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocalLanguageLastName]"
+                      dataType="wstr"
+                      length="40"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[LocalLanguageLastName]"
+                      name="LocalLanguageLastName" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AlternateEmail]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AlternateEmail]"
+                      name="AlternateEmail" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AcquiredCompanyPersonID]"
+                      codePage="1252"
+                      dataType="str"
+                      length="30"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[AcquiredCompanyPersonID]"
+                      name="AcquiredCompanyPersonID" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Copy Data to Staging Tables.Paths[OLE DB Source Output]"
+              endId="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging.Inputs[Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\Copy Data to Staging Tables\Source 1 - HC01Person.Outputs[OLE DB Source Output]" />
+            <path
+              refId="Package\Copy Data to Staging Tables.Paths[OLE DB Source Output1]"
+              endId="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging.Inputs[Destination Input]"
+              name="OLE DB Source Output"
+              startId="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS.Outputs[OLE DB Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Create Staging Tables"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{DD8A20CF-AC96-47C8-B45E-D6A5646B60E6}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Create Staging Tables"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:LoggingOptions
+        DTS:FilterKind="0" />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BCE0499E-2EC9-40D1-9FDB-146B4A40608D}"
+          SQLTask:BypassPrepare="False"
+          SQLTask:SqlStatementSource="IF OBJECT_ID('dbo.CARD02CardKeyMappingStaging', 'U') IS NOT NULL &#xA;  DROP TABLE dbo.CARD02CardKeyMappingStaging; &#xA;IF OBJECT_ID('dbo.HC01PersonStaging', 'U') IS NOT NULL &#xA;  DROP TABLE dbo.HC01PersonStaging; &#xA;GO&#xA;&#xA;CREATE TABLE [dbo].[CARD02CardKeyMappingStaging](&#xA;&#x9;[CardKeyNbr] [int] NOT NULL,&#xA;&#x9;[RegistrarId] [int] NOT NULL,&#xA;&#x9;[SAPPersonnelNbr] [int] NULL,&#xA; CONSTRAINT [PK_CARD02CardKeyMappingStaging] PRIMARY KEY NONCLUSTERED &#xA;(&#xA;&#x9;[CardKeyNbr] ASC&#xA;)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) &#xA;) &#xA;GO&#xA;&#xA;CREATE NONCLUSTERED INDEX [IX_CARD02CardKeyMappingStaging_SAPPersonnelNbr] ON [dbo].[CARD02CardKeyMappingStaging]&#xA;(&#xA;&#x9;[SAPPersonnelNbr] ASC&#xA;)&#xA;INCLUDE ([CardKeyNbr]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)&#xA;GO&#xA;&#xA;CREATE TABLE [dbo].[HC01PersonStaging](&#xA;&#x9;[PersonnelNumber] [int] NOT NULL,&#xA;&#x9;[AddressBookDifferentiatorName] [varchar](40) NULL,&#xA;&#x9;[AddressBookTitleDesc] [varchar](30) NULL,&#xA;&#x9;[BuildingID] [int] NOT NULL,&#xA;&#x9;[EmailName] [varchar](30) NULL,&#xA;&#x9;[FirstName] [varchar](40) NULL,&#xA;&#x9;[FullName] [varchar](93) NULL,&#xA;&#x9;[LastName] [varchar](40) NULL,&#xA;&#x9;[MiddleName] [varchar](10) NULL,&#xA;&#x9;[PersonnelAreaCode] [int] NOT NULL,&#xA;&#x9;[PersonnelSubAreaCode] [int] NOT NULL,&#xA;&#x9;[PersonStatusCode] [char](1) NOT NULL,&#xA;&#x9;[PreferredFirstName] [varchar](40) NULL,&#xA;&#x9;[RoomNumber] [varchar](6) NULL,&#xA;&#x9;[SecondLastName] [varchar](40) NULL,&#xA;&#x9;[SuffixName] [varchar](15) NULL,&#xA;&#x9;[WorkFaxNbr] [varchar](30) NULL,&#xA;&#x9;[WorkPhoneNbr] [varchar](30) NULL,&#xA;&#x9;[LastUpdatedDate] [datetime] NOT NULL,&#xA;&#x9;[MobileBldgAssociationID] [int] NULL,&#xA;&#x9;[BusinessFullName] [varchar](93) NULL,&#xA;&#x9;[BusinessLastName] [varchar](40) NULL,&#xA;&#x9;[UseBusinessLastNameInd] [char](1) NULL,&#xA;&#x9;[OrgProject] [varchar](30) NULL,&#xA;&#x9;[LocationAreaCode] [char](3) NULL,&#xA;&#x9;[LocationAreaDetail] [varchar](20) NULL,&#xA;&#x9;[LocationCity] [varchar](30) NULL,&#xA;&#x9;[LocalLanguageFirstName] [nvarchar](40) NULL,&#xA;&#x9;[LocalLanguageLastName] [nvarchar](40) NULL,&#xA;&#x9;[AlternateEmail] [varchar](30) NULL,&#xA;&#x9;[AcquiredCompanyPersonID] [varchar](30) NULL,&#xA; CONSTRAINT [PK_HC01PersonStaging] PRIMARY KEY NONCLUSTERED &#xA;(&#xA;&#x9;[PersonnelNumber] ASC&#xA;)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) &#xA;) &#xA;GO&#xA;&#xA;CREATE NONCLUSTERED INDEX [IX_HC01PersonStaging_EmailName] ON [dbo].[HC01PersonStaging]&#xA;(&#xA;&#x9;[EmailName] ASC&#xA;)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)&#xA;GO&#xA;&#xA;&#xA;&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Rename Staging Tables"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{8E1B79B3-EBCB-47EB-8087-E80B37BBD58B}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Rename Staging Tables"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:LoggingOptions
+        DTS:FilterKind="0" />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{BCE0499E-2EC9-40D1-9FDB-146B4A40608D}"
+          SQLTask:BypassPrepare="False"
+          SQLTask:SqlStatementSource="IF OBJECT_ID('dbo.CARD02CardKeyMappingS', 'U') IS NOT NULL &#xA;  DROP TABLE dbo.CARD02CardKeyMappingS; &#xA;IF OBJECT_ID('dbo.HC01Person', 'U') IS NOT NULL &#xA;  DROP TABLE dbo.HC01Person; &#xA;GO&#xA;&#xA;exec sp_rename 'dbo.CARD02CardKeyMappingStaging', 'CARD02CardKeyMappingS';&#xA;exec sp_rename 'dbo.HC01PersonStaging', 'HC01Person';&#xA;go&#xA;&#xA;exec sp_rename 'dbo.PK_CARD02CardKeyMappingStaging', 'PK_CARD02CardKeyMappingS';&#xA;exec sp_rename 'dbo.CARD02CardKeyMappingS.IX_CARD02CardKeyMappingStaging_SAPPersonnelNbr', 'IX_CARD02CardKeyMappingS_SAPPersonnelNbr', 'INDEX';&#xA;exec sp_rename 'dbo.PK_HC01PersonStaging', 'PK_HC01Person';&#xA;exec sp_rename 'dbo.HC01Person.IX_HC01PersonStaging_EmailName', 'IX_HC01Person_EmailName', 'INDEX';&#xA;go&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Sync Data From Source"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{47EBC639-6573-415B-9287-82F57E49B9C5}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Sync Data From Source"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2016; © 2015 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:LoggingOptions
+        DTS:FilterKind="0" />
+      <DTS:PropertyExpression
+        DTS:Name="Disable">! @[User::Perform_Sync]</DTS:PropertyExpression>
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{07691D03-CDEE-4D2A-9705-EE9A09047B5C}"
+          SQLTask:BypassPrepare="False"
+          SQLTask:SqlStatementSource="EXECUTE [dbo].[EDS3D_CopyTable] @EDSTableName='CARD02CardKeyMappingS';&#xA;go&#xA;&#xA;EXECUTE [dbo].[EDS3D_CopyTable] @EDSTableName='HC01Person';&#xA;go" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{C76068C9-5CF6-475E-8EAA-33C305E33F47}"
+      DTS:From="Package\Copy Data to Staging Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\Rename Staging Tables" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 1]"
+      DTS:CreationName=""
+      DTS:DTSID="{C264B2D1-4BB5-4D96-9059-EF1994F71CE7}"
+      DTS:From="Package\Create Staging Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 1"
+      DTS:To="Package\Copy Data to Staging Tables" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{D3B77C6C-644D-4C40-955F-5DE7EC0028D0}"
+      DTS:From="Package\Sync Data From Source"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 2"
+      DTS:To="Package\Create Staging Tables" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
+<!--If you manually edit this section and make a mistake, you can delete it. -->
+<!--The package will still be able to load normally but the previous layout information will be lost and the designer will automatically re-arrange the elements on the design surface.-->
+<Objects
+  Version="8">
+  <!--Each node below will contain properties that do not affect runtime behavior.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="213.333333333334,42.6666666666667"
+          Id="Package\Copy Data to Staging Tables"
+          TopLeft="23.0833332898716,242.499997597933" />
+        <NodeLayout
+          Size="182.666666666667,42.6666666666667"
+          Id="Package\Create Staging Tables"
+          TopLeft="44.9999993294477,155.133330559333" />
+        <NodeLayout
+          Size="190.666666666667,42.6666666666667"
+          Id="Package\Rename Staging Tables"
+          TopLeft="28.7499995715916,339.733327258428" />
+        <NodeLayout
+          Size="190,42.6666666666667"
+          Id="Package\Sync Data From Source"
+          TopLeft="38.8333332836627,36.3666666511695" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="126.916666430732,285.1666642646">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,54.5666629938282"
+              Start="0,0"
+              End="0,47.0666629938282">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,47.0666629938282" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 1]"
+          TopLeft="133.04166630966,197.799997226">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,44.7000003719331"
+              Start="0,0"
+              End="0,37.2000003719331">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,37.2000003719331" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 2]"
+          TopLeft="135.083332973222,79.0333333178361">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,76.0999972414971"
+              Start="0,0"
+              End="0,68.5999972414971">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,68.5999972414971" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Copy Data to Staging Tables">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="245.333333333334,42.6666666666667"
+          Id="Package\Copy Data to Staging Tables\Source - CARD02CardKeyMappingS"
+          TopLeft="17.4166666480402,5.50000000000004" />
+        <NodeLayout
+          Size="244,42.6666666666667"
+          Id="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging"
+          TopLeft="334.41666664804,108.166666666667" />
+        <NodeLayout
+          Size="266.666666666667,42.6666666666667"
+          Id="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging"
+          TopLeft="4.66666667908436,107.733333341082" />
+        <NodeLayout
+          Size="188,42.6666666666667"
+          Id="Package\Copy Data to Staging Tables\Source 1 - HC01Person"
+          TopLeft="345.083333314707,5.50000000000004" />
+        <EdgeLayout
+          Id="Package\Copy Data to Staging Tables.Paths[OLE DB Source Output1]"
+          TopLeft="139.041666663562,48.1666666666667">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,59.5666666744154"
+              Start="0,0"
+              End="0,52.0666666744154">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.0666666744154" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package\Copy Data to Staging Tables.Paths[OLE DB Source Output]"
+          TopLeft="439.083333314707,48.1666666666667">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60.0000000000001"
+              Start="0,0"
+              End="0,52.5000000000001">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5000000000001" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Copy Data to Staging Tables\Destination 1 - HC01PersonStaging">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Copy Data to Staging Tables\Destination - CARD02CardKeyMappingStaging">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>

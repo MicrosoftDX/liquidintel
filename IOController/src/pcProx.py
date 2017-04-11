@@ -29,6 +29,19 @@ class PCProx(object):
         def beepEndSession(self):
             self._pcProx._Z7BeepNowhs(0,0)
 
+        def startSession(self):
+            # Turn on the green LED for the duration of the session
+            self._pcProx._Z23setLEDCtrl_bAppCtrlsLEDs(1)
+            self._pcProx._Z20setLEDCtrl_bVolatiles(1)
+            self._pcProx._Z23setLEDCtrl_iRedLEDStates(0)
+            self._pcProx._Z23setLEDCtrl_iGrnLEDStates(1)
+
+        def endSession(self):
+            # Return LED control back to automatic & beep the end of the session
+            self._pcProx._Z23setLEDCtrl_bAppCtrlsLEDs(0)
+            self.beepEndSession()
+            return 0
+            
     else:
         def __init__(self):
             self.counter = 0
@@ -42,6 +55,14 @@ class PCProx(object):
             return 0
 
         def beepEndSession(self):
+            # No-op
+            return 0
+
+        def startSession(self):
+            # No-op
+            return 0
+
+        def endSession(self):
             # No-op
             return 0
             
