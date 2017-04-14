@@ -34,6 +34,10 @@ module DXLiquidIntel.App.Controller {
                 .then((userInfo: Model.UserInfo) => {
                     $scope.systemUserInfo = userInfo;
                     continueAfterUserLoad();
+                },
+                (reason: any) => {
+                    $scope.systemUserInfo = null;
+                    continueAfterUserLoad();
                 });
         }
 

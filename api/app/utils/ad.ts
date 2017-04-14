@@ -1,7 +1,10 @@
-/// <reference path="typings/index.d.ts" />
+/// <reference path="../../typings/index.d.ts" />
 
 import request = require('request')
 import url = require('url');
+
+export const ResourceGraph  = 'https://graph.microsoft.com';
+export const ResourceARM    = 'https://management.core.windows.net/';
 
 export class Token {
     public value: string = null;
@@ -9,25 +12,29 @@ export class Token {
 
     constructor(protected tenant: string, protected clientId: string, protected clientSecret: string) { }
 
-    public acquire(next: (Error, Token) => void): void {
+    public acquire(grant_type: string, resource: string, extraParams: (params) => any, next: (Error, Token) => void): void {
         if (this.value && this.expires > Date.now()) {
             next(null, this);
         } else if (this.clientId && this.clientSecret) {
+            var data = {
+                'grant_type': grant_type,
+                'client_id': this.clientId,
+                'client_secret': this.clientSecret,
+                'resource': resource
+            };
+            if (extraParams) {
+                data = extraParams(data);
+            }
             request.post(
                 {
                     url: `https://login.microsoftonline.com/${this.tenant}/oauth2/token`,
                     json: true,
-                    form: {
-                        'grant_type': 'client_credentials',
-                        'client_id': this.clientId,
-                        'client_secret': this.clientSecret,
-                        'resource': 'https://graph.microsoft.com'
-                    }
+                    form: data
                 }, (err, response, body) => {
                     let result = body; // JSON.parse(body);
-                    //console.log('Response ' + JSON.stringify(body));
-                    if (err || result == null) { 
-                        next(err, null); return; 
+                    if (err || response.statusCode >= 400 || result == null) { 
+                        next(err || result, null); 
+                        return; 
                     }
                     this.value = (result.access_token) ? result.access_token : null;
                     this.expires = (result.expires_on) ? parseInt(result.expires_on) * 1000 : Date.now();
@@ -38,9 +45,9 @@ export class Token {
         }
     }
 
-    public accessToken(): Promise<string> {
+    public accessToken(resource: string = ResourceGraph): Promise<string> {
         return new Promise<string>((resolve, reject) => {
-            this.acquire((err, token) => {
+            this.acquire('client_credentials', resource, null, (err, token) => {
                 if (err) {
                     return reject(err);
                 }
@@ -49,8 +56,29 @@ export class Token {
         });
     }
 
-    public async bearerToken(): Promise<string> {
-        return "Bearer " + await this.accessToken();
+    public onBehalfOfToken(userToken: string, resource: string): Promise<string> {
+        return new Promise<string>((resolve, reject) => {
+            this.acquire('urn:ietf:params:oauth:grant-type:jwt-bearer', resource, 
+                (data) => {
+                    data['assertion'] = userToken;
+                    data['requested_token_use'] = 'on_behalf_of';
+                    data['scope'] = 'openid';
+                    return data;
+                }, 
+                (err, token) => {
+                    if (err) {
+                        return reject(err);
+                    }
+                    resolve(token.value);
+                });
+        });
+    }
+
+    public async bearerToken(tokenRequestor: () => Promise<string> = null): Promise<string> {
+        if (!tokenRequestor) {
+            tokenRequestor = () => this.accessToken();
+        }
+        return "Bearer " + await tokenRequestor();
     }
 }
 
@@ -64,7 +92,8 @@ export class SimpleGraph
 {
     constructor(protected accessToken: Token) { }
 
-    static baseUri =  "https://graph.microsoft.com/v1.0/"
+    static baseOrigin   = "https://graph.microsoft.com/";
+    static baseUri      = SimpleGraph.baseOrigin + "v1.0/";
 
     public async groupIdsFromNames(names: string[]): Promise<string[]> {
         let predicate = names.map((v) => "displayName+eq+'" + encodeURI(v) + "'").join('+or+');        
@@ -84,6 +113,18 @@ export class SimpleGraph
         // Transitively determine the list of users from the list of groups
         await Promise.all(groupIds.map(groupId => this.groupUserMembers(groupId, uniqueUsers, checkedGroups)));
         return Array.from(uniqueUsers.values());
+    }
+
+    public async searchGroups(searchTerm: string, limit: number = 15): Promise<any[]> {
+        var groups = await this.getUrl(SimpleGraph.baseUri + `groups?$filter=startswith(displayName,'${searchTerm}')&$top=${limit}&$expand=owners`, async body => {
+            return Promise.resolve(body.value.map(group => {
+                return {
+                    displayName: group.displayName,
+                    owners: group.owners.map(owner => owner.displayName)
+                };
+            }))
+        });
+        return groups;
     }
 
     private async groupUserMembers(groupId: string, users: Map<string, GraphUser>, groupsChecked: Set<string>): Promise<void> {

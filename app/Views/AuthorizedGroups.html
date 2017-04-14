@@ -1,0 +1,70 @@
+<div ng-form="authorizedGroupsForm" ng-submit="updateAuthorizedGroups()">
+    <h2>User Information</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Authorized AAD Groups</div>
+        <div class="panel-body">
+            <p>Enter the list of AAD groups (security groups, distribution lists, O365 groups) that are enabled to drink beer.</p>
+        </div>
+        <table class="table table-striped">
+            <tbody>
+                <tr ng-repeat="group in authorizedGroups.AuthorizedGroups">
+                    <td width="75%" style="vertical-align: middle; padding-left: 15px;">{{group}}</td>
+                    <td>
+                        <button type="button" class="btn btn-default" aria-label="Delete Group" data-ng-click="deleteGroup(group)">
+                            <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td width="75%">
+                        <input type="text"
+                               class="form-control accountName"
+                               placeholder="AAD Group Name"
+                               ng-model="newGroup"
+                               uib-typeahead="group as group.displayName for group in searchGroups($viewValue)"
+                               typeahead-loading="loadingGroups"
+                               typeahead-no-results="noResults"
+                               typeahead-editable="false"
+                               typeahead-show-hint="true"
+                               typeahead-append-to-body="true"
+                               typeahead-min-length="3"
+                               typeahead-wait-ms="100" 
+                               typeahead-input-formatter="$model.displayName"
+                               typeahead-template-url="typeaheadTemplate.html" />
+                        <i ng-show="loadingGroups" class="glyphicon glyphicon-refresh"></i>
+                        <div ng-show="noResults">
+                            <i class="glyphicon glyphicon-remove"></i> No Groups Found
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-default" aria-label="Delete Group" data-ng-click="addGroup()">Add</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <script type="text/ng-template" id="typeaheadTemplate.html">
+            <a class="autocomplete-item"> 
+                <p class="info"> 
+                    <span class="title" ng-bind-html="match.model.displayName | uibTypeaheadHighlight:query"></span> 
+                    <span class="sub_title"><strong>Owners: {{match.model.owners.join(',')}}</span> 
+                </p>
+            </a>
+        </script>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>
+                    

@@ -4,6 +4,7 @@
 /// <reference path="UserInfo.ts" />
 /// <reference path="Vote.ts" />
 /// <reference path="TapInfo.ts" />
+/// <reference path="Admin.ts" />
 
 module DXLiquidIntel.App.Model {
 
@@ -13,7 +14,8 @@ module DXLiquidIntel.App.Model {
         votes: Vote[]
         votesTally: VoteTally[]
         currentTaps: TapInfo[]
-        currentActivities: Model.Activity[]
+        currentActivities: Activity[]
+        authorizedGroups: AuthorizedGroups
         title: string
         error: string
         error_class: string

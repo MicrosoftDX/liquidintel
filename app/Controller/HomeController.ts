@@ -4,11 +4,12 @@
 /// <reference path="./ControllerBase.ts" />
 /// <reference path="../Service/UserService.ts" />
 /// <reference path="../Service/DashboardService.ts" />
+/// <reference path="../Service/KegsService.ts" />
 
 module DXLiquidIntel.App.Controller {
 
     export class HomeController extends ControllerBase {
-        static $inject = ['$scope', '$rootScope', 'adalAuthenticationService', '$location', '$route', 'userService', 'dashboardService', '$interval'];
+        static $inject = ['$scope', '$rootScope', 'adalAuthenticationService', '$location', '$route', 'userService', 'dashboardService', 'kegsService', '$interval'];
 
         constructor($scope: Model.IDXLiquidIntelScope,
             $rootScope: Model.IDXLiquidIntelScope,
@@ -17,6 +18,7 @@ module DXLiquidIntel.App.Controller {
             $route: ng.route.IRouteService,
             userService: Service.UserService,
             protected dashboardService: Service.DashboardService,
+            protected kegsService: Service.KegsService,
             $interval: ng.IIntervalService) {
 
             super($scope, $rootScope, adalAuthenticationService, $location, userService, () => {
@@ -29,7 +31,7 @@ module DXLiquidIntel.App.Controller {
         }
 
         protected async populate(): Promise<void> {
-            this.$scope.currentTaps = await this.dashboardService.getKegStatus();
+            this.$scope.currentTaps = await this.kegsService.getTapsStatus();
             this.$scope.currentActivities = await this.dashboardService.getLatestActivities(25);
         }
     }

@@ -4,7 +4,11 @@
         "sourceMap": true,
         "preserveConstEnums": true,
         "module": "none",
-        "target": "es6"
+        "target": "es5",
+        "lib": [
+            "dom",
+            "es2015"
+        ]
     },
     "exclude": [
         "node_modules"

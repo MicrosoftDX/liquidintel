@@ -4,13 +4,8 @@
 
 module DXLiquidIntel.App.Model {
 
-    // Need to keep structure in sync with DashServer.ManagementAPI.Models.OperationState in the WebAPI
-    export class TapInfo {
-        public TapId: number
-        public KegId: number
-        public InstallDate: Date
-        public KegSize: number
-        public CurrentVolume: number
+    export class Keg {
+        public KegId?: number
         public Name: string
         public Brewery: string
         public BeerType: string
@@ -19,6 +14,17 @@ module DXLiquidIntel.App.Model {
         public BeerDescription: string
         public UntappdId?: number
         public imagePath: string
+        public BeerInfo?: BeerInfo
+    }
+
+    export class TapInfo extends Keg {
+        public TapId: number
+        public InstallDate: Date
+        public KegSize: number
+        public CurrentVolume: number
+        public OriginalUntappdId?: number
+
+        public getSetBeerInfo?: (beerInfo: BeerInfo) => BeerInfo;
     }
 }
          

@@ -21,7 +21,10 @@ module DXLiquidIntel.App.Controller {
 
             super($scope, $rootScope, adalAuthenticationService, $location, userService, async () => {
                 this.setTitleForRoute($route.current);
-                $scope.buttonBarButtons = [];
+                $scope.buttonBarButtons = [
+                    new Model.ButtonBarButton("Commit", $scope, "userForm.$valid && userForm.$dirty && !updateInProgress", () => this.update(), true),
+                    new Model.ButtonBarButton("Revert", $scope, "!updateInProgress", () => this.populate(), false)
+                ];
                 $scope.untappdAuthenticationUri = await untappdService.getUntappdAuthUri($window.location.origin);
                 $scope.disconnectUntappdUser = () => this.disconnectUser();
                 $scope.updateUserInfo = () => this.update();
@@ -50,6 +53,7 @@ module DXLiquidIntel.App.Controller {
                 }
                 this.setUpdateState(false);
                 this.$scope.loadingMessage = "";
+                this.$scope.userForm.$setPristine();
             }
             catch (ex) {
                 this.setError(true, ex.data || ex.statusText, ex.headers);
@@ -64,6 +68,7 @@ module DXLiquidIntel.App.Controller {
                 this.$scope.systemUserInfo = userInfo;
                 this.setUpdateState(false);
                 this.$scope.loadingMessage = "";
+                this.$scope.userForm.$setPristine();
             }
             catch (ex) {
                 this.setError(true, ex.data || ex.statusText, ex.headers);

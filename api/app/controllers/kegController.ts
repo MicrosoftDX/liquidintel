@@ -84,6 +84,16 @@ export async function postPreviouslyInstalledKeg(kegId: number, tapId: number, k
             .parameter("installDate", TYPES.DateTime2, new Date(Date.now()))
             .parameter("kegSize", TYPES.Decimal, kegSize)
             .execute(false);
+        // Finally, cancel any existing votes for this beer
+        sqlStatement = "UPDATE dbo.UserVotes " +
+                       "SET IsCurrent = 0 " +
+                       "WHERE UntappdId IN ( " +
+	                   "    SELECT k.UntappdId " + 
+	                   "    FROM dbo.DimKeg k " +
+	                   "    WHERE Id = @kegId)";
+        await connection.sql(sqlStatement)
+            .parameter("kegId", TYPES.Int, kegId)
+            .execute(false);
     }, 
     () => getCurrentKeg(tapId, outputFunc),
     (err) => outputFunc({code: 500, msg: "Failed to post new keg: " + err}));
