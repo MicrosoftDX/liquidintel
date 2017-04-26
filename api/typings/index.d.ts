@@ -12,9 +12,9 @@
 /// <reference path="modules/serve-static/index.d.ts" />
 /// <reference path="modules/tedious-connection-pool/index.d.ts" />
 /// <reference path="modules/tedious/index.d.ts" />
+/// <reference path="modules/xml2js/index.d.ts" />
 
 interface Array<T> {
    mapAsync<U>(callbackfn: (value: T, index: number, array: T[]) => Promise<U>, thisArg?: any): Promise<U[]>;
    forEachAsync(callbackfn: (value: T, index: number, array: T[]) => Promise<void>, thisArg?: any): Promise<void>;
 }
-

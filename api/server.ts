@@ -18,6 +18,7 @@ import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');
 import votingController = require('./app/controllers/votingController');
 import adminController = require('./app/controllers/adminController');
+import updateController = require('./app/controllers/updateController');
 import queryExpression = require('./app/utils/query_expression');
 import adminUserCache = require('./app/utils/admin_user_cache');
 import settings = require('./app/utils/settings_encoder');
@@ -151,6 +152,9 @@ router.route('/votes_tally')
 router.route('/admin/AuthorizedGroups')
     .get(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => adminController.getAllowedGroups(req.query, resultDispatcher)))
     .put(bearerOAuthStrategy(true), stdHandler((req, resultDispatcher) => adminController.putAllowedGroups(req.body.AuthorizedGroups, req.headers.authorization, resultDispatcher)));
+
+router.route('/updates/:package_type')
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => updateController.getAvailableUpdates(req.params.package_type, new queryExpression.QueryExpression(req.query), resultDispatcher)));
 
 app.use('/api', router);
 

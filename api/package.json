@@ -22,7 +22,8 @@
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
     "tedious": "^1.14.0",
-    "tedious-connection-pool": "^1.0.5"
+    "tedious-connection-pool": "^1.0.5",
+    "xml2js": "^0.4.17"
   },
   "devDependencies": {
     "typescript": "^2.1.5",

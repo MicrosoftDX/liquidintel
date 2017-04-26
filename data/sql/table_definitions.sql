@@ -126,7 +126,7 @@ CREATE TABLE dbo.SecurityTokens(
  [api_key] nvarchar(1000) not null,
  [desc] nvarchar(2000) not null,
  CONSTRAINT pk_security PRIMARY KEY(client_id)
-)
+);
 
 CREATE INDEX IX_CARD02CardKeyMappingS_SAPPersonnelNbr
 ON CARD02CardKeyMappingS

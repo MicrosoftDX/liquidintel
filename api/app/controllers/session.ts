@@ -112,7 +112,7 @@ export async function postNewSession(body: any, output: (resp:any) => express.Re
             .prepare();
         var newActivities = await tapsInfo
             .filter(tapInfo => body.Taps[tapInfo.TapId.toString()] != null &&
-                                body.Taps[tapInfo.TapId.toString()].amount > 0)
+                                body.Taps[tapInfo.TapId.toString()].amount > 20)
             .mapAsync(async tapInfo => {
                 // Important we await here as we can't have multiple statements activity at once
                 let newActivity = await insertDrinkers.execute(false, false, {
