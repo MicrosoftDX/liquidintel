@@ -1,0 +1,25 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "cordova-plugin-hostedwebapp": {
+            "PACKAGE_NAME": "net.azurewebsites.dxliquidapp"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "net.azurewebsites.dxliquidapp"
+        },
+        "cordova-plugin-statusbar": {
+            "PACKAGE_NAME": "net.azurewebsites.dxliquidapp"
+        }
+    },
+    "dependent_plugins": {
+        "cordova-plugin-network-information": {
+            "PACKAGE_NAME": "net.azurewebsites.dxliquidapp"
+        }
+    }
+}
