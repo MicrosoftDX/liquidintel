@@ -88,7 +88,10 @@ function getSessions_internal(sessionId, queryParams) {
                     BeerImagePath: row.imagePath,
                     PersonnelNumber: row.PersonnelNumber,
                     Alias: row.EmailName,
-                    FullName: row.FullName
+                    FullName: row.FullName,
+                    UntappdCheckinId: row.UntappdCheckinId,
+                    UntappdBadgeName: row.UntappdBadgeName,
+                    UntappdBadgeImageURL: row.UntappdBadgeImageURL
                 };
             });
         }

@@ -142,14 +142,22 @@ function postNewKeg(body, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (body.UntappdId && untappd.isIntegrationEnabled()) {
-                var beerInfo = yield untappd.getBeerInfo(body.UntappdId);
-                body.Name = beerInfo.beer_name;
-                body.Brewery = beerInfo.brewery_name;
-                body.BeerType = beerInfo.beer_style;
-                body.ABV = beerInfo.beer_abv;
-                body.IBU = beerInfo.beer_ibu;
-                body.BeerDescription = beerInfo.beer_description;
-                body.imagePath = beerInfo.beer_label_image;
+                try {
+                    var beerInfo = yield untappd.getBeerInfo(body.UntappdId);
+                    body.Name = beerInfo.beer_name;
+                    body.Brewery = beerInfo.brewery_name;
+                    body.BeerType = beerInfo.beer_style;
+                    body.ABV = beerInfo.beer_abv;
+                    body.IBU = beerInfo.beer_ibu;
+                    body.BeerDescription = beerInfo.beer_description;
+                    body.imagePath = beerInfo.beer_label_image;
+                }
+                catch (ex) {
+                    if (ex.error.meta.error_type === 'invalid_param') {
+                        return output({ code: 400, msg: 'Invalid Param: ' + ex.error.meta.error_detail });
+                    }
+                    throw ex;
+                }
             }
             var sqlStatement = "INSERT INTO DimKeg " +
                 "(Name, Brewery, BeerType, ABV, IBU, BeerDescription, UntappdId, imagePath) " +

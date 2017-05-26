@@ -65,7 +65,7 @@ export async function getValidPeople(cardId: number, output: (resp:any) => expre
     }
     catch (ex) {
         console.warn('Failed to retrieve list of valid people. Details: ' + ex);
-        return output({code: 500, msg: 'Internal error: ' + ex});
+        return output({code: 500, msg: 'Internal error: ' + ex.stack});
     }
 }
 
