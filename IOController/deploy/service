@@ -5,7 +5,8 @@ After=network.target
 [Service]
 WorkingDirectory=/opt/IOController/current
 ExecStart=/usr/bin/python /opt/IOController/current/IOController.py --config /etc/opt/IOController/IOController.cfg --config /opt/IOController/current/IOController.cfg -l /etc/opt/IOController/log.cfg
-Restart=on-failure
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target

@@ -22,6 +22,7 @@ var tz = require('moment-timezone');
 const kegController = require("./app/controllers/kegController");
 const personController = require("./app/controllers/personController");
 const sessionController = require("./app/controllers/session");
+const updateController = require("./app/controllers/updateController");
 const queryExpression = require("./app/utils/query_expression");
 const adminUserCache = require("./app/utils/admin_user_cache");
 require('./app/utils/array_async');
@@ -110,6 +111,8 @@ router.route('/CurrentKeg/:tap_id?')
 router.route('/users/:user_id?')
     .get(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.getUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, resultDispatcher)))
     .put(bearerOAuthStrategy(false), stdHandler((req, resultDispatcher) => personController.postUserDetails(req.params.user_id, req.user.is_admin, req.user.upn, req.body, resultDispatcher)));
+router.route('/updates/:package_type')
+    .get(basicAuthStrategy(), stdHandler((req, resultDispatcher) => updateController.getAvailableUpdates(req.params.package_type, new queryExpression.QueryExpression(req.query), resultDispatcher)));
 app.use('/api', router);
 app.listen(port, function () {
     console.log('Listening on port: ' + port);

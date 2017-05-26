@@ -54,7 +54,7 @@ require('source-map-support').install({environment: 'node'});
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';var _path=__webpack_require__(2);var _path2=_interopRequireDefault(_path);var _express=__webpack_require__(3);var _express2=_interopRequireDefault(_express);var _compression=__webpack_require__(4);var _compression2=_interopRequireDefault(_compression);var _cookieParser=__webpack_require__(5);var _cookieParser2=_interopRequireDefault(_cookieParser);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _server=__webpack_require__(7);var _server2=_interopRequireDefault(_server);var _routes=__webpack_require__(167);var _routes2=_interopRequireDefault(_routes);var _router=__webpack_require__(601);var _RubixAssetMiddleware=__webpack_require__(617);var _RubixAssetMiddleware2=_interopRequireDefault(_RubixAssetMiddleware);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var port=process.env.PORT||8080;var app=(0,_express2.default)();app.use((0,_compression2.default)());app.use((0,_cookieParser2.default)());app.use(_express2.default.static(_path2.default.join(process.cwd(),'public')));app.set('views',_path2.default.join(process.cwd(),'views'));app.set('view engine','pug');function renderHTML(req,res){(0,_router.renderHTMLString)(_routes2.default,req,function(error,redirectLocation,html){if(error){if(error.message==='Not found'){res.status(404).send(error.message);}else{res.status(500).send(error.message);}}else if(redirectLocation){res.redirect(302,redirectLocation.pathname+redirectLocation.search);}else{res.render('index',{content:html});}});}app.get('*',(0,_RubixAssetMiddleware2.default)('ltr'),function(req,res,next){renderHTML(req,res);});app.listen(port,function(){console.log('Node.js app is running at http://localhost:'+port+'/');});
+	'use strict';var _path=__webpack_require__(2);var _path2=_interopRequireDefault(_path);var _express=__webpack_require__(3);var _express2=_interopRequireDefault(_express);var _compression=__webpack_require__(4);var _compression2=_interopRequireDefault(_compression);var _cookieParser=__webpack_require__(5);var _cookieParser2=_interopRequireDefault(_cookieParser);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _server=__webpack_require__(7);var _server2=_interopRequireDefault(_server);var _routes=__webpack_require__(167);var _routes2=_interopRequireDefault(_routes);var _router=__webpack_require__(608);var _RubixAssetMiddleware=__webpack_require__(626);var _RubixAssetMiddleware2=_interopRequireDefault(_RubixAssetMiddleware);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var port=process.env.PORT||8080;var app=(0,_express2.default)();app.use((0,_compression2.default)());app.use((0,_cookieParser2.default)());app.use(_express2.default.static(_path2.default.join(process.cwd(),'public')));app.set('views',_path2.default.join(process.cwd(),'views'));app.set('view engine','pug');function renderHTML(req,res){(0,_router.renderHTMLString)(_routes2.default,req,function(error,redirectLocation,html){if(error){if(error.message==='Not found'){res.status(404).send(error.message);}else{res.status(500).send(error.message);}}else if(redirectLocation){res.redirect(302,redirectLocation.pathname+redirectLocation.search);}else{res.render('index',{content:html});}});}app.get('*',(0,_RubixAssetMiddleware2.default)('ltr'),function(req,res,next){renderHTML(req,res);});app.listen(port,function(){console.log('Node.js app is running at http://localhost:'+port+'/');});
 
 /***/ },
 /* 2 */
@@ -16924,10 +16924,10 @@ require('source-map-support').install({environment: 'node'});
 	 */
 	
 	function getUnboundedScrollPosition(scrollable) {
-	  if (scrollable === window) {
+	  if (scrollable.Window && scrollable instanceof scrollable.Window) {
 	    return {
-	      x: window.pageXOffset || document.documentElement.scrollLeft,
-	      y: window.pageYOffset || document.documentElement.scrollTop
+	      x: scrollable.pageXOffset || scrollable.document.documentElement.scrollLeft,
+	      y: scrollable.pageYOffset || scrollable.document.documentElement.scrollTop
 	    };
 	  }
 	  return {
@@ -17675,7 +17675,9 @@ require('source-map-support').install({environment: 'node'});
 	 * @return {boolean} Whether or not the object is a DOM node.
 	 */
 	function isNode(object) {
-	  return !!(object && (typeof Node === 'function' ? object instanceof Node : typeof object === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string'));
+	  var doc = object ? object.ownerDocument || object : document;
+	  var defaultView = doc.defaultView || window;
+	  return !!(object && (typeof defaultView.Node === 'function' ? object instanceof defaultView.Node : typeof object === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string'));
 	}
 	
 	module.exports = isNode;
@@ -17705,15 +17707,19 @@ require('source-map-support').install({environment: 'node'});
 	 *
 	 * The activeElement will be null only if the document or document body is not
 	 * yet defined.
+	 *
+	 * @param {?DOMDocument} doc Defaults to current document.
+	 * @return {?DOMElement}
 	 */
-	function getActiveElement() /*?DOMElement*/{
-	  if (typeof document === 'undefined') {
+	function getActiveElement(doc) /*?DOMElement*/{
+	  doc = doc || (typeof document !== 'undefined' ? document : undefined);
+	  if (typeof doc === 'undefined') {
 	    return null;
 	  }
 	  try {
-	    return document.activeElement || document.body;
+	    return doc.activeElement || doc.body;
 	  } catch (e) {
-	    return document.body;
+	    return doc.body;
 	  }
 	}
 	
@@ -19296,7 +19302,7 @@ require('source-map-support').install({environment: 'node'});
 /* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);var _footer=__webpack_require__(593);var _footer2=_interopRequireDefault(_footer);var _header=__webpack_require__(594);var _header2=_interopRequireDefault(_header);var _homeContainer=__webpack_require__(595);var _homeContainer2=_interopRequireDefault(_homeContainer);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var App=function(_React$Component){(0,_inherits3.default)(App,_React$Component);function App(){(0,_classCallCheck3.default)(this,App);return(0,_possibleConstructorReturn3.default)(this,_React$Component.apply(this,arguments));}App.prototype.render=function render(){return _react2.default.createElement(_rubix.MainContainer,this.props,_react2.default.createElement(_header2.default,null),_react2.default.createElement('div',{id:'body'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},this.props.children)))),_react2.default.createElement(_footer2.default,null));};return App;}(_react2.default.Component);exports.default=_react2.default.createElement(_reactRouter.Route,{path:'/',component:App},_react2.default.createElement(_reactRouter.IndexRoute,{component:_homeContainer2.default}));
+	'use strict';exports.__esModule=true;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);var _footer=__webpack_require__(600);var _footer2=_interopRequireDefault(_footer);var _header=__webpack_require__(601);var _header2=_interopRequireDefault(_header);var _homeContainer=__webpack_require__(602);var _homeContainer2=_interopRequireDefault(_homeContainer);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var App=function(_React$Component){(0,_inherits3.default)(App,_React$Component);function App(){(0,_classCallCheck3.default)(this,App);return(0,_possibleConstructorReturn3.default)(this,_React$Component.apply(this,arguments));}App.prototype.render=function render(){return _react2.default.createElement(_rubix.MainContainer,this.props,_react2.default.createElement(_header2.default,null),_react2.default.createElement('div',{id:'body'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},this.props.children)))),_react2.default.createElement(_footer2.default,null));};return App;}(_react2.default.Component);exports.default=_react2.default.createElement(_reactRouter.Route,{path:'/',component:App},_react2.default.createElement(_reactRouter.IndexRoute,{component:_homeContainer2.default}));
 
 /***/ },
 /* 168 */
@@ -20976,23 +20982,23 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _BPanel3 = _interopRequireDefault(_BPanel2);
 	
-	var _BPanelGroup2 = __webpack_require__(377);
+	var _BPanelGroup2 = __webpack_require__(380);
 	
 	var _BPanelGroup3 = _interopRequireDefault(_BPanelGroup2);
 	
-	var _Carousel2 = __webpack_require__(378);
+	var _Carousel2 = __webpack_require__(381);
 	
 	var _Carousel3 = _interopRequireDefault(_Carousel2);
 	
-	var _Checkbox2 = __webpack_require__(384);
+	var _Checkbox2 = __webpack_require__(387);
 	
 	var _Checkbox3 = _interopRequireDefault(_Checkbox2);
 	
-	var _Clearfix2 = __webpack_require__(386);
+	var _Clearfix2 = __webpack_require__(389);
 	
 	var _Clearfix3 = _interopRequireDefault(_Clearfix2);
 	
-	var _ControlLabel2 = __webpack_require__(388);
+	var _ControlLabel2 = __webpack_require__(391);
 	
 	var _ControlLabel3 = _interopRequireDefault(_ControlLabel2);
 	
@@ -21000,7 +21006,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Col3 = _interopRequireDefault(_Col2);
 	
-	var _Collapse2 = __webpack_require__(390);
+	var _Collapse2 = __webpack_require__(393);
 	
 	var _Collapse3 = _interopRequireDefault(_Collapse2);
 	
@@ -21012,39 +21018,39 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Dropdown3 = _interopRequireDefault(_Dropdown2);
 	
-	var _DropdownButton2 = __webpack_require__(391);
+	var _DropdownButton2 = __webpack_require__(394);
 	
 	var _DropdownButton3 = _interopRequireDefault(_DropdownButton2);
 	
-	var _DropdownHoverButton2 = __webpack_require__(395);
+	var _DropdownHoverButton2 = __webpack_require__(401);
 	
 	var _DropdownHoverButton3 = _interopRequireDefault(_DropdownHoverButton2);
 	
-	var _Fade2 = __webpack_require__(396);
+	var _Fade2 = __webpack_require__(402);
 	
 	var _Fade3 = _interopRequireDefault(_Fade2);
 	
-	var _Form2 = __webpack_require__(398);
+	var _Form2 = __webpack_require__(404);
 	
 	var _Form3 = _interopRequireDefault(_Form2);
 	
-	var _FormControl2 = __webpack_require__(402);
+	var _FormControl2 = __webpack_require__(408);
 	
 	var _FormControl3 = _interopRequireDefault(_FormControl2);
 	
-	var _FormControlFeedback2 = __webpack_require__(406);
+	var _FormControlFeedback2 = __webpack_require__(412);
 	
 	var _FormControlFeedback3 = _interopRequireDefault(_FormControlFeedback2);
 	
-	var _FormControlStatic2 = __webpack_require__(407);
+	var _FormControlStatic2 = __webpack_require__(413);
 	
 	var _FormControlStatic3 = _interopRequireDefault(_FormControlStatic2);
 	
-	var _FormGroup2 = __webpack_require__(400);
+	var _FormGroup2 = __webpack_require__(406);
 	
 	var _FormGroup3 = _interopRequireDefault(_FormGroup2);
 	
-	var _Glyphicon2 = __webpack_require__(408);
+	var _Glyphicon2 = __webpack_require__(414);
 	
 	var _Glyphicon3 = _interopRequireDefault(_Glyphicon2);
 	
@@ -21052,7 +21058,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Grid3 = _interopRequireDefault(_Grid2);
 	
-	var _HelpBlock2 = __webpack_require__(409);
+	var _HelpBlock2 = __webpack_require__(415);
 	
 	var _HelpBlock3 = _interopRequireDefault(_HelpBlock2);
 	
@@ -21060,11 +21066,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Icon3 = _interopRequireDefault(_Icon2);
 	
-	var _Image2 = __webpack_require__(411);
+	var _Image2 = __webpack_require__(417);
 	
 	var _Image3 = _interopRequireDefault(_Image2);
 	
-	var _InputGroup2 = __webpack_require__(413);
+	var _InputGroup2 = __webpack_require__(419);
 	
 	var _InputGroup3 = _interopRequireDefault(_InputGroup2);
 	
@@ -21072,87 +21078,87 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _isBrowser3 = _interopRequireDefault(_isBrowser2);
 	
-	var _Jumbotron2 = __webpack_require__(417);
+	var _Jumbotron2 = __webpack_require__(423);
 	
 	var _Jumbotron3 = _interopRequireDefault(_Jumbotron2);
 	
-	var _L20n2 = __webpack_require__(419);
+	var _L20n2 = __webpack_require__(425);
 	
 	var _L20n3 = _interopRequireDefault(_L20n2);
 	
-	var _Label2 = __webpack_require__(420);
+	var _Label2 = __webpack_require__(426);
 	
 	var _Label3 = _interopRequireDefault(_Label2);
 	
-	var _Lead2 = __webpack_require__(422);
+	var _Lead2 = __webpack_require__(428);
 	
 	var _Lead3 = _interopRequireDefault(_Lead2);
 	
-	var _ListGroup2 = __webpack_require__(423);
+	var _ListGroup2 = __webpack_require__(429);
 	
 	var _ListGroup3 = _interopRequireDefault(_ListGroup2);
 	
-	var _ListGroupItem2 = __webpack_require__(426);
+	var _ListGroupItem2 = __webpack_require__(432);
 	
 	var _ListGroupItem3 = _interopRequireDefault(_ListGroupItem2);
 	
-	var _LoremIpsum2 = __webpack_require__(427);
+	var _LoremIpsum2 = __webpack_require__(433);
 	
 	var _LoremIpsum3 = _interopRequireDefault(_LoremIpsum2);
 	
-	var _Media2 = __webpack_require__(428);
+	var _Media2 = __webpack_require__(434);
 	
 	var _Media3 = _interopRequireDefault(_Media2);
 	
-	var _MediaBody2 = __webpack_require__(436);
+	var _MediaBody2 = __webpack_require__(442);
 	
 	var _MediaBody3 = _interopRequireDefault(_MediaBody2);
 	
-	var _MediaHeading2 = __webpack_require__(437);
+	var _MediaHeading2 = __webpack_require__(443);
 	
 	var _MediaHeading3 = _interopRequireDefault(_MediaHeading2);
 	
-	var _MediaLeft2 = __webpack_require__(438);
+	var _MediaLeft2 = __webpack_require__(444);
 	
 	var _MediaLeft3 = _interopRequireDefault(_MediaLeft2);
 	
-	var _MediaList2 = __webpack_require__(439);
+	var _MediaList2 = __webpack_require__(445);
 	
 	var _MediaList3 = _interopRequireDefault(_MediaList2);
 	
-	var _MediaListItem2 = __webpack_require__(440);
+	var _MediaListItem2 = __webpack_require__(446);
 	
 	var _MediaListItem3 = _interopRequireDefault(_MediaListItem2);
 	
-	var _MediaRight2 = __webpack_require__(441);
+	var _MediaRight2 = __webpack_require__(447);
 	
 	var _MediaRight3 = _interopRequireDefault(_MediaRight2);
 	
-	var _MenuItem2 = __webpack_require__(442);
+	var _MenuItem2 = __webpack_require__(448);
 	
 	var _MenuItem3 = _interopRequireDefault(_MenuItem2);
 	
-	var _Modal2 = __webpack_require__(444);
+	var _Modal2 = __webpack_require__(450);
 	
 	var _Modal3 = _interopRequireDefault(_Modal2);
 	
-	var _ModalBody2 = __webpack_require__(484);
+	var _ModalBody2 = __webpack_require__(491);
 	
 	var _ModalBody3 = _interopRequireDefault(_ModalBody2);
 	
-	var _ModalDialog2 = __webpack_require__(483);
+	var _ModalDialog2 = __webpack_require__(490);
 	
 	var _ModalDialog3 = _interopRequireDefault(_ModalDialog2);
 	
-	var _ModalFooter2 = __webpack_require__(485);
+	var _ModalFooter2 = __webpack_require__(492);
 	
 	var _ModalFooter3 = _interopRequireDefault(_ModalFooter2);
 	
-	var _ModalHeader2 = __webpack_require__(486);
+	var _ModalHeader2 = __webpack_require__(493);
 	
 	var _ModalHeader3 = _interopRequireDefault(_ModalHeader2);
 	
-	var _ModalTitle2 = __webpack_require__(487);
+	var _ModalTitle2 = __webpack_require__(494);
 	
 	var _ModalTitle3 = _interopRequireDefault(_ModalTitle2);
 	
@@ -21160,23 +21166,23 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Nav3 = _interopRequireDefault(_Nav2);
 	
-	var _Navbar2 = __webpack_require__(488);
+	var _Navbar2 = __webpack_require__(495);
 	
 	var _Navbar3 = _interopRequireDefault(_Navbar2);
 	
-	var _NavbarBrand2 = __webpack_require__(494);
+	var _NavbarBrand2 = __webpack_require__(501);
 	
 	var _NavbarBrand3 = _interopRequireDefault(_NavbarBrand2);
 	
-	var _NavbarCollapse2 = __webpack_require__(495);
+	var _NavbarCollapse2 = __webpack_require__(502);
 	
 	var _NavbarCollapse3 = _interopRequireDefault(_NavbarCollapse2);
 	
-	var _NavbarHeader2 = __webpack_require__(496);
+	var _NavbarHeader2 = __webpack_require__(503);
 	
 	var _NavbarHeader3 = _interopRequireDefault(_NavbarHeader2);
 	
-	var _NavbarToggle2 = __webpack_require__(497);
+	var _NavbarToggle2 = __webpack_require__(504);
 	
 	var _NavbarToggle3 = _interopRequireDefault(_NavbarToggle2);
 	
@@ -21186,55 +21192,55 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _NavItem3 = _interopRequireDefault(_NavItem2);
 	
-	var _Overlay2 = __webpack_require__(498);
+	var _Overlay2 = __webpack_require__(505);
 	
 	var _Overlay3 = _interopRequireDefault(_Overlay2);
 	
-	var _OverlayTrigger2 = __webpack_require__(508);
+	var _OverlayTrigger2 = __webpack_require__(515);
 	
 	var _OverlayTrigger3 = _interopRequireDefault(_OverlayTrigger2);
 	
 	var _Panel2 = _interopRequireDefault(_Panel);
 	
-	var _PageHeader2 = __webpack_require__(510);
+	var _PageHeader2 = __webpack_require__(517);
 	
 	var _PageHeader3 = _interopRequireDefault(_PageHeader2);
 	
-	var _PageItem2 = __webpack_require__(512);
+	var _PageItem2 = __webpack_require__(519);
 	
 	var _PageItem3 = _interopRequireDefault(_PageItem2);
 	
-	var _Pager2 = __webpack_require__(516);
+	var _Pager2 = __webpack_require__(523);
 	
 	var _Pager3 = _interopRequireDefault(_Pager2);
 	
-	var _Pagination2 = __webpack_require__(518);
+	var _Pagination2 = __webpack_require__(525);
 	
 	var _Pagination3 = _interopRequireDefault(_Pagination2);
 	
-	var _Popover2 = __webpack_require__(521);
+	var _Popover2 = __webpack_require__(528);
 	
 	var _Popover3 = _interopRequireDefault(_Popover2);
 	
 	var _Pricing2 = _interopRequireDefault(_Pricing);
 	
-	var _Progress2 = __webpack_require__(523);
+	var _Progress2 = __webpack_require__(530);
 	
 	var _Progress3 = _interopRequireDefault(_Progress2);
 	
-	var _ProgressBar2 = __webpack_require__(525);
+	var _ProgressBar2 = __webpack_require__(532);
 	
 	var _ProgressBar3 = _interopRequireDefault(_ProgressBar2);
 	
-	var _ProgressGroup2 = __webpack_require__(526);
+	var _ProgressGroup2 = __webpack_require__(533);
 	
 	var _ProgressGroup3 = _interopRequireDefault(_ProgressGroup2);
 	
-	var _Radio2 = __webpack_require__(527);
+	var _Radio2 = __webpack_require__(534);
 	
 	var _Radio3 = _interopRequireDefault(_Radio2);
 	
-	var _ResponsiveEmbed2 = __webpack_require__(529);
+	var _ResponsiveEmbed2 = __webpack_require__(536);
 	
 	var _ResponsiveEmbed3 = _interopRequireDefault(_ResponsiveEmbed2);
 	
@@ -21248,55 +21254,55 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Sidebar2 = _interopRequireDefault(_Sidebar);
 	
-	var _SplitButton2 = __webpack_require__(531);
+	var _SplitButton2 = __webpack_require__(538);
 	
 	var _SplitButton3 = _interopRequireDefault(_SplitButton2);
 	
-	var _SplitHoverButton2 = __webpack_require__(572);
+	var _SplitHoverButton2 = __webpack_require__(579);
 	
 	var _SplitHoverButton3 = _interopRequireDefault(_SplitHoverButton2);
 	
-	var _Tab2 = __webpack_require__(573);
+	var _Tab2 = __webpack_require__(580);
 	
 	var _Tab3 = _interopRequireDefault(_Tab2);
 	
-	var _TabContainer2 = __webpack_require__(578);
+	var _TabContainer2 = __webpack_require__(585);
 	
 	var _TabContainer3 = _interopRequireDefault(_TabContainer2);
 	
-	var _TabContent2 = __webpack_require__(579);
+	var _TabContent2 = __webpack_require__(586);
 	
 	var _TabContent3 = _interopRequireDefault(_TabContent2);
 	
-	var _Table2 = __webpack_require__(580);
+	var _Table2 = __webpack_require__(587);
 	
 	var _Table3 = _interopRequireDefault(_Table2);
 	
-	var _TabPane2 = __webpack_require__(577);
+	var _TabPane2 = __webpack_require__(584);
 	
 	var _TabPane3 = _interopRequireDefault(_TabPane2);
 	
-	var _Tabs2 = __webpack_require__(582);
+	var _Tabs2 = __webpack_require__(589);
 	
 	var _Tabs3 = _interopRequireDefault(_Tabs2);
 	
-	var _Tag2 = __webpack_require__(585);
+	var _Tag2 = __webpack_require__(592);
 	
 	var _Tag3 = _interopRequireDefault(_Tag2);
 	
-	var _Thumbnail2 = __webpack_require__(586);
+	var _Thumbnail2 = __webpack_require__(593);
 	
 	var _Thumbnail3 = _interopRequireDefault(_Thumbnail2);
 	
-	var _Tooltip2 = __webpack_require__(588);
+	var _Tooltip2 = __webpack_require__(595);
 	
 	var _Tooltip3 = _interopRequireDefault(_Tooltip2);
 	
-	var _Well2 = __webpack_require__(590);
+	var _Well2 = __webpack_require__(597);
 	
 	var _Well3 = _interopRequireDefault(_Well2);
 	
-	var _utils2 = __webpack_require__(592);
+	var _utils2 = __webpack_require__(599);
 	
 	var _utils = _interopRequireWildcard(_utils2);
 	
@@ -23831,9 +23837,14 @@ require('source-map-support').install({environment: 'node'});
 	
 	    var _this = (0, _possibleConstructorReturn3['default'])(this, _React$Component.call(this, props));
 	
+	    _this.handleRootClose = _this.handleRootClose.bind(_this);
 	    _this.handleKeyDown = _this.handleKeyDown.bind(_this);
 	    return _this;
 	  }
+	
+	  DropdownMenu.prototype.handleRootClose = function handleRootClose(event) {
+	    this.props.onClose(event, { source: 'rootClose' });
+	  };
 	
 	  DropdownMenu.prototype.handleKeyDown = function handleKeyDown(event) {
 	    switch (event.keyCode) {
@@ -23847,7 +23858,7 @@ require('source-map-support').install({environment: 'node'});
 	        break;
 	      case _keycode2['default'].codes.esc:
 	      case _keycode2['default'].codes.tab:
-	        this.props.onClose(event);
+	        this.props.onClose(event, { source: 'keydown' });
 	        break;
 	      default:
 	    }
@@ -23902,17 +23913,16 @@ require('source-map-support').install({environment: 'node'});
 	    var _props = this.props,
 	        open = _props.open,
 	        pullRight = _props.pullRight,
-	        onClose = _props.onClose,
 	        labelledBy = _props.labelledBy,
 	        onSelect = _props.onSelect,
 	        className = _props.className,
 	        rootCloseEvent = _props.rootCloseEvent,
 	        children = _props.children,
-	        props = (0, _objectWithoutProperties3['default'])(_props, ['open', 'pullRight', 'onClose', 'labelledBy', 'onSelect', 'className', 'rootCloseEvent', 'children']);
+	        props = (0, _objectWithoutProperties3['default'])(_props, ['open', 'pullRight', 'labelledBy', 'onSelect', 'className', 'rootCloseEvent', 'children']);
 	
-	    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
-	        bsProps = _splitBsProps[0],
-	        elementProps = _splitBsProps[1];
+	    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['onClose']),
+	        bsProps = _splitBsPropsAndOmit[0],
+	        elementProps = _splitBsPropsAndOmit[1];
 	
 	    var classes = (0, _extends4['default'])({}, (0, _bootstrapUtils.getClassSet)(bsProps), (_extends2 = {}, _extends2[(0, _bootstrapUtils.prefix)(bsProps, 'right')] = pullRight, _extends2));
 	
@@ -23920,7 +23930,7 @@ require('source-map-support').install({environment: 'node'});
 	      _RootCloseWrapper2['default'],
 	      {
 	        disabled: !open,
-	        onRootClose: onClose,
+	        onRootClose: this.handleRootClose,
 	        event: rootCloseEvent
 	      },
 	      _react2['default'].createElement(
@@ -24125,6 +24135,13 @@ require('source-map-support').install({environment: 'node'});
 	  return !!(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey);
 	}
 	
+	/**
+	 * The `<RootCloseWrapper/>` component registers your callback on the document
+	 * when rendered. Powers the `<Overlay/>` component. This is used achieve modal
+	 * style behavior where your callback is triggered when the user tries to
+	 * interact with the rest of the document or hits the `esc` key.
+	 */
+	
 	var RootCloseWrapper = function (_React$Component) {
 	  _inherits(RootCloseWrapper, _React$Component);
 	
@@ -24217,22 +24234,23 @@ require('source-map-support').install({environment: 'node'});
 	  return RootCloseWrapper;
 	}(_react2.default.Component);
 	
-	exports.default = RootCloseWrapper;
-	
-	
 	RootCloseWrapper.displayName = 'RootCloseWrapper';
 	
 	RootCloseWrapper.propTypes = {
-	  onRootClose: _react2.default.PropTypes.func,
-	  children: _react2.default.PropTypes.element,
-	
 	  /**
-	   * Disable the the RootCloseWrapper, preventing it from triggering
-	   * `onRootClose`.
+	   * Callback fired after click or mousedown. Also triggers when user hits `esc`.
+	   */
+	  onRootClose: _react2.default.PropTypes.func,
+	  /**
+	   * Children to render.
+	   */
+	  children: _react2.default.PropTypes.element,
+	  /**
+	   * Disable the the RootCloseWrapper, preventing it from triggering `onRootClose`.
 	   */
 	  disabled: _react2.default.PropTypes.bool,
 	  /**
-	   * Choose which document mouse event to bind to
+	   * Choose which document mouse event to bind to.
 	   */
 	  event: _react2.default.PropTypes.oneOf(['click', 'mousedown'])
 	};
@@ -24240,6 +24258,8 @@ require('source-map-support').install({environment: 'node'});
 	RootCloseWrapper.defaultProps = {
 	  event: 'click'
 	};
+	
+	exports.default = RootCloseWrapper;
 	module.exports = exports['default'];
 
 /***/ },
@@ -30800,11 +30820,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Transition = __webpack_require__(374);
+	var _Transition = __webpack_require__(377);
 	
 	var _Transition2 = _interopRequireDefault(_Transition);
 	
-	var _capitalize = __webpack_require__(376);
+	var _capitalize = __webpack_require__(379);
 	
 	var _capitalize2 = _interopRequireDefault(_capitalize);
 	
@@ -30837,6 +30857,11 @@ require('source-map-support').install({environment: 'node'});
 	   * Show the component; triggers the expand or collapse animation
 	   */
 	  'in': _react2['default'].PropTypes.bool,
+	
+	  /**
+	   * Wait until the first "enter" transition to mount the component (add it to the DOM)
+	   */
+	  mountOnEnter: _react2['default'].PropTypes.bool,
 	
 	  /**
 	   * Unmount the component (remove it from the DOM) when it is collapsed
@@ -30908,6 +30933,7 @@ require('source-map-support').install({environment: 'node'});
 	var defaultProps = {
 	  'in': false,
 	  timeout: 300,
+	  mountOnEnter: false,
 	  unmountOnExit: false,
 	  transitionAppear: false,
 	
@@ -31028,46 +31054,93 @@ require('source-map-support').install({environment: 'node'});
 
 	'use strict';
 	
-	var camelize = __webpack_require__(368),
-	    hyphenate = __webpack_require__(370),
-	    _getComputedStyle = __webpack_require__(372),
-	    removeStyle = __webpack_require__(373);
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = style;
 	
-	var has = Object.prototype.hasOwnProperty;
+	var _camelizeStyle = __webpack_require__(368);
 	
-	module.exports = function style(node, property, value) {
-	  var css = '',
-	      props = property;
+	var _camelizeStyle2 = _interopRequireDefault(_camelizeStyle);
+	
+	var _hyphenateStyle = __webpack_require__(370);
+	
+	var _hyphenateStyle2 = _interopRequireDefault(_hyphenateStyle);
+	
+	var _getComputedStyle2 = __webpack_require__(372);
+	
+	var _getComputedStyle3 = _interopRequireDefault(_getComputedStyle2);
+	
+	var _removeStyle = __webpack_require__(373);
+	
+	var _removeStyle2 = _interopRequireDefault(_removeStyle);
+	
+	var _properties = __webpack_require__(374);
+	
+	var _isTransform = __webpack_require__(376);
+	
+	var _isTransform2 = _interopRequireDefault(_isTransform);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function style(node, property, value) {
+	  var css = '';
+	  var transforms = '';
+	  var props = property;
 	
 	  if (typeof property === 'string') {
-	
-	    if (value === undefined) return node.style[camelize(property)] || _getComputedStyle(node).getPropertyValue(hyphenate(property));else (props = {})[property] = value;
+	    if (value === undefined) {
+	      return node.style[(0, _camelizeStyle2.default)(property)] || (0, _getComputedStyle3.default)(node).getPropertyValue((0, _hyphenateStyle2.default)(property));
+	    } else {
+	      (props = {})[property] = value;
+	    }
 	  }
 	
-	  for (var key in props) if (has.call(props, key)) {
-	    !props[key] && props[key] !== 0 ? removeStyle(node, hyphenate(key)) : css += hyphenate(key) + ':' + props[key] + ';';
+	  Object.keys(props).forEach(function (key) {
+	    var value = props[key];
+	    if (!value && value !== 0) {
+	      (0, _removeStyle2.default)(node, (0, _hyphenateStyle2.default)(key));
+	    } else if ((0, _isTransform2.default)(key)) {
+	      transforms += key + '(' + value + ') ';
+	    } else {
+	      css += (0, _hyphenateStyle2.default)(key) + ': ' + value + ';';
+	    }
+	  });
+	
+	  if (transforms) {
+	    css += _properties.transform + ': ' + transforms + ';';
 	  }
 	
 	  node.style.cssText += ';' + css;
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 368 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright 2014-2015, Facebook, Inc.
-	 * All rights reserved.
-	 * https://github.com/facebook/react/blob/2aeb8a2a6beb00617a4217f7f8284924fa2ad819/src/vendor/core/camelizeStyleName.js
-	 */
-	
 	'use strict';
-	var camelize = __webpack_require__(369);
-	var msPattern = /^-ms-/;
 	
-	module.exports = function camelizeStyleName(string) {
-	  return camelize(string.replace(msPattern, 'ms-'));
-	};
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = camelizeStyleName;
+	
+	var _camelize = __webpack_require__(369);
+	
+	var _camelize2 = _interopRequireDefault(_camelize);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var msPattern = /^-ms-/; /**
+	                          * Copyright 2014-2015, Facebook, Inc.
+	                          * All rights reserved.
+	                          * https://github.com/facebook/react/blob/2aeb8a2a6beb00617a4217f7f8284924fa2ad819/src/vendor/core/camelizeStyleName.js
+	                          */
+	function camelizeStyleName(string) {
+	  return (0, _camelize2.default)(string.replace(msPattern, 'ms-'));
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 369 */
@@ -31075,32 +31148,46 @@ require('source-map-support').install({environment: 'node'});
 
 	"use strict";
 	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = camelize;
 	var rHyphen = /-(.)/g;
 	
-	module.exports = function camelize(string) {
+	function camelize(string) {
 	  return string.replace(rHyphen, function (_, chr) {
 	    return chr.toUpperCase();
 	  });
-	};
+	}
+	module.exports = exports["default"];
 
 /***/ },
 /* 370 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/**
-	 * Copyright 2013-2014, Facebook, Inc.
-	 * All rights reserved.
-	 * https://github.com/facebook/react/blob/2aeb8a2a6beb00617a4217f7f8284924fa2ad819/src/vendor/core/hyphenateStyleName.js
-	 */
+	'use strict';
 	
-	"use strict";
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = hyphenateStyleName;
 	
-	var hyphenate = __webpack_require__(371);
-	var msPattern = /^ms-/;
+	var _hyphenate = __webpack_require__(371);
 	
-	module.exports = function hyphenateStyleName(string) {
-	  return hyphenate(string).replace(msPattern, "-ms-");
-	};
+	var _hyphenate2 = _interopRequireDefault(_hyphenate);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var msPattern = /^ms-/; /**
+	                         * Copyright 2013-2014, Facebook, Inc.
+	                         * All rights reserved.
+	                         * https://github.com/facebook/react/blob/2aeb8a2a6beb00617a4217f7f8284924fa2ad819/src/vendor/core/hyphenateStyleName.js
+	                         */
+	
+	function hyphenateStyleName(string) {
+	  return (0, _hyphenate2.default)(string).replace(msPattern, '-ms-');
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 371 */
@@ -31108,11 +31195,17 @@ require('source-map-support').install({environment: 'node'});
 
 	'use strict';
 	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = hyphenate;
+	
 	var rUpper = /([A-Z])/g;
 	
-	module.exports = function hyphenate(string) {
+	function hyphenate(string) {
 	  return string.replace(rUpper, '-$1').toLowerCase();
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 372 */
@@ -31120,24 +31213,30 @@ require('source-map-support').install({environment: 'node'});
 
 	'use strict';
 	
-	var babelHelpers = __webpack_require__(278);
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = _getComputedStyle;
 	
-	var _utilCamelizeStyle = __webpack_require__(368);
+	var _camelizeStyle = __webpack_require__(368);
 	
-	var _utilCamelizeStyle2 = babelHelpers.interopRequireDefault(_utilCamelizeStyle);
+	var _camelizeStyle2 = _interopRequireDefault(_camelizeStyle);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
 	var rposition = /^(top|right|bottom|left)$/;
 	var rnumnonpx = /^([+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|))(?!px)[a-z%]+$/i;
 	
-	module.exports = function _getComputedStyle(node) {
+	function _getComputedStyle(node) {
 	  if (!node) throw new TypeError('No Element passed to `getComputedStyle()`');
 	  var doc = node.ownerDocument;
 	
-	  return 'defaultView' in doc ? doc.defaultView.opener ? node.ownerDocument.defaultView.getComputedStyle(node, null) : window.getComputedStyle(node, null) : { //ie 8 "magic" from: https://github.com/jquery/jquery/blob/1.11-stable/src/css/curCSS.js#L72
+	  return 'defaultView' in doc ? doc.defaultView.opener ? node.ownerDocument.defaultView.getComputedStyle(node, null) : window.getComputedStyle(node, null) : {
+	    //ie 8 "magic" from: https://github.com/jquery/jquery/blob/1.11-stable/src/css/curCSS.js#L72
 	    getPropertyValue: function getPropertyValue(prop) {
 	      var style = node.style;
 	
-	      prop = (0, _utilCamelizeStyle2['default'])(prop);
+	      prop = (0, _camelizeStyle2.default)(prop);
 	
 	      if (prop == 'float') prop = 'styleFloat';
 	
@@ -31165,7 +31264,8 @@ require('source-map-support').install({environment: 'node'});
 	      return current;
 	    }
 	  };
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 373 */
@@ -31173,12 +31273,161 @@ require('source-map-support').install({environment: 'node'});
 
 	'use strict';
 	
-	module.exports = function removeStyle(node, key) {
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = removeStyle;
+	function removeStyle(node, key) {
 	  return 'removeProperty' in node.style ? node.style.removeProperty(key) : node.style.removeAttribute(key);
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
 /* 374 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.animationEnd = exports.animationDelay = exports.animationTiming = exports.animationDuration = exports.animationName = exports.transitionEnd = exports.transitionDuration = exports.transitionDelay = exports.transitionTiming = exports.transitionProperty = exports.transform = undefined;
+	
+	var _inDOM = __webpack_require__(375);
+	
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var transform = 'transform';
+	var prefix = void 0,
+	    transitionEnd = void 0,
+	    animationEnd = void 0;
+	var transitionProperty = void 0,
+	    transitionDuration = void 0,
+	    transitionTiming = void 0,
+	    transitionDelay = void 0;
+	var animationName = void 0,
+	    animationDuration = void 0,
+	    animationTiming = void 0,
+	    animationDelay = void 0;
+	
+	if (_inDOM2.default) {
+	  var _getTransitionPropert = getTransitionProperties();
+	
+	  prefix = _getTransitionPropert.prefix;
+	  exports.transitionEnd = transitionEnd = _getTransitionPropert.transitionEnd;
+	  exports.animationEnd = animationEnd = _getTransitionPropert.animationEnd;
+	
+	
+	  exports.transform = transform = prefix + '-' + transform;
+	  exports.transitionProperty = transitionProperty = prefix + '-transition-property';
+	  exports.transitionDuration = transitionDuration = prefix + '-transition-duration';
+	  exports.transitionDelay = transitionDelay = prefix + '-transition-delay';
+	  exports.transitionTiming = transitionTiming = prefix + '-transition-timing-function';
+	
+	  exports.animationName = animationName = prefix + '-animation-name';
+	  exports.animationDuration = animationDuration = prefix + '-animation-duration';
+	  exports.animationTiming = animationTiming = prefix + '-animation-delay';
+	  exports.animationDelay = animationDelay = prefix + '-animation-timing-function';
+	}
+	
+	exports.transform = transform;
+	exports.transitionProperty = transitionProperty;
+	exports.transitionTiming = transitionTiming;
+	exports.transitionDelay = transitionDelay;
+	exports.transitionDuration = transitionDuration;
+	exports.transitionEnd = transitionEnd;
+	exports.animationName = animationName;
+	exports.animationDuration = animationDuration;
+	exports.animationTiming = animationTiming;
+	exports.animationDelay = animationDelay;
+	exports.animationEnd = animationEnd;
+	exports.default = {
+	  transform: transform,
+	  end: transitionEnd,
+	  property: transitionProperty,
+	  timing: transitionTiming,
+	  delay: transitionDelay,
+	  duration: transitionDuration
+	};
+	
+	
+	function getTransitionProperties() {
+	  var style = document.createElement('div').style;
+	
+	  var vendorMap = {
+	    O: function O(e) {
+	      return 'o' + e.toLowerCase();
+	    },
+	    Moz: function Moz(e) {
+	      return e.toLowerCase();
+	    },
+	    Webkit: function Webkit(e) {
+	      return 'webkit' + e;
+	    },
+	    ms: function ms(e) {
+	      return 'MS' + e;
+	    }
+	  };
+	
+	  var vendors = Object.keys(vendorMap);
+	
+	  var transitionEnd = void 0,
+	      animationEnd = void 0;
+	  var prefix = '';
+	
+	  for (var i = 0; i < vendors.length; i++) {
+	    var vendor = vendors[i];
+	
+	    if (vendor + 'TransitionProperty' in style) {
+	      prefix = '-' + vendor.toLowerCase();
+	      transitionEnd = vendorMap[vendor]('TransitionEnd');
+	      animationEnd = vendorMap[vendor]('AnimationEnd');
+	      break;
+	    }
+	  }
+	
+	  if (!transitionEnd && 'transitionProperty' in style) transitionEnd = 'transitionend';
+	
+	  if (!animationEnd && 'animationName' in style) animationEnd = 'animationend';
+	
+	  style = null;
+	
+	  return { animationEnd: animationEnd, transitionEnd: transitionEnd, prefix: prefix };
+	}
+
+/***/ },
+/* 375 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
+	module.exports = exports['default'];
+
+/***/ },
+/* 376 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = isTransform;
+	var supportedTransforms = /^((translate|rotate|scale)(X|Y|Z|3d)?|matrix(3d)?|perspective|skew(X|Y)?)$/i;
+	
+	function isTransform(property) {
+	  return !!(property && supportedTransforms.test(property));
+	}
+	module.exports = exports["default"];
+
+/***/ },
+/* 377 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31192,6 +31441,18 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
+	var _classnames = __webpack_require__(246);
+	
+	var _classnames2 = _interopRequireDefault(_classnames);
+	
+	var _on = __webpack_require__(316);
+	
+	var _on2 = _interopRequireDefault(_on);
+	
+	var _properties = __webpack_require__(378);
+	
+	var _properties2 = _interopRequireDefault(_properties);
+	
 	var _react = __webpack_require__(6);
 	
 	var _react2 = _interopRequireDefault(_react);
@@ -31199,18 +31460,6 @@ require('source-map-support').install({environment: 'node'});
 	var _reactDom = __webpack_require__(263);
 	
 	var _reactDom2 = _interopRequireDefault(_reactDom);
-	
-	var _properties = __webpack_require__(375);
-	
-	var _properties2 = _interopRequireDefault(_properties);
-	
-	var _on = __webpack_require__(316);
-	
-	var _on2 = _interopRequireDefault(_on);
-	
-	var _classnames = __webpack_require__(246);
-	
-	var _classnames2 = _interopRequireDefault(_classnames);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -31236,7 +31485,7 @@ require('source-map-support').install({environment: 'node'});
 	 * but is specifically optimized for transitioning a single child "in" or "out".
 	 *
 	 * You don't even need to use class based css transitions if you don't want to (but it is easiest).
-	 * The extensive set of lifecyle callbacks means you have control over
+	 * The extensive set of lifecycle callbacks means you have control over
 	 * the transitioning now at each step of the way.
 	 */
 	
@@ -31249,12 +31498,23 @@ require('source-map-support').install({environment: 'node'});
 	    var _this = _possibleConstructorReturn(this, (Transition.__proto__ || Object.getPrototypeOf(Transition)).call(this, props, context));
 	
 	    var initialStatus = void 0;
+	    _this.nextStatus = null;
+	
 	    if (props.in) {
-	      // Start enter transition in componentDidMount.
-	      initialStatus = props.transitionAppear ? EXITED : ENTERED;
+	      if (props.transitionAppear) {
+	        initialStatus = EXITED;
+	        _this.nextStatus = ENTERING;
+	      } else {
+	        initialStatus = ENTERED;
+	      }
 	    } else {
-	      initialStatus = props.unmountOnExit ? UNMOUNTED : EXITED;
+	      if (props.unmountOnExit || props.mountOnEnter) {
+	        initialStatus = UNMOUNTED;
+	      } else {
+	        initialStatus = EXITED;
+	      }
 	    }
+	
 	    _this.state = { status: initialStatus };
 	
 	    _this.nextCallback = null;
@@ -31264,57 +31524,31 @@ require('source-map-support').install({environment: 'node'});
 	  _createClass(Transition, [{
 	    key: 'componentDidMount',
 	    value: function componentDidMount() {
-	      if (this.props.transitionAppear && this.props.in) {
-	        this.performEnter(this.props);
-	      }
+	      this.updateStatus();
 	    }
 	  }, {
 	    key: 'componentWillReceiveProps',
 	    value: function componentWillReceiveProps(nextProps) {
-	      if (nextProps.in && this.props.unmountOnExit) {
-	        if (this.state.status === UNMOUNTED) {
-	          // Start enter transition in componentDidUpdate.
+	      var status = this.state.status;
+	
+	
+	      if (nextProps.in) {
+	        if (status === UNMOUNTED) {
 	          this.setState({ status: EXITED });
 	        }
+	        if (status !== ENTERING && status !== ENTERED) {
+	          this.nextStatus = ENTERING;
+	        }
 	      } else {
-	        this._needsUpdate = true;
+	        if (status === ENTERING || status === ENTERED) {
+	          this.nextStatus = EXITING;
+	        }
 	      }
 	    }
 	  }, {
 	    key: 'componentDidUpdate',
 	    value: function componentDidUpdate() {
-	      var status = this.state.status;
-	
-	      if (this.props.unmountOnExit && status === EXITED) {
-	        // EXITED is always a transitional state to either ENTERING or UNMOUNTED
-	        // when using unmountOnExit.
-	        if (this.props.in) {
-	          this.performEnter(this.props);
-	        } else {
-	          this.setState({ status: UNMOUNTED });
-	        }
-	
-	        return;
-	      }
-	
-	      // guard ensures we are only responding to prop changes
-	      if (this._needsUpdate) {
-	        this._needsUpdate = false;
-	
-	        if (this.props.in) {
-	          if (status === EXITING) {
-	            this.performEnter(this.props);
-	          } else if (status === EXITED) {
-	            this.performEnter(this.props);
-	          }
-	          // Otherwise we're already entering or entered.
-	        } else {
-	          if (status === ENTERING || status === ENTERED) {
-	            this.performExit(this.props);
-	          }
-	          // Otherwise we're already exited or exiting.
-	        }
-	      }
+	      this.updateStatus();
 	    }
 	  }, {
 	    key: 'componentWillUnmount',
@@ -31322,46 +31556,45 @@ require('source-map-support').install({environment: 'node'});
 	      this.cancelNextCallback();
 	    }
 	  }, {
-	    key: 'performEnter',
-	    value: function performEnter(props) {
+	    key: 'updateStatus',
+	    value: function updateStatus() {
 	      var _this2 = this;
 	
-	      this.cancelNextCallback();
-	      var node = _reactDom2.default.findDOMNode(this);
+	      if (this.nextStatus !== null) {
+	        // nextStatus will always be ENTERING or EXITING.
+	        this.cancelNextCallback();
+	        var node = _reactDom2.default.findDOMNode(this);
 	
-	      // Not this.props, because we might be about to receive new props.
-	      props.onEnter(node);
+	        if (this.nextStatus === ENTERING) {
+	          this.props.onEnter(node);
 	
-	      this.safeSetState({ status: ENTERING }, function () {
-	        _this2.props.onEntering(node);
+	          this.safeSetState({ status: ENTERING }, function () {
+	            _this2.props.onEntering(node);
 	
-	        _this2.onTransitionEnd(node, function () {
-	          _this2.safeSetState({ status: ENTERED }, function () {
-	            _this2.props.onEntered(node);
+	            _this2.onTransitionEnd(node, function () {
+	              _this2.safeSetState({ status: ENTERED }, function () {
+	                _this2.props.onEntered(node);
+	              });
+	            });
 	          });
-	        });
-	      });
-	    }
-	  }, {
-	    key: 'performExit',
-	    value: function performExit(props) {
-	      var _this3 = this;
+	        } else {
+	          this.props.onExit(node);
 	
-	      this.cancelNextCallback();
-	      var node = _reactDom2.default.findDOMNode(this);
+	          this.safeSetState({ status: EXITING }, function () {
+	            _this2.props.onExiting(node);
 	
-	      // Not this.props, because we might be about to receive new props.
-	      props.onExit(node);
-	
-	      this.safeSetState({ status: EXITING }, function () {
-	        _this3.props.onExiting(node);
-	
-	        _this3.onTransitionEnd(node, function () {
-	          _this3.safeSetState({ status: EXITED }, function () {
-	            _this3.props.onExited(node);
+	            _this2.onTransitionEnd(node, function () {
+	              _this2.safeSetState({ status: EXITED }, function () {
+	                _this2.props.onExited(node);
+	              });
+	            });
 	          });
-	        });
-	      });
+	        }
+	
+	        this.nextStatus = null;
+	      } else if (this.props.unmountOnExit && this.state.status === EXITED) {
+	        this.setState({ status: UNMOUNTED });
+	      }
 	    }
 	  }, {
 	    key: 'cancelNextCallback',
@@ -31382,14 +31615,14 @@ require('source-map-support').install({environment: 'node'});
 	  }, {
 	    key: 'setNextCallback',
 	    value: function setNextCallback(callback) {
-	      var _this4 = this;
+	      var _this3 = this;
 	
 	      var active = true;
 	
 	      this.nextCallback = function (event) {
 	        if (active) {
 	          active = false;
-	          _this4.nextCallback = null;
+	          _this3.nextCallback = null;
 	
 	          callback(event);
 	        }
@@ -31456,6 +31689,11 @@ require('source-map-support').install({environment: 'node'});
 	   * Show the component; triggers the enter or exit animation
 	   */
 	  in: _react2.default.PropTypes.bool,
+	
+	  /**
+	   * Wait until the first "enter" transition to mount the component (add it to the DOM)
+	   */
+	  mountOnEnter: _react2.default.PropTypes.bool,
 	
 	  /**
 	   * Unmount the component (remove it from the DOM) when it is not shown
@@ -31545,7 +31783,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Transition;
 
 /***/ },
-/* 375 */
+/* 378 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31660,7 +31898,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 376 */
+/* 379 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -31673,7 +31911,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports["default"];
 
 /***/ },
-/* 377 */
+/* 380 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31691,7 +31929,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _PanelGroup2.default;
 
 /***/ },
-/* 378 */
+/* 381 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31700,7 +31938,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Carousel = __webpack_require__(379);
+	var _Carousel = __webpack_require__(382);
 	
 	var _Carousel2 = _interopRequireDefault(_Carousel);
 	
@@ -31709,7 +31947,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Carousel2.default;
 
 /***/ },
-/* 379 */
+/* 382 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -31744,15 +31982,15 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _CarouselCaption = __webpack_require__(380);
+	var _CarouselCaption = __webpack_require__(383);
 	
 	var _CarouselCaption2 = _interopRequireDefault(_CarouselCaption);
 	
-	var _CarouselItem = __webpack_require__(381);
+	var _CarouselItem = __webpack_require__(384);
 	
 	var _CarouselItem2 = _interopRequireDefault(_CarouselItem);
 	
-	var _Glyphicon = __webpack_require__(383);
+	var _Glyphicon = __webpack_require__(386);
 	
 	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
 	
@@ -31949,7 +32187,7 @@ require('source-map-support').install({environment: 'node'});
 	      return;
 	    }
 	
-	    var previousActiveIndex = this.getActiveIndex();
+	    var previousActiveIndex = this.props.slide ? this.getActiveIndex() : null;
 	    direction = direction || this.getDirection(previousActiveIndex, index);
 	
 	    var onSelect = this.props.onSelect;
@@ -32167,7 +32405,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 380 */
+/* 383 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32253,7 +32491,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 381 */
+/* 384 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32292,7 +32530,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 	
-	var _TransitionEvents = __webpack_require__(382);
+	var _TransitionEvents = __webpack_require__(385);
 	
 	var _TransitionEvents2 = _interopRequireDefault(_TransitionEvents);
 	
@@ -32421,7 +32659,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 382 */
+/* 385 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -32539,7 +32777,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 383 */
+/* 386 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32580,7 +32818,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var propTypes = {
 	  /**
-	   * An icon name. See e.g. http://getbootstrap.com/components/#glyphicons
+	   * An icon name without "glyphicon-" prefix. See e.g. http://getbootstrap.com/components/#glyphicons
 	   */
 	  glyph: _react2['default'].PropTypes.string.isRequired
 	};
@@ -32621,7 +32859,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 384 */
+/* 387 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32630,7 +32868,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Checkbox = __webpack_require__(385);
+	var _Checkbox = __webpack_require__(388);
 	
 	var _Checkbox2 = _interopRequireDefault(_Checkbox);
 	
@@ -32639,7 +32877,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Checkbox2.default;
 
 /***/ },
-/* 385 */
+/* 388 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32779,7 +33017,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 386 */
+/* 389 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32788,7 +33026,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Clearfix = __webpack_require__(387);
+	var _Clearfix = __webpack_require__(390);
 	
 	var _Clearfix2 = _interopRequireDefault(_Clearfix);
 	
@@ -32797,7 +33035,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Clearfix2.default;
 
 /***/ },
-/* 387 */
+/* 390 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32838,7 +33076,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _bootstrapUtils = __webpack_require__(296);
 	
-	var _capitalize = __webpack_require__(376);
+	var _capitalize = __webpack_require__(379);
 	
 	var _capitalize2 = _interopRequireDefault(_capitalize);
 	
@@ -32931,7 +33169,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 388 */
+/* 391 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -32940,7 +33178,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ControlLabel = __webpack_require__(389);
+	var _ControlLabel = __webpack_require__(392);
 	
 	var _ControlLabel2 = _interopRequireDefault(_ControlLabel);
 	
@@ -32949,7 +33187,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ControlLabel2.default;
 
 /***/ },
-/* 389 */
+/* 392 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33054,7 +33292,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 390 */
+/* 393 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33072,7 +33310,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Collapse2.default;
 
 /***/ },
-/* 391 */
+/* 394 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33120,7 +33358,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _DropdownButton = __webpack_require__(392);
+	var _DropdownButton = __webpack_require__(395);
 	
 	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
 	
@@ -33368,7 +33606,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = DropdownButton;
 
 /***/ },
-/* 392 */
+/* 395 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33399,7 +33637,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Dropdown = __webpack_require__(393);
+	var _Dropdown = __webpack_require__(396);
 	
 	var _Dropdown2 = _interopRequireDefault(_Dropdown);
 	
@@ -33475,7 +33713,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 393 */
+/* 396 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -33506,11 +33744,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _activeElement = __webpack_require__(277);
+	var _activeElement = __webpack_require__(397);
 	
 	var _activeElement2 = _interopRequireDefault(_activeElement);
 	
-	var _contains = __webpack_require__(280);
+	var _contains = __webpack_require__(399);
 	
 	var _contains2 = _interopRequireDefault(_contains);
 	
@@ -33554,7 +33792,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _DropdownMenu2 = _interopRequireDefault(_DropdownMenu);
 	
-	var _DropdownToggle = __webpack_require__(394);
+	var _DropdownToggle = __webpack_require__(400);
 	
 	var _DropdownToggle2 = _interopRequireDefault(_DropdownToggle);
 	
@@ -33620,10 +33858,10 @@ require('source-map-support').install({environment: 'node'});
 	
 	  /**
 	   * A callback fired when the Dropdown wishes to change visibility. Called with the requested
-	   * `open` value.
+	   * `open` value, the DOM event, and the source that fired it: `'click'`,`'keydown'`,`'rootClose'`, or `'select'`.
 	   *
 	   * ```js
-	   * function(Boolean isOpen) {}
+	   * function(Boolean isOpen, Object event, { String source }) {}
 	   * ```
 	   * @controllable open
 	   */
@@ -33709,12 +33947,12 @@ require('source-map-support').install({environment: 'node'});
 	    }
 	  };
 	
-	  Dropdown.prototype.handleClick = function handleClick() {
+	  Dropdown.prototype.handleClick = function handleClick(event) {
 	    if (this.props.disabled) {
 	      return;
 	    }
 	
-	    this.toggleOpen('click');
+	    this.toggleOpen(event, { source: 'click' });
 	  };
 	
 	  Dropdown.prototype.handleKeyDown = function handleKeyDown(event) {
@@ -33725,7 +33963,7 @@ require('source-map-support').install({environment: 'node'});
 	    switch (event.keyCode) {
 	      case _keycode2['default'].codes.down:
 	        if (!this.props.open) {
-	          this.toggleOpen('keydown');
+	          this.toggleOpen(event, { source: 'keydown' });
 	        } else if (this.menu.focusNext) {
 	          this.menu.focusNext();
 	        }
@@ -33733,30 +33971,30 @@ require('source-map-support').install({environment: 'node'});
 	        break;
 	      case _keycode2['default'].codes.esc:
 	      case _keycode2['default'].codes.tab:
-	        this.handleClose(event);
+	        this.handleClose(event, { source: 'keydown' });
 	        break;
 	      default:
 	    }
 	  };
 	
-	  Dropdown.prototype.toggleOpen = function toggleOpen(eventType) {
+	  Dropdown.prototype.toggleOpen = function toggleOpen(event, eventDetails) {
 	    var open = !this.props.open;
 	
 	    if (open) {
-	      this.lastOpenEventType = eventType;
+	      this.lastOpenEventType = eventDetails.source;
 	    }
 	
 	    if (this.props.onToggle) {
-	      this.props.onToggle(open);
+	      this.props.onToggle(open, event, eventDetails);
 	    }
 	  };
 	
-	  Dropdown.prototype.handleClose = function handleClose() {
+	  Dropdown.prototype.handleClose = function handleClose(event, eventDetails) {
 	    if (!this.props.open) {
 	      return;
 	    }
 	
-	    this.toggleOpen(null);
+	    this.toggleOpen(event, eventDetails);
 	  };
 	
 	  Dropdown.prototype.focusNextOnOpen = function focusNextOnOpen() {
@@ -33824,7 +34062,9 @@ require('source-map-support').install({environment: 'node'});
 	      labelledBy: id,
 	      bsClass: (0, _bootstrapUtils.prefix)(props, 'menu'),
 	      onClose: (0, _createChainedFunction2['default'])(child.props.onClose, onClose, this.handleClose),
-	      onSelect: (0, _createChainedFunction2['default'])(child.props.onSelect, onSelect, this.handleClose),
+	      onSelect: (0, _createChainedFunction2['default'])(child.props.onSelect, onSelect, function (key, event) {
+	        return _this3.handleClose(event, { source: 'select' });
+	      }),
 	      rootCloseEvent: rootCloseEvent
 	    }));
 	  };
@@ -33901,7 +34141,87 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 394 */
+/* 397 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = activeElement;
+	
+	var _ownerDocument = __webpack_require__(398);
+	
+	var _ownerDocument2 = _interopRequireDefault(_ownerDocument);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function activeElement() {
+	  var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : (0, _ownerDocument2.default)();
+	
+	  try {
+	    return doc.activeElement;
+	  } catch (e) {/* ie throws if no active element */}
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 398 */
+/***/ function(module, exports) {
+
+	"use strict";
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = ownerDocument;
+	function ownerDocument(node) {
+	  return node && node.ownerDocument || document;
+	}
+	module.exports = exports["default"];
+
+/***/ },
+/* 399 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _inDOM = __webpack_require__(375);
+	
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.default = function () {
+	  // HTML DOM and SVG DOM may have different support levels,
+	  // so we need to check on context instead of a document root element.
+	  return _inDOM2.default ? function (context, node) {
+	    if (context.contains) {
+	      return context.contains(node);
+	    } else if (context.compareDocumentPosition) {
+	      return context === node || !!(context.compareDocumentPosition(node) & 16);
+	    } else {
+	      return fallback(context, node);
+	    }
+	  } : fallback;
+	}();
+	
+	function fallback(context, node) {
+	  if (node) do {
+	    if (node === context) return true;
+	  } while (node = node.parentNode);
+	
+	  return false;
+	}
+	module.exports = exports['default'];
+
+/***/ },
+/* 400 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34014,7 +34334,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 395 */
+/* 401 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34054,11 +34374,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _DropdownButton = __webpack_require__(392);
+	var _DropdownButton = __webpack_require__(395);
 	
 	var _DropdownButton2 = _interopRequireDefault(_DropdownButton);
 	
-	var _DropdownButton3 = __webpack_require__(391);
+	var _DropdownButton3 = __webpack_require__(394);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -34084,7 +34404,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = DropdownHoverButton;
 
 /***/ },
-/* 396 */
+/* 402 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34093,7 +34413,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Fade = __webpack_require__(397);
+	var _Fade = __webpack_require__(403);
 	
 	var _Fade2 = _interopRequireDefault(_Fade);
 	
@@ -34102,7 +34422,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Fade2.default;
 
 /***/ },
-/* 397 */
+/* 403 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34133,7 +34453,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Transition = __webpack_require__(374);
+	var _Transition = __webpack_require__(377);
 	
 	var _Transition2 = _interopRequireDefault(_Transition);
 	
@@ -34144,6 +34464,11 @@ require('source-map-support').install({environment: 'node'});
 	   * Show the component; triggers the fade in or fade out animation
 	   */
 	  'in': _react2['default'].PropTypes.bool,
+	
+	  /**
+	   * Wait until the first "enter" transition to mount the component (add it to the DOM)
+	   */
+	  mountOnEnter: _react2['default'].PropTypes.bool,
 	
 	  /**
 	   * Unmount the component (remove it from the DOM) when it is faded out
@@ -34192,6 +34517,7 @@ require('source-map-support').install({environment: 'node'});
 	var defaultProps = {
 	  'in': false,
 	  timeout: 300,
+	  mountOnEnter: false,
 	  unmountOnExit: false,
 	  transitionAppear: false
 	};
@@ -34222,7 +34548,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 398 */
+/* 404 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34262,15 +34588,15 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Form = __webpack_require__(399);
+	var _Form = __webpack_require__(405);
 	
 	var _Form2 = _interopRequireDefault(_Form);
 	
-	var _FormGroup = __webpack_require__(400);
+	var _FormGroup = __webpack_require__(406);
 	
 	var _FormGroup2 = _interopRequireDefault(_FormGroup);
 	
-	var _FormControl = __webpack_require__(402);
+	var _FormControl = __webpack_require__(408);
 	
 	var _FormControl2 = _interopRequireDefault(_FormControl);
 	
@@ -34330,7 +34656,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Form;
 
 /***/ },
-/* 399 */
+/* 405 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34428,7 +34754,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 400 */
+/* 406 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34437,7 +34763,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _FormGroup = __webpack_require__(401);
+	var _FormGroup = __webpack_require__(407);
 	
 	var _FormGroup2 = _interopRequireDefault(_FormGroup);
 	
@@ -34446,7 +34772,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _FormGroup2.default;
 
 /***/ },
-/* 401 */
+/* 407 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34570,7 +34896,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 402 */
+/* 408 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34579,7 +34905,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _FormControl = __webpack_require__(403);
+	var _FormControl = __webpack_require__(409);
 	
 	var _FormControl2 = _interopRequireDefault(_FormControl);
 	
@@ -34588,7 +34914,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _FormControl2.default;
 
 /***/ },
-/* 403 */
+/* 409 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34631,15 +34957,17 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _FormControlFeedback = __webpack_require__(404);
+	var _FormControlFeedback = __webpack_require__(410);
 	
 	var _FormControlFeedback2 = _interopRequireDefault(_FormControlFeedback);
 	
-	var _FormControlStatic = __webpack_require__(405);
+	var _FormControlStatic = __webpack_require__(411);
 	
 	var _FormControlStatic2 = _interopRequireDefault(_FormControlStatic);
 	
 	var _bootstrapUtils = __webpack_require__(296);
+	
+	var _StyleConfig = __webpack_require__(301);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 	
@@ -34690,7 +35018,8 @@ require('source-map-support').install({environment: 'node'});
 	        id = _props$id === undefined ? controlId : _props$id,
 	        inputRef = _props.inputRef,
 	        className = _props.className,
-	        props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'type', 'id', 'inputRef', 'className']);
+	        bsSize = _props.bsSize,
+	        props = (0, _objectWithoutProperties3['default'])(_props, ['componentClass', 'type', 'id', 'inputRef', 'className', 'bsSize']);
 	
 	    var _splitBsProps = (0, _bootstrapUtils.splitBsProps)(props),
 	        bsProps = _splitBsProps[0],
@@ -34702,6 +35031,13 @@ require('source-map-support').install({environment: 'node'});
 	    var classes = void 0;
 	    if (type !== 'file') {
 	      classes = (0, _bootstrapUtils.getClassSet)(bsProps);
+	    }
+	
+	    // If user provides a size, make sure to append it to classes as input-
+	    // e.g. if bsSize is small, it will append input-sm
+	    if (bsSize) {
+	      var size = _StyleConfig.SIZE_MAP[bsSize] || bsSize;
+	      classes[(0, _bootstrapUtils.prefix)({ bsClass: 'input' }, size)] = true;
 	    }
 	
 	    return _react2['default'].createElement(Component, (0, _extends3['default'])({}, elementProps, {
@@ -34722,11 +35058,11 @@ require('source-map-support').install({environment: 'node'});
 	FormControl.Feedback = _FormControlFeedback2['default'];
 	FormControl.Static = _FormControlStatic2['default'];
 	
-	exports['default'] = (0, _bootstrapUtils.bsClass)('form-control', FormControl);
+	exports['default'] = (0, _bootstrapUtils.bsClass)('form-control', (0, _bootstrapUtils.bsSizes)([_StyleConfig.Size.SMALL, _StyleConfig.Size.LARGE], FormControl));
 	module.exports = exports['default'];
 
 /***/ },
-/* 404 */
+/* 410 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34761,7 +35097,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Glyphicon = __webpack_require__(383);
+	var _Glyphicon = __webpack_require__(386);
 	
 	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
 	
@@ -34842,7 +35178,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 405 */
+/* 411 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34928,7 +35264,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 406 */
+/* 412 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34937,7 +35273,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _FormControlFeedback = __webpack_require__(404);
+	var _FormControlFeedback = __webpack_require__(410);
 	
 	var _FormControlFeedback2 = _interopRequireDefault(_FormControlFeedback);
 	
@@ -34946,7 +35282,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _FormControlFeedback2.default;
 
 /***/ },
-/* 407 */
+/* 413 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34955,7 +35291,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _FormControlStatic = __webpack_require__(405);
+	var _FormControlStatic = __webpack_require__(411);
 	
 	var _FormControlStatic2 = _interopRequireDefault(_FormControlStatic);
 	
@@ -34964,7 +35300,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _FormControlStatic2.default;
 
 /***/ },
-/* 408 */
+/* 414 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34973,7 +35309,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Glyphicon = __webpack_require__(383);
+	var _Glyphicon = __webpack_require__(386);
 	
 	var _Glyphicon2 = _interopRequireDefault(_Glyphicon);
 	
@@ -34982,7 +35318,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Glyphicon2.default;
 
 /***/ },
-/* 409 */
+/* 415 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -34991,7 +35327,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _HelpBlock = __webpack_require__(410);
+	var _HelpBlock = __webpack_require__(416);
 	
 	var _HelpBlock2 = _interopRequireDefault(_HelpBlock);
 	
@@ -35000,7 +35336,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _HelpBlock2.default;
 
 /***/ },
-/* 410 */
+/* 416 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35070,7 +35406,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 411 */
+/* 417 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35079,7 +35415,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Image = __webpack_require__(412);
+	var _Image = __webpack_require__(418);
 	
 	var _Image2 = _interopRequireDefault(_Image);
 	
@@ -35088,7 +35424,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Image2.default;
 
 /***/ },
-/* 412 */
+/* 418 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35196,7 +35532,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 413 */
+/* 419 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35205,7 +35541,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _InputGroup = __webpack_require__(414);
+	var _InputGroup = __webpack_require__(420);
 	
 	var _InputGroup2 = _interopRequireDefault(_InputGroup);
 	
@@ -35214,7 +35550,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _InputGroup2.default;
 
 /***/ },
-/* 414 */
+/* 420 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35249,11 +35585,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _InputGroupAddon = __webpack_require__(415);
+	var _InputGroupAddon = __webpack_require__(421);
 	
 	var _InputGroupAddon2 = _interopRequireDefault(_InputGroupAddon);
 	
-	var _InputGroupButton = __webpack_require__(416);
+	var _InputGroupButton = __webpack_require__(422);
 	
 	var _InputGroupButton2 = _interopRequireDefault(_InputGroupButton);
 	
@@ -35297,7 +35633,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 415 */
+/* 421 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35367,7 +35703,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 416 */
+/* 422 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35437,7 +35773,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 417 */
+/* 423 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35446,7 +35782,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Jumbotron = __webpack_require__(418);
+	var _Jumbotron = __webpack_require__(424);
 	
 	var _Jumbotron2 = _interopRequireDefault(_Jumbotron);
 	
@@ -35455,7 +35791,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Jumbotron2.default;
 
 /***/ },
-/* 418 */
+/* 424 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35541,7 +35877,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 419 */
+/* 425 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35703,7 +36039,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 420 */
+/* 426 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35712,7 +36048,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Label = __webpack_require__(421);
+	var _Label = __webpack_require__(427);
 	
 	var _Label2 = _interopRequireDefault(_Label);
 	
@@ -35721,7 +36057,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Label2.default;
 
 /***/ },
-/* 421 */
+/* 427 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35822,7 +36158,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 422 */
+/* 428 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35890,7 +36226,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Lead;
 
 /***/ },
-/* 423 */
+/* 429 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35899,7 +36235,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ListGroup = __webpack_require__(424);
+	var _ListGroup = __webpack_require__(430);
 	
 	var _ListGroup2 = _interopRequireDefault(_ListGroup);
 	
@@ -35908,7 +36244,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ListGroup2.default;
 
 /***/ },
-/* 424 */
+/* 430 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -35947,7 +36283,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _ListGroupItem = __webpack_require__(425);
+	var _ListGroupItem = __webpack_require__(431);
 	
 	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
 	
@@ -36030,7 +36366,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 425 */
+/* 431 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36176,7 +36512,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 426 */
+/* 432 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36185,7 +36521,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ListGroupItem = __webpack_require__(425);
+	var _ListGroupItem = __webpack_require__(431);
 	
 	var _ListGroupItem2 = _interopRequireDefault(_ListGroupItem);
 	
@@ -36194,7 +36530,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ListGroupItem2.default;
 
 /***/ },
-/* 427 */
+/* 433 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36373,7 +36709,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 
 /***/ },
-/* 428 */
+/* 434 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36382,7 +36718,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Media = __webpack_require__(429);
+	var _Media = __webpack_require__(435);
 	
 	var _Media2 = _interopRequireDefault(_Media);
 	
@@ -36391,7 +36727,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Media2.default;
 
 /***/ },
-/* 429 */
+/* 435 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36430,27 +36766,27 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _MediaBody = __webpack_require__(430);
+	var _MediaBody = __webpack_require__(436);
 	
 	var _MediaBody2 = _interopRequireDefault(_MediaBody);
 	
-	var _MediaHeading = __webpack_require__(431);
+	var _MediaHeading = __webpack_require__(437);
 	
 	var _MediaHeading2 = _interopRequireDefault(_MediaHeading);
 	
-	var _MediaLeft = __webpack_require__(432);
+	var _MediaLeft = __webpack_require__(438);
 	
 	var _MediaLeft2 = _interopRequireDefault(_MediaLeft);
 	
-	var _MediaList = __webpack_require__(433);
+	var _MediaList = __webpack_require__(439);
 	
 	var _MediaList2 = _interopRequireDefault(_MediaList);
 	
-	var _MediaListItem = __webpack_require__(434);
+	var _MediaListItem = __webpack_require__(440);
 	
 	var _MediaListItem2 = _interopRequireDefault(_MediaListItem);
 	
-	var _MediaRight = __webpack_require__(435);
+	var _MediaRight = __webpack_require__(441);
 	
 	var _MediaRight2 = _interopRequireDefault(_MediaRight);
 	
@@ -36508,7 +36844,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 430 */
+/* 436 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36594,7 +36930,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 431 */
+/* 437 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36680,7 +37016,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 432 */
+/* 438 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36715,7 +37051,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Media = __webpack_require__(429);
+	var _Media = __webpack_require__(435);
 	
 	var _Media2 = _interopRequireDefault(_Media);
 	
@@ -36769,7 +37105,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 433 */
+/* 439 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36839,7 +37175,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 434 */
+/* 440 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36909,7 +37245,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 435 */
+/* 441 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -36944,7 +37280,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Media = __webpack_require__(429);
+	var _Media = __webpack_require__(435);
 	
 	var _Media2 = _interopRequireDefault(_Media);
 	
@@ -36998,7 +37334,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 436 */
+/* 442 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37007,7 +37343,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaBody = __webpack_require__(430);
+	var _MediaBody = __webpack_require__(436);
 	
 	var _MediaBody2 = _interopRequireDefault(_MediaBody);
 	
@@ -37016,7 +37352,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaBody2.default;
 
 /***/ },
-/* 437 */
+/* 443 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37025,7 +37361,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaHeading = __webpack_require__(431);
+	var _MediaHeading = __webpack_require__(437);
 	
 	var _MediaHeading2 = _interopRequireDefault(_MediaHeading);
 	
@@ -37034,7 +37370,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaHeading2.default;
 
 /***/ },
-/* 438 */
+/* 444 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37043,7 +37379,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaLeft = __webpack_require__(432);
+	var _MediaLeft = __webpack_require__(438);
 	
 	var _MediaLeft2 = _interopRequireDefault(_MediaLeft);
 	
@@ -37052,7 +37388,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaLeft2.default;
 
 /***/ },
-/* 439 */
+/* 445 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37061,7 +37397,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaList = __webpack_require__(433);
+	var _MediaList = __webpack_require__(439);
 	
 	var _MediaList2 = _interopRequireDefault(_MediaList);
 	
@@ -37070,7 +37406,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaList2.default;
 
 /***/ },
-/* 440 */
+/* 446 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37079,7 +37415,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaListItem = __webpack_require__(434);
+	var _MediaListItem = __webpack_require__(440);
 	
 	var _MediaListItem2 = _interopRequireDefault(_MediaListItem);
 	
@@ -37088,7 +37424,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaListItem2.default;
 
 /***/ },
-/* 441 */
+/* 447 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37097,7 +37433,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _MediaRight = __webpack_require__(435);
+	var _MediaRight = __webpack_require__(441);
 	
 	var _MediaRight2 = _interopRequireDefault(_MediaRight);
 	
@@ -37106,7 +37442,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _MediaRight2.default;
 
 /***/ },
-/* 442 */
+/* 448 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37148,7 +37484,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _MenuItem = __webpack_require__(443);
+	var _MenuItem = __webpack_require__(449);
 	
 	var _MenuItem2 = _interopRequireDefault(_MenuItem);
 	
@@ -37183,7 +37519,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = MenuItem;
 
 /***/ },
-/* 443 */
+/* 449 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37383,7 +37719,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 444 */
+/* 450 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37393,7 +37729,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = undefined;
 	
-	var _keys = __webpack_require__(445);
+	var _keys = __webpack_require__(451);
 	
 	var _keys2 = _interopRequireDefault(_keys);
 	
@@ -37427,11 +37763,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Modal = __webpack_require__(448);
+	var _Modal = __webpack_require__(454);
 	
 	var _Modal2 = _interopRequireDefault(_Modal);
 	
-	var _ModalDialog = __webpack_require__(483);
+	var _ModalDialog = __webpack_require__(490);
 	
 	var _ModalDialog2 = _interopRequireDefault(_ModalDialog);
 	
@@ -37483,20 +37819,20 @@ require('source-map-support').install({environment: 'node'});
 	Modal.Dialog = _ModalDialog2.default;
 
 /***/ },
-/* 445 */
+/* 451 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = { "default": __webpack_require__(446), __esModule: true };
+	module.exports = { "default": __webpack_require__(452), __esModule: true };
 
 /***/ },
-/* 446 */
+/* 452 */
 /***/ function(module, exports, __webpack_require__) {
 
-	__webpack_require__(447);
+	__webpack_require__(453);
 	module.exports = __webpack_require__(181).Object.keys;
 
 /***/ },
-/* 447 */
+/* 453 */
 /***/ function(module, exports, __webpack_require__) {
 
 	// 19.1.2.14 Object.keys(O)
@@ -37510,7 +37846,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 
 /***/ },
-/* 448 */
+/* 454 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -37541,19 +37877,19 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _events = __webpack_require__(449);
+	var _events = __webpack_require__(455);
 	
 	var _events2 = _interopRequireDefault(_events);
 	
-	var _ownerDocument = __webpack_require__(279);
+	var _ownerDocument = __webpack_require__(398);
 	
 	var _ownerDocument2 = _interopRequireDefault(_ownerDocument);
 	
-	var _inDOM = __webpack_require__(281);
+	var _inDOM = __webpack_require__(375);
 	
 	var _inDOM2 = _interopRequireDefault(_inDOM);
 	
-	var _scrollbarSize = __webpack_require__(454);
+	var _scrollbarSize = __webpack_require__(461);
 	
 	var _scrollbarSize2 = _interopRequireDefault(_scrollbarSize);
 	
@@ -37565,11 +37901,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 	
-	var _Modal = __webpack_require__(455);
+	var _Modal = __webpack_require__(462);
 	
 	var _Modal2 = _interopRequireDefault(_Modal);
 	
-	var _isOverflowing = __webpack_require__(473);
+	var _isOverflowing = __webpack_require__(480);
 	
 	var _isOverflowing2 = _interopRequireDefault(_isOverflowing);
 	
@@ -37577,27 +37913,27 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _Fade = __webpack_require__(397);
+	var _Fade = __webpack_require__(403);
 	
 	var _Fade2 = _interopRequireDefault(_Fade);
 	
-	var _ModalBody = __webpack_require__(478);
+	var _ModalBody = __webpack_require__(485);
 	
 	var _ModalBody2 = _interopRequireDefault(_ModalBody);
 	
-	var _ModalDialog = __webpack_require__(479);
+	var _ModalDialog = __webpack_require__(486);
 	
 	var _ModalDialog2 = _interopRequireDefault(_ModalDialog);
 	
-	var _ModalFooter = __webpack_require__(480);
+	var _ModalFooter = __webpack_require__(487);
 	
 	var _ModalFooter2 = _interopRequireDefault(_ModalFooter);
 	
-	var _ModalHeader = __webpack_require__(481);
+	var _ModalHeader = __webpack_require__(488);
 	
 	var _ModalHeader2 = _interopRequireDefault(_ModalHeader);
 	
-	var _ModalTitle = __webpack_require__(482);
+	var _ModalTitle = __webpack_require__(489);
 	
 	var _ModalTitle2 = _interopRequireDefault(_ModalTitle);
 	
@@ -37654,6 +37990,12 @@ require('source-map-support').install({environment: 'node'});
 	   * the Modal work well with assistive technologies, such as screen readers.
 	   */
 	  enforceFocus: _react2['default'].PropTypes.bool,
+	
+	  /**
+	   * When `true` The modal will restore focus to previously focused element once
+	   * modal is hidden
+	   */
+	  restoreFocus: _react2['default'].PropTypes.bool,
 	
 	  /**
 	   * When `true` The modal will show itself.
@@ -37858,92 +38200,157 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 449 */
+/* 455 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var on = __webpack_require__(450),
-	    off = __webpack_require__(451),
-	    filter = __webpack_require__(452);
 	
-	module.exports = { on: on, off: off, filter: filter };
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.listen = exports.filter = exports.off = exports.on = undefined;
+	
+	var _on = __webpack_require__(456);
+	
+	var _on2 = _interopRequireDefault(_on);
+	
+	var _off = __webpack_require__(457);
+	
+	var _off2 = _interopRequireDefault(_off);
+	
+	var _filter = __webpack_require__(458);
+	
+	var _filter2 = _interopRequireDefault(_filter);
+	
+	var _listen = __webpack_require__(460);
+	
+	var _listen2 = _interopRequireDefault(_listen);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	exports.on = _on2.default;
+	exports.off = _off2.default;
+	exports.filter = _filter2.default;
+	exports.listen = _listen2.default;
+	exports.default = { on: _on2.default, off: _off2.default, filter: _filter2.default, listen: _listen2.default };
 
 /***/ },
-/* 450 */
+/* 456 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var canUseDOM = __webpack_require__(281);
-	var on = function on() {};
 	
-	if (canUseDOM) {
-	  on = (function () {
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _inDOM = __webpack_require__(375);
+	
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var on = function on() {};
+	if (_inDOM2.default) {
+	  on = function () {
 	
 	    if (document.addEventListener) return function (node, eventName, handler, capture) {
 	      return node.addEventListener(eventName, handler, capture || false);
 	    };else if (document.attachEvent) return function (node, eventName, handler) {
-	      return node.attachEvent('on' + eventName, handler);
+	      return node.attachEvent('on' + eventName, function (e) {
+	        e = e || window.event;
+	        e.target = e.target || e.srcElement;
+	        e.currentTarget = node;
+	        handler.call(node, e);
+	      });
 	    };
-	  })();
+	  }();
 	}
 	
-	module.exports = on;
+	exports.default = on;
+	module.exports = exports['default'];
 
 /***/ },
-/* 451 */
+/* 457 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var canUseDOM = __webpack_require__(281);
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _inDOM = __webpack_require__(375);
+	
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
 	var off = function off() {};
-	
-	if (canUseDOM) {
-	
-	  off = (function () {
-	
+	if (_inDOM2.default) {
+	  off = function () {
 	    if (document.addEventListener) return function (node, eventName, handler, capture) {
 	      return node.removeEventListener(eventName, handler, capture || false);
 	    };else if (document.attachEvent) return function (node, eventName, handler) {
 	      return node.detachEvent('on' + eventName, handler);
 	    };
-	  })();
+	  }();
 	}
 	
-	module.exports = off;
+	exports.default = off;
+	module.exports = exports['default'];
 
 /***/ },
-/* 452 */
+/* 458 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var contains = __webpack_require__(280),
-	    qsa = __webpack_require__(453);
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = filterEvents;
 	
-	module.exports = function (selector, handler) {
-	  return function (e) {
+	var _contains = __webpack_require__(399);
+	
+	var _contains2 = _interopRequireDefault(_contains);
+	
+	var _querySelectorAll = __webpack_require__(459);
+	
+	var _querySelectorAll2 = _interopRequireDefault(_querySelectorAll);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	function filterEvents(selector, handler) {
+	  return function filterHandler(e) {
 	    var top = e.currentTarget,
 	        target = e.target,
-	        matches = qsa(top, selector);
+	        matches = (0, _querySelectorAll2.default)(top, selector);
 	
 	    if (matches.some(function (match) {
-	      return contains(match, target);
+	      return (0, _contains2.default)(match, target);
 	    })) handler.call(this, e);
 	  };
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
-/* 453 */
+/* 459 */
 /***/ function(module, exports) {
 
 	'use strict';
-	//     Zepto.js
-	//     (c) 2010-2015 Thomas Fuchs
-	//     Zepto.js may be freely distributed under the MIT license.
-	var simpleSelectorRE = /^[\w-]*$/,
-	    toArray = Function.prototype.bind.call(Function.prototype.call, [].slice);
 	
-	module.exports = function qsa(element, selector) {
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.default = qsa;
+	// Zepto.js
+	// (c) 2010-2015 Thomas Fuchs
+	// Zepto.js may be freely distributed under the MIT license.
+	var simpleSelectorRE = /^[\w-]*$/;
+	var toArray = Function.prototype.bind.call(Function.prototype.call, [].slice);
+	
+	function qsa(element, selector) {
 	  var maybeID = selector[0] === '#',
 	      maybeClass = selector[0] === '.',
 	      nameOnly = maybeID || maybeClass ? selector.slice(1) : selector,
@@ -37962,21 +38369,60 @@ require('source-map-support').install({environment: 'node'});
 	  }
 	
 	  return toArray(element.querySelectorAll(selector));
-	};
+	}
+	module.exports = exports['default'];
 
 /***/ },
-/* 454 */
+/* 460 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var canUseDOM = __webpack_require__(281);
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
 	
-	var size;
+	var _inDOM = __webpack_require__(375);
 	
-	module.exports = function (recalc) {
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	var _on = __webpack_require__(456);
+	
+	var _on2 = _interopRequireDefault(_on);
+	
+	var _off = __webpack_require__(457);
+	
+	var _off2 = _interopRequireDefault(_off);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var listen = function listen() {};
+	
+	if (_inDOM2.default) {
+	  listen = function listen(node, eventName, handler, capture) {
+	    (0, _on2.default)(node, eventName, handler, capture);
+	    return function () {
+	      (0, _off2.default)(node, eventName, handler, capture);
+	    };
+	  };
+	}
+	
+	exports.default = listen;
+	module.exports = exports['default'];
+
+/***/ },
+/* 461 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	exports.default = function (recalc) {
 	  if (!size || recalc) {
-	    if (canUseDOM) {
+	    if (_inDOM2.default) {
 	      var scrollDiv = document.createElement('div');
 	
 	      scrollDiv.style.position = 'absolute';
@@ -37993,9 +38439,19 @@ require('source-map-support').install({environment: 'node'});
 	
 	  return size;
 	};
+	
+	var _inDOM = __webpack_require__(375);
+	
+	var _inDOM2 = _interopRequireDefault(_inDOM);
+	
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+	
+	var size = void 0;
+	
+	module.exports = exports['default'];
 
 /***/ },
-/* 455 */
+/* 462 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38015,7 +38471,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _componentOrElement = __webpack_require__(456);
+	var _componentOrElement = __webpack_require__(463);
 	
 	var _componentOrElement2 = _interopRequireDefault(_componentOrElement);
 	
@@ -38023,11 +38479,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _Portal = __webpack_require__(457);
+	var _Portal = __webpack_require__(464);
 	
 	var _Portal2 = _interopRequireDefault(_Portal);
 	
-	var _ModalManager = __webpack_require__(459);
+	var _ModalManager = __webpack_require__(466);
 	
 	var _ModalManager2 = _interopRequireDefault(_ModalManager);
 	
@@ -38039,7 +38495,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _addEventListener2 = _interopRequireDefault(_addEventListener);
 	
-	var _addFocusListener = __webpack_require__(476);
+	var _addFocusListener = __webpack_require__(483);
 	
 	var _addFocusListener2 = _interopRequireDefault(_addFocusListener);
 	
@@ -38047,7 +38503,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _inDOM2 = _interopRequireDefault(_inDOM);
 	
-	var _activeElement = __webpack_require__(477);
+	var _activeElement = __webpack_require__(484);
 	
 	var _activeElement2 = _interopRequireDefault(_activeElement);
 	
@@ -38055,7 +38511,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _contains2 = _interopRequireDefault(_contains);
 	
-	var _getContainer = __webpack_require__(458);
+	var _getContainer = __webpack_require__(465);
 	
 	var _getContainer2 = _interopRequireDefault(_getContainer);
 	
@@ -38201,6 +38657,12 @@ require('source-map-support').install({environment: 'node'});
 	    enforceFocus: _react2.default.PropTypes.bool,
 	
 	    /**
+	     * When `true` The modal will restore focus to previously focused element once
+	     * modal is hidden
+	     */
+	    restoreFocus: _react2.default.PropTypes.bool,
+	
+	    /**
 	     * Callback fired before the Modal transitions in
 	     */
 	    onEnter: _react2.default.PropTypes.func,
@@ -38246,6 +38708,7 @@ require('source-map-support').install({environment: 'node'});
 	      keyboard: true,
 	      autoFocus: true,
 	      enforceFocus: true,
+	      restoreFocus: true,
 	      onHide: noop,
 	      manager: modalManager,
 	      renderBackdrop: function renderBackdrop(props) {
@@ -38446,7 +38909,9 @@ require('source-map-support').install({environment: 'node'});
 	
 	    this._onFocusinListener.remove();
 	
-	    this.restoreLastFocus();
+	    if (this.props.restoreFocus) {
+	      this.restoreLastFocus();
+	    }
 	  },
 	  setMountNode: function setMountNode(ref) {
 	    this.mountNode = ref ? ref.getMountNode() : ref;
@@ -38544,7 +39009,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 456 */
+/* 463 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38581,7 +39046,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = (0, _createChainableTypeChecker2.default)(validate);
 
 /***/ },
-/* 457 */
+/* 464 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38598,7 +39063,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 	
-	var _componentOrElement = __webpack_require__(456);
+	var _componentOrElement = __webpack_require__(463);
 	
 	var _componentOrElement2 = _interopRequireDefault(_componentOrElement);
 	
@@ -38606,7 +39071,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _ownerDocument2 = _interopRequireDefault(_ownerDocument);
 	
-	var _getContainer = __webpack_require__(458);
+	var _getContainer = __webpack_require__(465);
 	
 	var _getContainer2 = _interopRequireDefault(_getContainer);
 	
@@ -38703,7 +39168,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 458 */
+/* 465 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38726,7 +39191,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 459 */
+/* 466 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38737,23 +39202,23 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _style = __webpack_require__(460);
+	var _style = __webpack_require__(467);
 	
 	var _style2 = _interopRequireDefault(_style);
 	
-	var _class = __webpack_require__(468);
+	var _class = __webpack_require__(475);
 	
 	var _class2 = _interopRequireDefault(_class);
 	
-	var _scrollbarSize = __webpack_require__(472);
+	var _scrollbarSize = __webpack_require__(479);
 	
 	var _scrollbarSize2 = _interopRequireDefault(_scrollbarSize);
 	
-	var _isOverflowing = __webpack_require__(473);
+	var _isOverflowing = __webpack_require__(480);
 	
 	var _isOverflowing2 = _interopRequireDefault(_isOverflowing);
 	
-	var _manageAriaHidden = __webpack_require__(475);
+	var _manageAriaHidden = __webpack_require__(482);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -38917,7 +39382,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 460 */
+/* 467 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38927,25 +39392,25 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = style;
 	
-	var _camelizeStyle = __webpack_require__(461);
+	var _camelizeStyle = __webpack_require__(468);
 	
 	var _camelizeStyle2 = _interopRequireDefault(_camelizeStyle);
 	
-	var _hyphenateStyle = __webpack_require__(463);
+	var _hyphenateStyle = __webpack_require__(470);
 	
 	var _hyphenateStyle2 = _interopRequireDefault(_hyphenateStyle);
 	
-	var _getComputedStyle2 = __webpack_require__(465);
+	var _getComputedStyle2 = __webpack_require__(472);
 	
 	var _getComputedStyle3 = _interopRequireDefault(_getComputedStyle2);
 	
-	var _removeStyle = __webpack_require__(466);
+	var _removeStyle = __webpack_require__(473);
 	
 	var _removeStyle2 = _interopRequireDefault(_removeStyle);
 	
-	var _properties = __webpack_require__(375);
+	var _properties = __webpack_require__(378);
 	
-	var _isTransform = __webpack_require__(467);
+	var _isTransform = __webpack_require__(474);
 	
 	var _isTransform2 = _interopRequireDefault(_isTransform);
 	
@@ -38984,7 +39449,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 461 */
+/* 468 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -38994,7 +39459,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = camelizeStyleName;
 	
-	var _camelize = __webpack_require__(462);
+	var _camelize = __webpack_require__(469);
 	
 	var _camelize2 = _interopRequireDefault(_camelize);
 	
@@ -39011,7 +39476,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 462 */
+/* 469 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39030,7 +39495,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports["default"];
 
 /***/ },
-/* 463 */
+/* 470 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39040,7 +39505,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = hyphenateStyleName;
 	
-	var _hyphenate = __webpack_require__(464);
+	var _hyphenate = __webpack_require__(471);
 	
 	var _hyphenate2 = _interopRequireDefault(_hyphenate);
 	
@@ -39058,7 +39523,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 464 */
+/* 471 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39076,7 +39541,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 465 */
+/* 472 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39086,7 +39551,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = _getComputedStyle;
 	
-	var _camelizeStyle = __webpack_require__(461);
+	var _camelizeStyle = __webpack_require__(468);
 	
 	var _camelizeStyle2 = _interopRequireDefault(_camelizeStyle);
 	
@@ -39136,7 +39601,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 466 */
+/* 473 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39151,7 +39616,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 467 */
+/* 474 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39168,7 +39633,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports["default"];
 
 /***/ },
-/* 468 */
+/* 475 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39178,15 +39643,15 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.hasClass = exports.removeClass = exports.addClass = undefined;
 	
-	var _addClass = __webpack_require__(469);
+	var _addClass = __webpack_require__(476);
 	
 	var _addClass2 = _interopRequireDefault(_addClass);
 	
-	var _removeClass = __webpack_require__(471);
+	var _removeClass = __webpack_require__(478);
 	
 	var _removeClass2 = _interopRequireDefault(_removeClass);
 	
-	var _hasClass = __webpack_require__(470);
+	var _hasClass = __webpack_require__(477);
 	
 	var _hasClass2 = _interopRequireDefault(_hasClass);
 	
@@ -39198,7 +39663,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = { addClass: _addClass2.default, removeClass: _removeClass2.default, hasClass: _hasClass2.default };
 
 /***/ },
-/* 469 */
+/* 476 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39208,7 +39673,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = addClass;
 	
-	var _hasClass = __webpack_require__(470);
+	var _hasClass = __webpack_require__(477);
 	
 	var _hasClass2 = _interopRequireDefault(_hasClass);
 	
@@ -39220,7 +39685,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 470 */
+/* 477 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39235,7 +39700,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports["default"];
 
 /***/ },
-/* 471 */
+/* 478 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39245,7 +39710,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 472 */
+/* 479 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39285,7 +39750,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 473 */
+/* 480 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39295,7 +39760,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = isOverflowing;
 	
-	var _isWindow = __webpack_require__(474);
+	var _isWindow = __webpack_require__(481);
 	
 	var _isWindow2 = _interopRequireDefault(_isWindow);
 	
@@ -39331,7 +39796,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 474 */
+/* 481 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -39346,7 +39811,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports["default"];
 
 /***/ },
-/* 475 */
+/* 482 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39400,7 +39865,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 476 */
+/* 483 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -39436,7 +39901,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 477 */
+/* 484 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39462,7 +39927,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 478 */
+/* 485 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39548,7 +40013,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 479 */
+/* 486 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39653,7 +40118,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 480 */
+/* 487 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39739,7 +40204,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 481 */
+/* 488 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39853,7 +40318,7 @@ require('source-map-support').install({environment: 'node'});
 	          type: 'button',
 	          className: 'close',
 	          'aria-label': label,
-	          onClick: (0, _createChainedFunction2['default'])(modal.onHide, onHide)
+	          onClick: (0, _createChainedFunction2['default'])(modal && modal.onHide, onHide)
 	        },
 	        _react2['default'].createElement(
 	          'span',
@@ -39876,7 +40341,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 482 */
+/* 489 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -39962,7 +40427,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 483 */
+/* 490 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40006,7 +40471,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _ModalDialog = __webpack_require__(479);
+	var _ModalDialog = __webpack_require__(486);
 	
 	var _ModalDialog2 = _interopRequireDefault(_ModalDialog);
 	
@@ -40046,7 +40511,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = ModalDialog;
 
 /***/ },
-/* 484 */
+/* 491 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40055,7 +40520,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ModalBody = __webpack_require__(478);
+	var _ModalBody = __webpack_require__(485);
 	
 	var _ModalBody2 = _interopRequireDefault(_ModalBody);
 	
@@ -40064,7 +40529,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ModalBody2.default;
 
 /***/ },
-/* 485 */
+/* 492 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40073,7 +40538,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ModalFooter = __webpack_require__(480);
+	var _ModalFooter = __webpack_require__(487);
 	
 	var _ModalFooter2 = _interopRequireDefault(_ModalFooter);
 	
@@ -40082,7 +40547,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ModalFooter2.default;
 
 /***/ },
-/* 486 */
+/* 493 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40091,7 +40556,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ModalHeader = __webpack_require__(481);
+	var _ModalHeader = __webpack_require__(488);
 	
 	var _ModalHeader2 = _interopRequireDefault(_ModalHeader);
 	
@@ -40100,7 +40565,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ModalHeader2.default;
 
 /***/ },
-/* 487 */
+/* 494 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40109,7 +40574,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ModalTitle = __webpack_require__(482);
+	var _ModalTitle = __webpack_require__(489);
 	
 	var _ModalTitle2 = _interopRequireDefault(_ModalTitle);
 	
@@ -40118,7 +40583,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ModalTitle2.default;
 
 /***/ },
-/* 488 */
+/* 495 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40127,7 +40592,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Navbar = __webpack_require__(489);
+	var _Navbar = __webpack_require__(496);
 	
 	var _Navbar2 = _interopRequireDefault(_Navbar);
 	
@@ -40136,7 +40601,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Navbar2.default;
 
 /***/ },
-/* 489 */
+/* 496 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40183,19 +40648,19 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Grid2 = _interopRequireDefault(_Grid);
 	
-	var _NavbarBrand = __webpack_require__(490);
+	var _NavbarBrand = __webpack_require__(497);
 	
 	var _NavbarBrand2 = _interopRequireDefault(_NavbarBrand);
 	
-	var _NavbarCollapse = __webpack_require__(491);
+	var _NavbarCollapse = __webpack_require__(498);
 	
 	var _NavbarCollapse2 = _interopRequireDefault(_NavbarCollapse);
 	
-	var _NavbarHeader = __webpack_require__(492);
+	var _NavbarHeader = __webpack_require__(499);
 	
 	var _NavbarHeader2 = _interopRequireDefault(_NavbarHeader);
 	
-	var _NavbarToggle = __webpack_require__(493);
+	var _NavbarToggle = __webpack_require__(500);
 	
 	var _NavbarToggle2 = _interopRequireDefault(_NavbarToggle);
 	
@@ -40467,7 +40932,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 490 */
+/* 497 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40552,7 +41017,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 491 */
+/* 498 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40635,7 +41100,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 492 */
+/* 499 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40709,7 +41174,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 493 */
+/* 500 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40824,7 +41289,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 494 */
+/* 501 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40833,7 +41298,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _NavbarBrand = __webpack_require__(490);
+	var _NavbarBrand = __webpack_require__(497);
 	
 	var _NavbarBrand2 = _interopRequireDefault(_NavbarBrand);
 	
@@ -40842,7 +41307,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _NavbarBrand2.default;
 
 /***/ },
-/* 495 */
+/* 502 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40851,7 +41316,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _NavbarCollapse = __webpack_require__(491);
+	var _NavbarCollapse = __webpack_require__(498);
 	
 	var _NavbarCollapse2 = _interopRequireDefault(_NavbarCollapse);
 	
@@ -40860,7 +41325,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _NavbarCollapse2.default;
 
 /***/ },
-/* 496 */
+/* 503 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40869,7 +41334,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _NavbarHeader = __webpack_require__(492);
+	var _NavbarHeader = __webpack_require__(499);
 	
 	var _NavbarHeader2 = _interopRequireDefault(_NavbarHeader);
 	
@@ -40878,7 +41343,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _NavbarHeader2.default;
 
 /***/ },
-/* 497 */
+/* 504 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40887,7 +41352,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _NavbarToggle = __webpack_require__(493);
+	var _NavbarToggle = __webpack_require__(500);
 	
 	var _NavbarToggle2 = _interopRequireDefault(_NavbarToggle);
 	
@@ -40896,7 +41361,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _NavbarToggle2.default;
 
 /***/ },
-/* 498 */
+/* 505 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40905,7 +41370,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Overlay = __webpack_require__(499);
+	var _Overlay = __webpack_require__(506);
 	
 	var _Overlay2 = _interopRequireDefault(_Overlay);
 	
@@ -40914,7 +41379,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Overlay2.default;
 
 /***/ },
-/* 499 */
+/* 506 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -40949,7 +41414,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Overlay = __webpack_require__(500);
+	var _Overlay = __webpack_require__(507);
 	
 	var _Overlay2 = _interopRequireDefault(_Overlay);
 	
@@ -40957,7 +41422,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _Fade = __webpack_require__(397);
+	var _Fade = __webpack_require__(403);
 	
 	var _Fade2 = _interopRequireDefault(_Fade);
 	
@@ -41073,7 +41538,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 500 */
+/* 507 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41090,11 +41555,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _Portal = __webpack_require__(457);
+	var _Portal = __webpack_require__(464);
 	
 	var _Portal2 = _interopRequireDefault(_Portal);
 	
-	var _Position = __webpack_require__(501);
+	var _Position = __webpack_require__(508);
 	
 	var _Position2 = _interopRequireDefault(_Position);
 	
@@ -41305,7 +41770,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 501 */
+/* 508 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41330,15 +41795,15 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 	
-	var _componentOrElement = __webpack_require__(456);
+	var _componentOrElement = __webpack_require__(463);
 	
 	var _componentOrElement2 = _interopRequireDefault(_componentOrElement);
 	
-	var _calculatePosition = __webpack_require__(502);
+	var _calculatePosition = __webpack_require__(509);
 	
 	var _calculatePosition2 = _interopRequireDefault(_calculatePosition);
 	
-	var _getContainer = __webpack_require__(458);
+	var _getContainer = __webpack_require__(465);
 	
 	var _getContainer2 = _interopRequireDefault(_getContainer);
 	
@@ -41519,7 +41984,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 502 */
+/* 509 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41529,15 +41994,15 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = calculatePosition;
 	
-	var _offset = __webpack_require__(503);
+	var _offset = __webpack_require__(510);
 	
 	var _offset2 = _interopRequireDefault(_offset);
 	
-	var _position = __webpack_require__(504);
+	var _position = __webpack_require__(511);
 	
 	var _position2 = _interopRequireDefault(_position);
 	
-	var _scrollTop = __webpack_require__(506);
+	var _scrollTop = __webpack_require__(513);
 	
 	var _scrollTop2 = _interopRequireDefault(_scrollTop);
 	
@@ -41651,7 +42116,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 503 */
+/* 510 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41665,7 +42130,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _contains2 = _interopRequireDefault(_contains);
 	
-	var _isWindow = __webpack_require__(474);
+	var _isWindow = __webpack_require__(481);
 	
 	var _isWindow2 = _interopRequireDefault(_isWindow);
 	
@@ -41701,7 +42166,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 504 */
+/* 511 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41714,23 +42179,23 @@ require('source-map-support').install({environment: 'node'});
 	
 	exports.default = position;
 	
-	var _offset = __webpack_require__(503);
+	var _offset = __webpack_require__(510);
 	
 	var _offset2 = _interopRequireDefault(_offset);
 	
-	var _offsetParent = __webpack_require__(505);
+	var _offsetParent = __webpack_require__(512);
 	
 	var _offsetParent2 = _interopRequireDefault(_offsetParent);
 	
-	var _scrollTop = __webpack_require__(506);
+	var _scrollTop = __webpack_require__(513);
 	
 	var _scrollTop2 = _interopRequireDefault(_scrollTop);
 	
-	var _scrollLeft = __webpack_require__(507);
+	var _scrollLeft = __webpack_require__(514);
 	
 	var _scrollLeft2 = _interopRequireDefault(_scrollLeft);
 	
-	var _style = __webpack_require__(460);
+	var _style = __webpack_require__(467);
 	
 	var _style2 = _interopRequireDefault(_style);
 	
@@ -41767,7 +42232,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 505 */
+/* 512 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41781,7 +42246,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _ownerDocument2 = _interopRequireDefault(_ownerDocument);
 	
-	var _style = __webpack_require__(460);
+	var _style = __webpack_require__(467);
 	
 	var _style2 = _interopRequireDefault(_style);
 	
@@ -41804,7 +42269,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 506 */
+/* 513 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41814,7 +42279,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = scrollTop;
 	
-	var _isWindow = __webpack_require__(474);
+	var _isWindow = __webpack_require__(481);
 	
 	var _isWindow2 = _interopRequireDefault(_isWindow);
 	
@@ -41830,7 +42295,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 507 */
+/* 514 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41840,7 +42305,7 @@ require('source-map-support').install({environment: 'node'});
 	});
 	exports.default = scrollTop;
 	
-	var _isWindow = __webpack_require__(474);
+	var _isWindow = __webpack_require__(481);
 	
 	var _isWindow2 = _interopRequireDefault(_isWindow);
 	
@@ -41856,7 +42321,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 508 */
+/* 515 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41865,7 +42330,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _OverlayTrigger = __webpack_require__(509);
+	var _OverlayTrigger = __webpack_require__(516);
 	
 	var _OverlayTrigger2 = _interopRequireDefault(_OverlayTrigger);
 	
@@ -41874,7 +42339,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _OverlayTrigger2.default;
 
 /***/ },
-/* 509 */
+/* 516 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -41901,7 +42366,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _extends3 = _interopRequireDefault(_extends2);
 	
-	var _contains = __webpack_require__(280);
+	var _contains = __webpack_require__(399);
 	
 	var _contains2 = _interopRequireDefault(_contains);
 	
@@ -41917,7 +42382,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _warning2 = _interopRequireDefault(_warning);
 	
-	var _Overlay = __webpack_require__(499);
+	var _Overlay = __webpack_require__(506);
 	
 	var _Overlay2 = _interopRequireDefault(_Overlay);
 	
@@ -42184,10 +42649,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	    var child = _react2['default'].Children.only(children);
 	    var childProps = child.props;
+	    var triggerProps = {};
 	
-	    var triggerProps = {
-	      'aria-describedby': overlay.props.id
-	    };
+	    if (this.state.show) {
+	      triggerProps['aria-describedby'] = overlay.props.id;
+	    }
 	
 	    // FIXME: The logic here for passing through handlers on this component is
 	    // inconsistent. We shouldn't be passing any of these props through.
@@ -42225,7 +42691,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 510 */
+/* 517 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42234,7 +42700,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _PageHeader = __webpack_require__(511);
+	var _PageHeader = __webpack_require__(518);
 	
 	var _PageHeader2 = _interopRequireDefault(_PageHeader);
 	
@@ -42243,7 +42709,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _PageHeader2.default;
 
 /***/ },
-/* 511 */
+/* 518 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42322,7 +42788,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 512 */
+/* 519 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42331,7 +42797,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _PageItem = __webpack_require__(513);
+	var _PageItem = __webpack_require__(520);
 	
 	var _PageItem2 = _interopRequireDefault(_PageItem);
 	
@@ -42340,18 +42806,18 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _PageItem2.default;
 
 /***/ },
-/* 513 */
+/* 520 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	exports.__esModule = true;
 	
-	var _PagerItem = __webpack_require__(514);
+	var _PagerItem = __webpack_require__(521);
 	
 	var _PagerItem2 = _interopRequireDefault(_PagerItem);
 	
-	var _deprecationWarning = __webpack_require__(515);
+	var _deprecationWarning = __webpack_require__(522);
 	
 	var _deprecationWarning2 = _interopRequireDefault(_deprecationWarning);
 	
@@ -42361,7 +42827,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 514 */
+/* 521 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42490,7 +42956,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 515 */
+/* 522 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42581,7 +43047,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 516 */
+/* 523 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42590,7 +43056,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Pager = __webpack_require__(517);
+	var _Pager = __webpack_require__(524);
 	
 	var _Pager2 = _interopRequireDefault(_Pager);
 	
@@ -42599,7 +43065,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Pager2.default;
 
 /***/ },
-/* 517 */
+/* 524 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42634,7 +43100,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _PagerItem = __webpack_require__(514);
+	var _PagerItem = __webpack_require__(521);
 	
 	var _PagerItem2 = _interopRequireDefault(_PagerItem);
 	
@@ -42699,7 +43165,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 518 */
+/* 525 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42708,7 +43174,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Pagination = __webpack_require__(519);
+	var _Pagination = __webpack_require__(526);
 	
 	var _Pagination2 = _interopRequireDefault(_Pagination);
 	
@@ -42717,7 +43183,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Pagination2.default;
 
 /***/ },
-/* 519 */
+/* 526 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -42756,7 +43222,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _elementType2 = _interopRequireDefault(_elementType);
 	
-	var _PaginationButton = __webpack_require__(520);
+	var _PaginationButton = __webpack_require__(527);
 	
 	var _PaginationButton2 = _interopRequireDefault(_PaginationButton);
 	
@@ -42770,7 +43236,8 @@ require('source-map-support').install({environment: 'node'});
 	  maxButtons: _react2['default'].PropTypes.number,
 	
 	  /**
-	   * When `true`, will display the first and the last button page
+	   * When `true`, will display the first and the last button page when
+	   * displaying ellipsis.
 	   */
 	  boundaryLinks: _react2['default'].PropTypes.bool,
 	
@@ -42837,53 +43304,43 @@ require('source-map-support').install({environment: 'node'});
 	
 	    var startPage = void 0;
 	    var endPage = void 0;
-	    var hasHiddenPagesAfter = void 0;
 	
-	    if (maxButtons) {
-	      var hiddenPagesBefore = activePage - parseInt(maxButtons / 2, 10);
-	      startPage = Math.max(hiddenPagesBefore, 1);
-	      hasHiddenPagesAfter = items >= startPage + maxButtons;
-	
-	      if (!hasHiddenPagesAfter) {
-	        endPage = items;
-	        startPage = items - maxButtons + 1;
-	        if (startPage < 1) {
-	          startPage = 1;
-	        }
-	      } else {
-	        endPage = startPage + maxButtons - 1;
-	      }
+	    if (maxButtons && maxButtons < items) {
+	      startPage = Math.max(Math.min(activePage - Math.floor(maxButtons / 2, 10), items - maxButtons + 1), 1);
+	      endPage = startPage + maxButtons - 1;
 	    } else {
 	      startPage = 1;
 	      endPage = items;
 	    }
 	
-	    for (var pagenumber = startPage; pagenumber <= endPage; pagenumber++) {
+	    for (var page = startPage; page <= endPage; ++page) {
 	      pageButtons.push(_react2['default'].createElement(
 	        _PaginationButton2['default'],
 	        (0, _extends3['default'])({}, buttonProps, {
-	          key: pagenumber,
-	          eventKey: pagenumber,
-	          active: pagenumber === activePage
+	          key: page,
+	          eventKey: page,
+	          active: page === activePage
 	        }),
-	        pagenumber
+	        page
 	      ));
 	    }
 	
-	    if (boundaryLinks && ellipsis && startPage !== 1) {
-	      pageButtons.unshift(_react2['default'].createElement(
-	        _PaginationButton2['default'],
-	        {
-	          key: 'ellipsisFirst',
-	          disabled: true,
-	          componentClass: buttonProps.componentClass
-	        },
-	        _react2['default'].createElement(
-	          'span',
-	          { 'aria-label': 'More' },
-	          ellipsis === true ? '\u2026' : ellipsis
-	        )
-	      ));
+	    if (ellipsis && boundaryLinks && startPage > 1) {
+	      if (startPage > 2) {
+	        pageButtons.unshift(_react2['default'].createElement(
+	          _PaginationButton2['default'],
+	          {
+	            key: 'ellipsisFirst',
+	            disabled: true,
+	            componentClass: buttonProps.componentClass
+	          },
+	          _react2['default'].createElement(
+	            'span',
+	            { 'aria-label': 'More' },
+	            ellipsis === true ? '\u2026' : ellipsis
+	          )
+	        ));
+	      }
 	
 	      pageButtons.unshift(_react2['default'].createElement(
 	        _PaginationButton2['default'],
@@ -42896,22 +43353,24 @@ require('source-map-support').install({environment: 'node'});
 	      ));
 	    }
 	
-	    if (maxButtons && hasHiddenPagesAfter && ellipsis) {
-	      pageButtons.push(_react2['default'].createElement(
-	        _PaginationButton2['default'],
-	        {
-	          key: 'ellipsis',
-	          disabled: true,
-	          componentClass: buttonProps.componentClass
-	        },
-	        _react2['default'].createElement(
-	          'span',
-	          { 'aria-label': 'More' },
-	          ellipsis === true ? '\u2026' : ellipsis
-	        )
-	      ));
+	    if (ellipsis && endPage < items) {
+	      if (!boundaryLinks || endPage < items - 1) {
+	        pageButtons.push(_react2['default'].createElement(
+	          _PaginationButton2['default'],
+	          {
+	            key: 'ellipsis',
+	            disabled: true,
+	            componentClass: buttonProps.componentClass
+	          },
+	          _react2['default'].createElement(
+	            'span',
+	            { 'aria-label': 'More' },
+	            ellipsis === true ? '\u2026' : ellipsis
+	          )
+	        ));
+	      }
 	
-	      if (boundaryLinks && endPage !== items) {
+	      if (boundaryLinks) {
 	        pageButtons.push(_react2['default'].createElement(
 	          _PaginationButton2['default'],
 	          (0, _extends3['default'])({}, buttonProps, {
@@ -43021,7 +43480,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 520 */
+/* 527 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43159,7 +43618,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 521 */
+/* 528 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43168,7 +43627,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Popover = __webpack_require__(522);
+	var _Popover = __webpack_require__(529);
 	
 	var _Popover2 = _interopRequireDefault(_Popover);
 	
@@ -43177,7 +43636,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Popover2.default;
 
 /***/ },
-/* 522 */
+/* 529 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43332,7 +43791,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 523 */
+/* 530 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43376,7 +43835,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _BProgressBar = __webpack_require__(524);
+	var _BProgressBar = __webpack_require__(531);
 	
 	var _BProgressBar2 = _interopRequireDefault(_BProgressBar);
 	
@@ -43478,7 +43937,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Progress;
 
 /***/ },
-/* 524 */
+/* 531 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43703,7 +44162,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = (0, _bootstrapUtils.bsClass)('progress-bar', (0, _bootstrapUtils.bsStyles)((0, _values2.default)(_StyleConfig.State), ProgressBar));
 
 /***/ },
-/* 525 */
+/* 532 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43743,7 +44202,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _BProgressBar = __webpack_require__(524);
+	var _BProgressBar = __webpack_require__(531);
 	
 	var _BProgressBar2 = _interopRequireDefault(_BProgressBar);
 	
@@ -43777,7 +44236,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = ProgressBar;
 
 /***/ },
-/* 526 */
+/* 533 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43837,7 +44296,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = ProgressGroup;
 
 /***/ },
-/* 527 */
+/* 534 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43846,7 +44305,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Radio = __webpack_require__(528);
+	var _Radio = __webpack_require__(535);
 	
 	var _Radio2 = _interopRequireDefault(_Radio);
 	
@@ -43855,7 +44314,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Radio2.default;
 
 /***/ },
-/* 528 */
+/* 535 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -43995,7 +44454,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 529 */
+/* 536 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44004,7 +44463,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _ResponsiveEmbed = __webpack_require__(530);
+	var _ResponsiveEmbed = __webpack_require__(537);
 	
 	var _ResponsiveEmbed2 = _interopRequireDefault(_ResponsiveEmbed);
 	
@@ -44013,7 +44472,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _ResponsiveEmbed2.default;
 
 /***/ },
-/* 530 */
+/* 537 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44124,7 +44583,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 531 */
+/* 538 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44160,11 +44619,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _RSplitButton = __webpack_require__(532);
+	var _RSplitButton = __webpack_require__(539);
 	
 	var _RSplitButton2 = _interopRequireDefault(_RSplitButton);
 	
-	var _DropdownButton = __webpack_require__(391);
+	var _DropdownButton = __webpack_require__(394);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -44188,7 +44647,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = SplitButton;
 
 /***/ },
-/* 532 */
+/* 539 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44201,7 +44660,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _extends3 = _interopRequireDefault(_extends2);
 	
-	var _keys = __webpack_require__(445);
+	var _keys = __webpack_require__(451);
 	
 	var _keys2 = _interopRequireDefault(_keys);
 	
@@ -44237,19 +44696,19 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _Button2 = _interopRequireDefault(_Button);
 	
-	var _Dropdown = __webpack_require__(393);
+	var _Dropdown = __webpack_require__(396);
 	
 	var _Dropdown2 = _interopRequireDefault(_Dropdown);
 	
-	var _SplitToggle = __webpack_require__(533);
+	var _SplitToggle = __webpack_require__(540);
 	
 	var _SplitToggle2 = _interopRequireDefault(_SplitToggle);
 	
-	var _omit = __webpack_require__(534);
+	var _omit = __webpack_require__(541);
 	
 	var _omit2 = _interopRequireDefault(_omit);
 	
-	var _pick = __webpack_require__(571);
+	var _pick = __webpack_require__(578);
 	
 	var _pick2 = _interopRequireDefault(_pick);
 	
@@ -44345,7 +44804,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = SplitButton;
 
 /***/ },
-/* 533 */
+/* 540 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -44372,7 +44831,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _DropdownToggle = __webpack_require__(394);
+	var _DropdownToggle = __webpack_require__(400);
 	
 	var _DropdownToggle2 = _interopRequireDefault(_DropdownToggle);
 	
@@ -44402,17 +44861,17 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 534 */
+/* 541 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayMap = __webpack_require__(535),
-	    baseDifference = __webpack_require__(536),
-	    baseFlatten = __webpack_require__(549),
-	    bindCallback = __webpack_require__(560),
-	    keysIn = __webpack_require__(562),
-	    pickByArray = __webpack_require__(565),
-	    pickByCallback = __webpack_require__(566),
-	    restParam = __webpack_require__(570);
+	var arrayMap = __webpack_require__(542),
+	    baseDifference = __webpack_require__(543),
+	    baseFlatten = __webpack_require__(556),
+	    bindCallback = __webpack_require__(567),
+	    keysIn = __webpack_require__(569),
+	    pickByArray = __webpack_require__(572),
+	    pickByCallback = __webpack_require__(573),
+	    restParam = __webpack_require__(577);
 	
 	/**
 	 * The opposite of `_.pick`; this method creates an object composed of the
@@ -44455,7 +44914,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 535 */
+/* 542 */
 /***/ function(module, exports) {
 
 	/**
@@ -44482,12 +44941,12 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 536 */
+/* 543 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseIndexOf = __webpack_require__(537),
-	    cacheIndexOf = __webpack_require__(539),
-	    createCache = __webpack_require__(541);
+	var baseIndexOf = __webpack_require__(544),
+	    cacheIndexOf = __webpack_require__(546),
+	    createCache = __webpack_require__(548);
 	
 	/** Used as the size to enable large array optimizations. */
 	var LARGE_ARRAY_SIZE = 200;
@@ -44543,10 +45002,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 537 */
+/* 544 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var indexOfNaN = __webpack_require__(538);
+	var indexOfNaN = __webpack_require__(545);
 	
 	/**
 	 * The base implementation of `_.indexOf` without support for binary searches.
@@ -44576,7 +45035,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 538 */
+/* 545 */
 /***/ function(module, exports) {
 
 	/**
@@ -44605,10 +45064,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 539 */
+/* 546 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(540);
+	var isObject = __webpack_require__(547);
 	
 	/**
 	 * Checks if `value` is in `cache` mimicking the return signature of
@@ -44630,7 +45089,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 540 */
+/* 547 */
 /***/ function(module, exports) {
 
 	/**
@@ -44664,11 +45123,11 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 541 */
+/* 548 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var SetCache = __webpack_require__(542),
-	    getNative = __webpack_require__(544);
+	var SetCache = __webpack_require__(549),
+	    getNative = __webpack_require__(551);
 	
 	/** Native method references. */
 	var Set = getNative(global, 'Set');
@@ -44691,11 +45150,11 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 542 */
+/* 549 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var cachePush = __webpack_require__(543),
-	    getNative = __webpack_require__(544);
+	var cachePush = __webpack_require__(550),
+	    getNative = __webpack_require__(551);
 	
 	/** Native method references. */
 	var Set = getNative(global, 'Set');
@@ -44726,10 +45185,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 543 */
+/* 550 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(540);
+	var isObject = __webpack_require__(547);
 	
 	/**
 	 * Adds `value` to the cache.
@@ -44752,10 +45211,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 544 */
+/* 551 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isNative = __webpack_require__(545);
+	var isNative = __webpack_require__(552);
 	
 	/**
 	 * Gets the native function at `key` of `object`.
@@ -44774,12 +45233,12 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 545 */
+/* 552 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isFunction = __webpack_require__(546),
-	    isHostObject = __webpack_require__(547),
-	    isObjectLike = __webpack_require__(548);
+	var isFunction = __webpack_require__(553),
+	    isHostObject = __webpack_require__(554),
+	    isObjectLike = __webpack_require__(555);
 	
 	/** Used to detect host constructors (Safari > 5). */
 	var reIsHostCtor = /^\[object .+?Constructor\]$/;
@@ -44829,10 +45288,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 546 */
+/* 553 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(540);
+	var isObject = __webpack_require__(547);
 	
 	/** `Object#toString` result references. */
 	var funcTag = '[object Function]';
@@ -44873,7 +45332,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 547 */
+/* 554 */
 /***/ function(module, exports) {
 
 	/**
@@ -44900,7 +45359,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 548 */
+/* 555 */
 /***/ function(module, exports) {
 
 	/**
@@ -44918,14 +45377,14 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 549 */
+/* 556 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayPush = __webpack_require__(550),
-	    isArguments = __webpack_require__(551),
-	    isArray = __webpack_require__(559),
-	    isArrayLike = __webpack_require__(552),
-	    isObjectLike = __webpack_require__(548);
+	var arrayPush = __webpack_require__(557),
+	    isArguments = __webpack_require__(558),
+	    isArray = __webpack_require__(566),
+	    isArrayLike = __webpack_require__(559),
+	    isObjectLike = __webpack_require__(555);
 	
 	/**
 	 * The base implementation of `_.flatten` with added support for restricting
@@ -44965,7 +45424,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 550 */
+/* 557 */
 /***/ function(module, exports) {
 
 	/**
@@ -44991,11 +45450,11 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 551 */
+/* 558 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isArrayLike = __webpack_require__(552),
-	    isObjectLike = __webpack_require__(548);
+	var isArrayLike = __webpack_require__(559),
+	    isObjectLike = __webpack_require__(555);
 	
 	/** Used for native method references. */
 	var objectProto = Object.prototype;
@@ -45031,11 +45490,11 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 552 */
+/* 559 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getLength = __webpack_require__(553),
-	    isLength = __webpack_require__(558);
+	var getLength = __webpack_require__(560),
+	    isLength = __webpack_require__(565);
 	
 	/**
 	 * Checks if `value` is array-like.
@@ -45052,10 +45511,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 553 */
+/* 560 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseProperty = __webpack_require__(554);
+	var baseProperty = __webpack_require__(561);
 	
 	/**
 	 * Gets the "length" property value of `object`.
@@ -45073,10 +45532,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 554 */
+/* 561 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(555);
+	var toObject = __webpack_require__(562);
 	
 	/**
 	 * The base implementation of `_.property` without support for deep paths.
@@ -45095,12 +45554,12 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 555 */
+/* 562 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObject = __webpack_require__(540),
-	    isString = __webpack_require__(556),
-	    support = __webpack_require__(557);
+	var isObject = __webpack_require__(547),
+	    isString = __webpack_require__(563),
+	    support = __webpack_require__(564);
 	
 	/**
 	 * Converts `value` to an object if it's not one.
@@ -45127,10 +45586,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 556 */
+/* 563 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var isObjectLike = __webpack_require__(548);
+	var isObjectLike = __webpack_require__(555);
 	
 	/** `Object#toString` result references. */
 	var stringTag = '[object String]';
@@ -45168,7 +45627,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 557 */
+/* 564 */
 /***/ function(module, exports) {
 
 	/** Used for native method references. */
@@ -45270,7 +45729,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 558 */
+/* 565 */
 /***/ function(module, exports) {
 
 	/**
@@ -45296,12 +45755,12 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 559 */
+/* 566 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var getNative = __webpack_require__(544),
-	    isLength = __webpack_require__(558),
-	    isObjectLike = __webpack_require__(548);
+	var getNative = __webpack_require__(551),
+	    isLength = __webpack_require__(565),
+	    isObjectLike = __webpack_require__(555);
 	
 	/** `Object#toString` result references. */
 	var arrayTag = '[object Array]';
@@ -45342,10 +45801,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 560 */
+/* 567 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var identity = __webpack_require__(561);
+	var identity = __webpack_require__(568);
 	
 	/**
 	 * A specialized version of `baseCallback` which only supports `this` binding
@@ -45387,7 +45846,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 561 */
+/* 568 */
 /***/ function(module, exports) {
 
 	/**
@@ -45413,18 +45872,18 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 562 */
+/* 569 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var arrayEach = __webpack_require__(563),
-	    isArguments = __webpack_require__(551),
-	    isArray = __webpack_require__(559),
-	    isFunction = __webpack_require__(546),
-	    isIndex = __webpack_require__(564),
-	    isLength = __webpack_require__(558),
-	    isObject = __webpack_require__(540),
-	    isString = __webpack_require__(556),
-	    support = __webpack_require__(557);
+	var arrayEach = __webpack_require__(570),
+	    isArguments = __webpack_require__(558),
+	    isArray = __webpack_require__(566),
+	    isFunction = __webpack_require__(553),
+	    isIndex = __webpack_require__(571),
+	    isLength = __webpack_require__(565),
+	    isObject = __webpack_require__(547),
+	    isString = __webpack_require__(563),
+	    support = __webpack_require__(564);
 	
 	/** `Object#toString` result references. */
 	var arrayTag = '[object Array]',
@@ -45555,7 +46014,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 563 */
+/* 570 */
 /***/ function(module, exports) {
 
 	/**
@@ -45583,7 +46042,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 564 */
+/* 571 */
 /***/ function(module, exports) {
 
 	/** Used to detect unsigned integer values. */
@@ -45613,10 +46072,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 565 */
+/* 572 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(555);
+	var toObject = __webpack_require__(562);
 	
 	/**
 	 * A specialized version of `_.pick` which picks `object` properties specified
@@ -45647,10 +46106,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 566 */
+/* 573 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseForIn = __webpack_require__(567);
+	var baseForIn = __webpack_require__(574);
 	
 	/**
 	 * A specialized version of `_.pick` which picks `object` properties `predicate`
@@ -45675,11 +46134,11 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 567 */
+/* 574 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFor = __webpack_require__(568),
-	    keysIn = __webpack_require__(562);
+	var baseFor = __webpack_require__(575),
+	    keysIn = __webpack_require__(569);
 	
 	/**
 	 * The base implementation of `_.forIn` without support for callback
@@ -45698,10 +46157,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 568 */
+/* 575 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var createBaseFor = __webpack_require__(569);
+	var createBaseFor = __webpack_require__(576);
 	
 	/**
 	 * The base implementation of `baseForIn` and `baseForOwn` which iterates
@@ -45721,10 +46180,10 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 569 */
+/* 576 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var toObject = __webpack_require__(555);
+	var toObject = __webpack_require__(562);
 	
 	/**
 	 * Creates a base function for `_.forIn` or `_.forInRight`.
@@ -45754,7 +46213,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 570 */
+/* 577 */
 /***/ function(module, exports) {
 
 	/** Used as the `TypeError` message for "Functions" methods. */
@@ -45818,14 +46277,14 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 571 */
+/* 578 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var baseFlatten = __webpack_require__(549),
-	    bindCallback = __webpack_require__(560),
-	    pickByArray = __webpack_require__(565),
-	    pickByCallback = __webpack_require__(566),
-	    restParam = __webpack_require__(570);
+	var baseFlatten = __webpack_require__(556),
+	    bindCallback = __webpack_require__(567),
+	    pickByArray = __webpack_require__(572),
+	    pickByCallback = __webpack_require__(573),
+	    restParam = __webpack_require__(577);
 	
 	/**
 	 * Creates an object composed of the picked `object` properties. Property
@@ -45866,7 +46325,7 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 572 */
+/* 579 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45906,11 +46365,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _RSplitButton = __webpack_require__(532);
+	var _RSplitButton = __webpack_require__(539);
 	
 	var _RSplitButton2 = _interopRequireDefault(_RSplitButton);
 	
-	var _DropdownButton = __webpack_require__(391);
+	var _DropdownButton = __webpack_require__(394);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -45936,7 +46395,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = SplitHoverButton;
 
 /***/ },
-/* 573 */
+/* 580 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45945,11 +46404,11 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Tab = __webpack_require__(574);
+	var _Tab = __webpack_require__(581);
 	
 	var _Tab2 = _interopRequireDefault(_Tab);
 	
-	var _TabPane = __webpack_require__(577);
+	var _TabPane = __webpack_require__(584);
 	
 	var _TabPane2 = _interopRequireDefault(_TabPane);
 	
@@ -45960,7 +46419,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Tab2.default;
 
 /***/ },
-/* 574 */
+/* 581 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -45991,11 +46450,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _TabContainer2 = _interopRequireDefault(_TabContainer);
 	
-	var _TabContent = __webpack_require__(575);
+	var _TabContent = __webpack_require__(582);
 	
 	var _TabContent2 = _interopRequireDefault(_TabContent);
 	
-	var _TabPane = __webpack_require__(576);
+	var _TabPane = __webpack_require__(583);
 	
 	var _TabPane2 = _interopRequireDefault(_TabPane);
 	
@@ -46045,7 +46504,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 575 */
+/* 582 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46099,6 +46558,11 @@ require('source-map-support').install({environment: 'node'});
 	  animation: _react.PropTypes.oneOfType([_react.PropTypes.bool, _elementType2['default']]),
 	
 	  /**
+	   * Wait until the first "enter" transition to mount tabs (add them to the DOM)
+	   */
+	  mountOnEnter: _react2['default'].PropTypes.bool,
+	
+	  /**
 	   * Unmount tabs (remove it from the DOM) when they are no longer visible
 	   */
 	  unmountOnExit: _react.PropTypes.bool
@@ -46107,6 +46571,7 @@ require('source-map-support').install({environment: 'node'});
 	var defaultProps = {
 	  componentClass: 'div',
 	  animation: true,
+	  mountOnEnter: false,
 	  unmountOnExit: false
 	};
 	
@@ -46121,6 +46586,7 @@ require('source-map-support').install({environment: 'node'});
 	    bsClass: _react.PropTypes.string,
 	    animation: _react.PropTypes.oneOfType([_react.PropTypes.bool, _elementType2['default']]),
 	    activeKey: _react.PropTypes.any,
+	    mountOnEnter: _react.PropTypes.bool,
 	    unmountOnExit: _react.PropTypes.bool,
 	    onPaneEnter: _react.PropTypes.func.isRequired,
 	    onPaneExited: _react.PropTypes.func.isRequired,
@@ -46153,6 +46619,7 @@ require('source-map-support').install({environment: 'node'});
 	    var _props = this.props,
 	        bsClass = _props.bsClass,
 	        animation = _props.animation,
+	        mountOnEnter = _props.mountOnEnter,
 	        unmountOnExit = _props.unmountOnExit;
 	
 	
@@ -46167,6 +46634,7 @@ require('source-map-support').install({environment: 'node'});
 	        bsClass: bsClass,
 	        animation: animation,
 	        activeKey: activeKey,
+	        mountOnEnter: mountOnEnter,
 	        unmountOnExit: unmountOnExit,
 	        onPaneEnter: this.handlePaneEnter,
 	        onPaneExited: this.handlePaneExited,
@@ -46234,7 +46702,7 @@ require('source-map-support').install({environment: 'node'});
 	        className = _props2.className,
 	        props = (0, _objectWithoutProperties3['default'])(_props2, ['componentClass', 'className']);
 	
-	    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['animation', 'unmountOnExit']),
+	    var _splitBsPropsAndOmit = (0, _bootstrapUtils.splitBsPropsAndOmit)(props, ['animation', 'mountOnEnter', 'unmountOnExit']),
 	        bsProps = _splitBsPropsAndOmit[0],
 	        elementProps = _splitBsPropsAndOmit[1];
 	
@@ -46255,7 +46723,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 576 */
+/* 583 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46304,7 +46772,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _createChainedFunction2 = _interopRequireDefault(_createChainedFunction);
 	
-	var _Fade = __webpack_require__(397);
+	var _Fade = __webpack_require__(403);
 	
 	var _Fade2 = _interopRequireDefault(_Fade);
 	
@@ -46367,6 +46835,11 @@ require('source-map-support').install({environment: 'node'});
 	  onExited: _react.PropTypes.func,
 	
 	  /**
+	   * Wait until the first "enter" transition to mount the tab (add it to the DOM)
+	   */
+	  mountOnEnter: _react2['default'].PropTypes.bool,
+	
+	  /**
 	   * Unmount the tab (remove it from the DOM) when it is no longer visible
 	   */
 	  unmountOnExit: _react.PropTypes.bool
@@ -46374,13 +46847,14 @@ require('source-map-support').install({environment: 'node'});
 	
 	var contextTypes = {
 	  $bs_tabContainer: _react.PropTypes.shape({
-	    getId: _react.PropTypes.func,
-	    unmountOnExit: _react.PropTypes.bool
+	    getTabId: _react.PropTypes.func,
+	    getPaneId: _react.PropTypes.func
 	  }),
 	  $bs_tabContent: _react.PropTypes.shape({
 	    bsClass: _react.PropTypes.string,
 	    animation: _react.PropTypes.oneOfType([_react.PropTypes.bool, _elementType2['default']]),
 	    activeKey: _react.PropTypes.any,
+	    mountOnEnter: _react.PropTypes.bool,
 	    unmountOnExit: _react.PropTypes.bool,
 	    onPaneEnter: _react.PropTypes.func.isRequired,
 	    onPaneExited: _react.PropTypes.func.isRequired,
@@ -46492,8 +46966,9 @@ require('source-map-support').install({environment: 'node'});
 	        onExit = _props.onExit,
 	        onExiting = _props.onExiting,
 	        onExited = _props.onExited,
+	        propsMountOnEnter = _props.mountOnEnter,
 	        propsUnmountOnExit = _props.unmountOnExit,
-	        props = (0, _objectWithoutProperties3['default'])(_props, ['eventKey', 'className', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited', 'unmountOnExit']);
+	        props = (0, _objectWithoutProperties3['default'])(_props, ['eventKey', 'className', 'onEnter', 'onEntering', 'onEntered', 'onExit', 'onExiting', 'onExited', 'mountOnEnter', 'unmountOnExit']);
 	    var _context = this.context,
 	        tabContent = _context.$bs_tabContent,
 	        tabContainer = _context.$bs_tabContainer;
@@ -46505,6 +46980,7 @@ require('source-map-support').install({environment: 'node'});
 	    var active = this.isActive();
 	    var animation = this.getAnimation();
 	
+	    var mountOnEnter = propsMountOnEnter != null ? propsMountOnEnter : tabContent && tabContent.mountOnEnter;
 	    var unmountOnExit = propsUnmountOnExit != null ? propsUnmountOnExit : tabContent && tabContent.unmountOnExit;
 	
 	    if (!active && !animation && unmountOnExit) {
@@ -46547,6 +47023,7 @@ require('source-map-support').install({environment: 'node'});
 	          onExit: onExit,
 	          onExiting: onExiting,
 	          onExited: (0, _createChainedFunction2['default'])(this.handleExited, onExited),
+	          mountOnEnter: mountOnEnter,
 	          unmountOnExit: unmountOnExit
 	        },
 	        pane
@@ -46567,7 +47044,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 577 */
+/* 584 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46605,7 +47082,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _TabPane = __webpack_require__(576);
+	var _TabPane = __webpack_require__(583);
 	
 	var _TabPane2 = _interopRequireDefault(_TabPane);
 	
@@ -46652,7 +47129,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = TabPane;
 
 /***/ },
-/* 578 */
+/* 585 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46670,7 +47147,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _TabContainer2.default;
 
 /***/ },
-/* 579 */
+/* 586 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46679,7 +47156,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _TabContent = __webpack_require__(575);
+	var _TabContent = __webpack_require__(582);
 	
 	var _TabContent2 = _interopRequireDefault(_TabContent);
 	
@@ -46688,7 +47165,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _TabContent2.default;
 
 /***/ },
-/* 580 */
+/* 587 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46730,7 +47207,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _Table = __webpack_require__(581);
+	var _Table = __webpack_require__(588);
 	
 	var _Table2 = _interopRequireDefault(_Table);
 	
@@ -46766,7 +47243,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Table;
 
 /***/ },
-/* 581 */
+/* 588 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46872,7 +47349,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 582 */
+/* 589 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46881,7 +47358,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Tabs = __webpack_require__(583);
+	var _Tabs = __webpack_require__(590);
 	
 	var _Tabs2 = _interopRequireDefault(_Tabs);
 	
@@ -46890,7 +47367,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Tabs2.default;
 
 /***/ },
-/* 583 */
+/* 590 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -46929,7 +47406,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _uncontrollable2 = _interopRequireDefault(_uncontrollable);
 	
-	var _Nav = __webpack_require__(584);
+	var _Nav = __webpack_require__(591);
 	
 	var _Nav2 = _interopRequireDefault(_Nav);
 	
@@ -46941,7 +47418,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _TabContainer2 = _interopRequireDefault(_TabContainer);
 	
-	var _TabContent = __webpack_require__(575);
+	var _TabContent = __webpack_require__(582);
 	
 	var _TabContent2 = _interopRequireDefault(_TabContent);
 	
@@ -46987,6 +47464,11 @@ require('source-map-support').install({environment: 'node'});
 	  onSelect: _react2['default'].PropTypes.func,
 	
 	  /**
+	   * Wait until the first "enter" transition to mount tabs (add them to the DOM)
+	   */
+	  mountOnEnter: _react2['default'].PropTypes.bool,
+	
+	  /**
 	   * Unmount tabs (remove it from the DOM) when it is no longer visible
 	   */
 	  unmountOnExit: _react2['default'].PropTypes.bool
@@ -46995,6 +47477,7 @@ require('source-map-support').install({environment: 'node'});
 	var defaultProps = {
 	  bsStyle: 'tabs',
 	  animation: true,
+	  mountOnEnter: false,
 	  unmountOnExit: false
 	};
 	
@@ -47044,6 +47527,7 @@ require('source-map-support').install({environment: 'node'});
 	        id = _props.id,
 	        onSelect = _props.onSelect,
 	        animation = _props.animation,
+	        mountOnEnter = _props.mountOnEnter,
 	        unmountOnExit = _props.unmountOnExit,
 	        bsClass = _props.bsClass,
 	        className = _props.className,
@@ -47051,7 +47535,7 @@ require('source-map-support').install({environment: 'node'});
 	        children = _props.children,
 	        _props$activeKey = _props.activeKey,
 	        activeKey = _props$activeKey === undefined ? getDefaultActiveKey(children) : _props$activeKey,
-	        props = (0, _objectWithoutProperties3['default'])(_props, ['id', 'onSelect', 'animation', 'unmountOnExit', 'bsClass', 'className', 'style', 'children', 'activeKey']);
+	        props = (0, _objectWithoutProperties3['default'])(_props, ['id', 'onSelect', 'animation', 'mountOnEnter', 'unmountOnExit', 'bsClass', 'className', 'style', 'children', 'activeKey']);
 	
 	
 	    return _react2['default'].createElement(
@@ -47078,6 +47562,7 @@ require('source-map-support').install({environment: 'node'});
 	          {
 	            bsClass: bsClass,
 	            animation: animation,
+	            mountOnEnter: mountOnEnter,
 	            unmountOnExit: unmountOnExit
 	          },
 	          children
@@ -47098,7 +47583,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 584 */
+/* 591 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47501,7 +47986,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 585 */
+/* 592 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47587,7 +48072,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Tag;
 
 /***/ },
-/* 586 */
+/* 593 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47596,7 +48081,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Thumbnail = __webpack_require__(587);
+	var _Thumbnail = __webpack_require__(594);
 	
 	var _Thumbnail2 = _interopRequireDefault(_Thumbnail);
 	
@@ -47605,7 +48090,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Thumbnail2.default;
 
 /***/ },
-/* 587 */
+/* 594 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47700,7 +48185,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 588 */
+/* 595 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47709,7 +48194,7 @@ require('source-map-support').install({environment: 'node'});
 	  value: true
 	});
 	
-	var _Tooltip = __webpack_require__(589);
+	var _Tooltip = __webpack_require__(596);
 	
 	var _Tooltip2 = _interopRequireDefault(_Tooltip);
 	
@@ -47718,7 +48203,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = _Tooltip2.default;
 
 /***/ },
-/* 589 */
+/* 596 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47861,7 +48346,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 590 */
+/* 597 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -47905,7 +48390,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _classnames2 = _interopRequireDefault(_classnames);
 	
-	var _Well = __webpack_require__(591);
+	var _Well = __webpack_require__(598);
 	
 	var _Well2 = _interopRequireDefault(_Well);
 	
@@ -47951,7 +48436,7 @@ require('source-map-support').install({environment: 'node'});
 	exports.default = Well;
 
 /***/ },
-/* 591 */
+/* 598 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48023,7 +48508,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 592 */
+/* 599 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48052,62 +48537,56 @@ require('source-map-support').install({environment: 'node'});
 	exports.ValidComponentChildren = _ValidComponentChildren3['default'];
 
 /***/ },
-/* 593 */
+/* 600 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var Footer=function(_React$Component){(0,_inherits3.default)(Footer,_React$Component);function Footer(){var _temp,_this,_ret;(0,_classCallCheck3.default)(this,Footer);for(var _len=arguments.length,args=Array(_len),_key=0;_key<_len;_key++){args[_key]=arguments[_key];}return _ret=(_temp=(_this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call.apply(_React$Component,[this].concat(args))),_this),_this.state={version:0},_temp),(0,_possibleConstructorReturn3.default)(_this,_ret);}Footer.prototype.componentDidMount=function componentDidMount(){this.setState({version:document.body.getAttribute('data-version')});};Footer.prototype.render=function render(){var year=new Date().getFullYear();return _react2.default.createElement('div',{id:'footer-container'},_react2.default.createElement(_rubix.Grid,{id:'footer',className:'text-center'},_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('div',null,'\xA9 ',year,' DX Liquid Intel')))));};return Footer;}(_react2.default.Component);exports.default=Footer;
 
 /***/ },
-/* 594 */
+/* 601 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';exports.__esModule=true;exports.default=undefined;var _extends2=__webpack_require__(250);var _extends3=_interopRequireDefault(_extends2);var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var Brand=function(_React$Component){(0,_inherits3.default)(Brand,_React$Component);function Brand(){(0,_classCallCheck3.default)(this,Brand);return(0,_possibleConstructorReturn3.default)(this,_React$Component.apply(this,arguments));}Brand.prototype.render=function render(){return _react2.default.createElement(_rubix.Navbar.Header,this.props,_react2.default.createElement('h1',null,'DX Liquid Intel'));};return Brand;}(_react2.default.Component);var HeaderNavigation=function(_React$Component2){(0,_inherits3.default)(HeaderNavigation,_React$Component2);function HeaderNavigation(){(0,_classCallCheck3.default)(this,HeaderNavigation);return(0,_possibleConstructorReturn3.default)(this,_React$Component2.apply(this,arguments));}HeaderNavigation.prototype.render=function render(){var props=(0,_extends3.default)({},this.props,{className:(0,_classnames2.default)('pull-right',this.props.className)});return _react2.default.createElement(_rubix.Nav,props,_react2.default.createElement(_rubix.NavItem,{className:'logout',href:'#'},_react2.default.createElement(_rubix.Icon,{bundle:'fontello',glyph:'off-1'})));};return HeaderNavigation;}(_react2.default.Component);var Header=function(_React$Component3){(0,_inherits3.default)(Header,_React$Component3);function Header(){(0,_classCallCheck3.default)(this,Header);return(0,_possibleConstructorReturn3.default)(this,_React$Component3.apply(this,arguments));}Header.prototype.render=function render(){return _react2.default.createElement(_rubix.Grid,(0,_extends3.default)({id:'navbar'},this.props),_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement(_rubix.Navbar,{fixedTop:true,fluid:true,id:'rubix-nav-header'},_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12,sm:12},_react2.default.createElement(Brand,null)))))));};return Header;}(_react2.default.Component);exports.default=Header;
 
 /***/ },
-/* 595 */
+/* 602 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _kegStatus=__webpack_require__(596);var _kegStatus2=_interopRequireDefault(_kegStatus);var _beerActivity=__webpack_require__(597);var _beerActivity2=_interopRequireDefault(_beerActivity);var _errorMessage=__webpack_require__(598);var _errorMessage2=_interopRequireDefault(_errorMessage);var _loadingMessage=__webpack_require__(599);var _loadingMessage2=_interopRequireDefault(_loadingMessage);var _default=__webpack_require__(600);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var HomeContainer=function(_React$Component){(0,_inherits3.default)(HomeContainer,_React$Component);function HomeContainer(props){(0,_classCallCheck3.default)(this,HomeContainer);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={kegs:[],activity:[]};return _this;}HomeContainer.prototype.componentDidMount=function componentDidMount(){var _this2=this;//Using a polling strategy
+	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _kegStatus=__webpack_require__(603);var _kegStatus2=_interopRequireDefault(_kegStatus);var _beerActivity=__webpack_require__(604);var _beerActivity2=_interopRequireDefault(_beerActivity);var _errorMessage=__webpack_require__(605);var _errorMessage2=_interopRequireDefault(_errorMessage);var _loadingMessage=__webpack_require__(606);var _loadingMessage2=_interopRequireDefault(_loadingMessage);var _default=__webpack_require__(607);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var HomeContainer=function(_React$Component){(0,_inherits3.default)(HomeContainer,_React$Component);function HomeContainer(props){(0,_classCallCheck3.default)(this,HomeContainer);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={kegs:[],activity:[]};return _this;}HomeContainer.prototype.componentDidMount=function componentDidMount(){var _this2=this;//Using a polling strategy
 	this._timer=setInterval(function(){return _this2.poll();},1000);};HomeContainer.prototype.componentWillUnmount=function componentWillUnmount(){var kegs=[];var activity=[];var kegsError=false;var activityError=false;this.setState({kegs:kegs,activity:activity});if(this._timer){clearInterval(this._timer);this._timer=null;}};HomeContainer.prototype.poll=function poll(){var _this3=this;var numberOfElems=25;var myHeaders=new Headers();myHeaders.append("Accept","application/json");myHeaders.append("Cache-Control","no-cache");myHeaders.delete("X-Requested-With");myHeaders.append("Authorization","Basic "+btoa(_default.webAppConfig.api.username+":"+_default.webAppConfig.api.password));var myInit={method:'GET',headers:myHeaders};fetch(_default.webAppConfig.api.url+'/currentKeg',myInit).then(function(res){if(res.ok){res=res.json();}else{var error=new Error(res.statusText);error.res=res;throw error;}return res;}).then(function(res){var kegs=res;var kegsError=false;var prevKegs=_this3.state.kegs;_this3.setState({kegs:kegs,kegsError:kegsError});}).catch(function(error){var kegsError=true;_this3.setState({kegsError:kegsError});console.log("Error: ");console.log(error);});fetch(_default.webAppConfig.api.url+'/activity?count='+numberOfElems,myInit).then(function(response){if(response.ok){return response.json();}else{throw Error(response.statusText);}}).then(function(res){if(res.length>0){var activity=res;var activityError=false;var prevActivity=_this3.state.activity;_this3.setState({activity:activity,activityError:activityError});}}).catch(function(error){var activityError=true;_this3.setState({activityError:activityError});console.log("Error: ");console.log(error);});};HomeContainer.prototype.render=function render(){return _react2.default.createElement('div',null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{sm:12,md:7},this.state.kegs.length>0?_react2.default.createElement(_kegStatus2.default,{kegs:this.state.kegs}):this.state.kegsError?_react2.default.createElement(_errorMessage2.default,null):_react2.default.createElement(_loadingMessage2.default,null)),_react2.default.createElement(_rubix.Col,{sm:12,md:5},this.state.activity.length>0?_react2.default.createElement(_beerActivity2.default,{activity:this.state.activity}):this.state.activityError?_react2.default.createElement(_errorMessage2.default,null):_react2.default.createElement(_loadingMessage2.default,null))));};return HomeContainer;}(_react2.default.Component);exports.default=HomeContainer;
 
 /***/ },
-/* 596 */
+/* 603 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;exports.default=undefined;var _assign=__webpack_require__(251);var _assign2=_interopRequireDefault(_assign);var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var KegStatus=function(_React$Component){(0,_inherits3.default)(KegStatus,_React$Component);function KegStatus(props){(0,_classCallCheck3.default)(this,KegStatus);return(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));}KegStatus.prototype.drawKnobs=function drawKnobs(){$('.dial').knob();$('.knob').knob({draw:function draw(){// 'tron' case
-	if(this.$.data('skin')=='tron'){var a=this.angle(this.cv)// Angle
-	,sa=this.startAngle// Previous start angle
-	,sat=this.startAngle// Start angle
-	,ea// Previous end angle
-	,eat=sat+a// End angle
-	,r=true;this.g.lineWidth=this.lineWidth;this.o.cursor&&(sat=eat-0.3)&&(eat=eat+0.3);if(this.o.displayPrevious){ea=this.startAngle+this.angle(this.value);this.o.cursor&&(sa=ea-0.3)&&(ea=ea+0.3);this.g.beginPath();this.g.strokeStyle=this.previousColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sa,ea,false);this.g.stroke();}this.g.beginPath();this.g.strokeStyle=r?this.o.fgColor:this.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth,sat,eat,false);this.g.stroke();this.g.lineWidth=2;this.g.beginPath();this.g.strokeStyle=this.o.fgColor;this.g.arc(this.xy,this.xy,this.radius-this.lineWidth+1+this.lineWidth*2/3,0,2*Math.PI,false);this.g.stroke();return false;}}});};KegStatus.prototype.componentDidMount=function componentDidMount(){this.drawKnobs();};KegStatus.prototype.render=function render(){var keg={"Name":"No name provided","Level":1,"imagePath":"https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67","BeerDescription":"No description available","Brewery":"NA","BeerType":"NA","ABV":"ABV NA","IBU":"IBU NA","InstallDate":"2017-01-18T23:30:00.000Z"};var kegs=[keg,(0,_assign2.default)({},keg)];this.props.kegs.forEach(function(elem,index){if(elem.length===0&&elem.constructor===Object){return;}if(elem.Name!=null&&elem.Name.length>0){kegs[elem.TapId-1].Name=elem.Name;}if(elem.CurrentVolume>0&&elem.KegSize>0){kegs[elem.TapId-1].Level=Math.round(elem.CurrentVolume/elem.KegSize*100);}if(elem.imagePath!=null&&elem.imagePath.length>0){kegs[elem.TapId-1].imagePath=elem.imagePath;}if(elem.BeerDescription!=null&&elem.BeerDescription.length>0){kegs[elem.TapId-1].BeerDescription=elem.BeerDescription;}if(elem.Brewery!=null&&elem.Brewery.length>0){kegs[elem.TapId-1].Brewery=elem.Brewery;}if(elem.BeerType!=null&&elem.BeerType.length>0){kegs[elem.TapId-1].BeerType=elem.BeerType;}if(elem.ABV&&elem.ABV!="NA"){kegs[elem.TapId-1].ABV=elem.ABV+"% ABV";}if(elem.IBU&&elem.IBU!="NA"){kegs[elem.TapId-1].IBU=elem.IBU+" IBU";}if(elem.InstallDate!=null&&elem.InstallDate.length>0){kegs[elem.TapId-1].InstallDate=moment(elem.InstallDate).fromNow;}});return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-blue fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Keg Status'))))),_react2.default.createElement(_rubix.PanelBody,null,_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement('br',null),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-1-"+index,xs:6,className:'text-center'},_react2.default.createElement('img',{key:index,src:elem.imagePath,height:'100'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-2-"+index,xs:6,className:'text-center fg-darkgrayishblue75'},_react2.default.createElement('h2',null,elem.Name));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-3-"+index,xs:6,className:'text-center'},_react2.default.createElement('h4',{key:index},elem.Brewery));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var color=elem.Level>25?elem.level>75?"#4DBD33":'#FFA500':'#ffcccc';return _react2.default.createElement(_rubix.Col,{key:"col-4-"+index,xs:6,className:'text-center'},_react2.default.createElement('input',{key:index,type:'text',value:elem.Level+"%",className:'dial autosize','data-width':'100%','data-fgcolor':color,readOnly:'readOnly'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Col,{key:"col-5-"+index,xs:6,className:'text-center'},_react2.default.createElement(_rubix.Badge,{key:index,className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-6-"+index,xs:6,className:'text-center'},_react2.default.createElement('p',null,_react2.default.createElement(_rubix.Label,{key:index,className:'bg-orange75 fg-white'},elem.ABV),' ',_react2.default.createElement(_rubix.Label,{className:'bg-yellow fg-white'},elem.IBU)));})),_react2.default.createElement('br',null))));};return KegStatus;}(_react2.default.Component);exports.default=KegStatus;
+	'use strict';exports.__esModule=true;exports.default=undefined;var _assign=__webpack_require__(251);var _assign2=_interopRequireDefault(_assign);var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var KegStatus=function(_React$Component){(0,_inherits3.default)(KegStatus,_React$Component);function KegStatus(props){(0,_classCallCheck3.default)(this,KegStatus);return(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));}KegStatus.prototype.drawKnobs=function drawKnobs(){$('.dial').knob({draw:function draw(){var color=this.v>=25?this.v>=75?'#4DBD33':'#FFA500':'#ffcccc';this.o.fgColor=color;this.o.inputColor=color;},'change':function change(v){var color=v>=25?v>=75?'#4DBD33':'#FFA500':'#ffcccc';this.o.fgColor=color;this.o.inputColor=color;}});};KegStatus.prototype.componentDidMount=function componentDidMount(){this.drawKnobs();};KegStatus.prototype.componentDidUpdate=function componentDidUpdate(prevProps,prevState){for(var i=0;i<2;i++){if(this.props.kegs[i].CurrentVolume!=prevProps.kegs[i].CurrentVolume){var newVol=this.props.kegs[i].KegSize>0?this.props.kegs[i].CurrentVolume/this.props.kegs[i].KegSize*100:0;var selec=".dial.knob-"+this.props.kegs[i].TapId;$(selec).val(newVol).trigger('change');}}};KegStatus.prototype.render=function render(){var keg={"Name":"No name provided","Level":1,"imagePath":"/imgs/app/avatars/beer.png","BeerDescription":"No description available","Brewery":"NA","BeerType":"NA","ABV":"ABV NA","IBU":"IBU NA","InstallDate":"2017-01-18T23:30:00.000Z","TapId":"1"};var kegs=[keg,(0,_assign2.default)({},keg)];this.props.kegs.forEach(function(elem,index){kegs[elem.TapId-1].TapId=elem.TapId;if(elem.length===0&&elem.constructor===Object){return;}if(elem.Name!=null&&elem.Name.length>0){kegs[elem.TapId-1].Name=elem.Name;}if(elem.CurrentVolume>0&&elem.KegSize>0){kegs[elem.TapId-1].Level=Math.round(elem.CurrentVolume/elem.KegSize*100);}if(elem.imagePath!=null&&elem.imagePath.length>0){kegs[elem.TapId-1].imagePath=elem.imagePath;}if(elem.BeerDescription!=null&&elem.BeerDescription.length>0){kegs[elem.TapId-1].BeerDescription=elem.BeerDescription;}if(elem.Brewery!=null&&elem.Brewery.length>0){kegs[elem.TapId-1].Brewery=elem.Brewery;}if(elem.BeerType!=null&&elem.BeerType.length>0){kegs[elem.TapId-1].BeerType=elem.BeerType;}if(elem.ABV&&elem.ABV!="NA"){kegs[elem.TapId-1].ABV=elem.ABV+"% ABV";}if(elem.IBU&&elem.IBU!="NA"){kegs[elem.TapId-1].IBU=elem.IBU+" IBU";}if(elem.InstallDate!=null&&elem.InstallDate.length>0){kegs[elem.TapId-1].InstallDate=moment(elem.InstallDate).fromNow;}});return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-blue fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Keg Status'))))),_react2.default.createElement(_rubix.PanelBody,null,_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement('br',null),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-1-"+index,xs:6,className:'text-center'},_react2.default.createElement('img',{key:index,src:elem.imagePath,height:'100'}));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-2-"+index,xs:6,className:'text-center fg-darkgrayishblue75'},_react2.default.createElement('h2',null,elem.Name));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-3-"+index,xs:6,className:'text-center'},_react2.default.createElement('h4',{key:index},elem.Brewery));})),_react2.default.createElement(_rubix.Row,{className:'hidden-xs'},kegs.map(function(elem,index,ar){var level=elem.Level;return _react2.default.createElement(_rubix.Col,{key:"col-4a-"+index,xs:6,className:'text-center'},_react2.default.createElement('input',{key:index,type:'text',value:level+"%",className:"dial autosize knob-"+elem.TapId,'data-width':'100%','data-fcolor':'',readOnly:'readOnly'}));})),_react2.default.createElement(_rubix.Row,{className:'visible-xs'},kegs.map(function(elem,index,ar){var level=elem.Level;var badgeColor=level>=25?level>=75?"bg-green":"bg-orange":"bg-red";return _react2.default.createElement(_rubix.Col,{key:"col-4b-"+index,xs:6,className:'text-center'},_react2.default.createElement(_rubix.Label,{key:index+"b",className:badgeColor},level,'% full'));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Col,{key:"col-5a-"+index,xs:6,className:'text-center'},_react2.default.createElement(_rubix.Badge,{key:index+"a",className:badgeColor+" hidden-xs",style:{marginRight:5,display:'inline'}},elem.BeerType),_react2.default.createElement('p',{key:index+"b",className:'visible-xs'},elem.BeerType));})),_react2.default.createElement(_rubix.Row,null,kegs.map(function(elem,index,ar){return _react2.default.createElement(_rubix.Col,{key:"col-6-"+index,xs:6,className:'text-center'},_react2.default.createElement('p',null,_react2.default.createElement(_rubix.Label,{key:index,className:'bg-orange75 fg-white'},elem.ABV),' ',_react2.default.createElement(_rubix.Label,{className:'bg-yellow fg-white'},elem.IBU)));})),_react2.default.createElement('br',null))));};return KegStatus;}(_react2.default.Component);exports.default=KegStatus;
 
 /***/ },
-/* 597 */
+/* 604 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var BeerActivity=function(_React$Component){(0,_inherits3.default)(BeerActivity,_React$Component);function BeerActivity(props){(0,_classCallCheck3.default)(this,BeerActivity);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={history:[]};return _this;}BeerActivity.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Latest beer activity...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0,maxHeight:'75vh',overflowY:'auto'}},_react2.default.createElement(_rubix.Grid,null,this.props.activity.map(function(elem,index){var relDate=moment(elem.PourTime).fromNow();var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Media,{key:index,itemID:elem.SessionId},_react2.default.createElement(_rubix.Media.Left,null,_react2.default.createElement('img',{className:'border-purple',style:{paddingTop:0},height:70,width:70,src:elem.BeerImagePath,alt:elem.BeerName})),_react2.default.createElement(_rubix.Media.Body,null,_react2.default.createElement(_rubix.Media.Heading,null,elem.FullName),_react2.default.createElement('span',{className:'fg-darkgrayishblue75'},'poured ',_react2.default.createElement('strong',null,elem.PourAmount,' ml'),' of ',_react2.default.createElement('strong',null,elem.BeerName,'  ')),_react2.default.createElement('small',null,_react2.default.createElement(_rubix.Badge,{className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType)),_react2.default.createElement('br',null),_react2.default.createElement('small',{className:'fg-darkgray40'},relDate)));}))));};return BeerActivity;}(_react2.default.Component);exports.default=BeerActivity;
+	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var BeerActivity=function(_React$Component){(0,_inherits3.default)(BeerActivity,_React$Component);function BeerActivity(props){(0,_classCallCheck3.default)(this,BeerActivity);var _this=(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));_this.state={history:[]};return _this;}BeerActivity.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Latest beer activity...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0,maxHeight:'75vh',overflowY:'auto'}},_react2.default.createElement(_rubix.Grid,null,this.props.activity.map(function(elem,index){var relDate=moment(elem.PourTime).fromNow();var badgeColor=elem.BeerType.toLowerCase().includes("red")?"bg-red":elem.BeerType.toLowerCase().includes("ipa")?"bg-blue":"bg-purple";return _react2.default.createElement(_rubix.Media,{key:index,itemID:elem.SessionId},_react2.default.createElement(_rubix.Media.Left,null,_react2.default.createElement('img',{className:'border-purple',style:{paddingTop:0},height:70,width:70,src:elem.BeerImagePath?elem.BeerImagePath:"/imgs/app/avatars/beer.png",alt:elem.BeerName})),_react2.default.createElement(_rubix.Media.Body,null,_react2.default.createElement(_rubix.Media.Heading,null,elem.FullName),_react2.default.createElement('span',{className:'fg-darkgrayishblue75'},'poured ',_react2.default.createElement('strong',null,elem.PourAmount,' ml'),' of ',_react2.default.createElement('strong',null,elem.BeerName,'  ')),_react2.default.createElement('small',null,_react2.default.createElement(_rubix.Badge,{className:badgeColor,style:{marginRight:5,display:'inline'}},elem.BeerType)),_react2.default.createElement('br',null),_react2.default.createElement('small',{className:'fg-darkgray40'},relDate)));}))));};return BeerActivity;}(_react2.default.Component);exports.default=BeerActivity;
 
 /***/ },
-/* 598 */
+/* 605 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var ErrorMessage=function(_React$Component){(0,_inherits3.default)(ErrorMessage,_React$Component);function ErrorMessage(props){(0,_classCallCheck3.default)(this,ErrorMessage);return(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));}ErrorMessage.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Error retrieving info...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0}},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Connection error'),_react2.default.createElement('p',null,'Somehow we couldn\'t retrieve information for this component, please verify the service is up and running'))))));};return ErrorMessage;}(_react2.default.Component);exports.default=ErrorMessage;
 
 /***/ },
-/* 599 */
+/* 606 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';exports.__esModule=true;exports.default=undefined;var _classCallCheck2=__webpack_require__(168);var _classCallCheck3=_interopRequireDefault(_classCallCheck2);var _possibleConstructorReturn2=__webpack_require__(169);var _possibleConstructorReturn3=_interopRequireDefault(_possibleConstructorReturn2);var _inherits2=__webpack_require__(238);var _inherits3=_interopRequireDefault(_inherits2);var _react=__webpack_require__(6);var _react2=_interopRequireDefault(_react);var _classnames=__webpack_require__(246);var _classnames2=_interopRequireDefault(_classnames);var _reactRouter=__webpack_require__(247);var _rubix=__webpack_require__(248);function _interopRequireDefault(obj){return obj&&obj.__esModule?obj:{default:obj};}var ErrorMessage=function(_React$Component){(0,_inherits3.default)(ErrorMessage,_React$Component);function ErrorMessage(props){(0,_classCallCheck3.default)(this,ErrorMessage);return(0,_possibleConstructorReturn3.default)(this,_React$Component.call(this,props));}ErrorMessage.prototype.render=function render(){return _react2.default.createElement(_rubix.PanelContainer,null,_react2.default.createElement(_rubix.PanelHeader,{className:'bg-purple fg-white'},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Retrieving info...'))))),_react2.default.createElement(_rubix.PanelBody,{className:'panel-sm-12 panel-xs-12',style:{paddingTop:0}},_react2.default.createElement(_rubix.Grid,null,_react2.default.createElement(_rubix.Row,null,_react2.default.createElement(_rubix.Col,{xs:12},_react2.default.createElement('h3',null,'Beer in progress'),_react2.default.createElement('p',null,'Fermenting the malted barley... '))))));};return ErrorMessage;}(_react2.default.Component);exports.default=ErrorMessage;
 
 /***/ },
-/* 600 */
+/* 607 */
 /***/ function(module, exports) {
 
-	"use strict";exports.__esModule=true;var webAppConfig=exports.webAppConfig={api:{url:process.env.API_URL||"http://localhost:8000/api",username:process.env.API_USERNAME||"0001-0002",password:process.env.API_PASSWORD||"ZHhsaXF1aWQtZGFzaGJvYXJk"},untappd:{key:process.env.UNTAPPD_KEY}};
+	"use strict";exports.__esModule=true;var webAppConfig=exports.webAppConfig={api:{url:process.env.API_URL||"https://dxliquidintel.azurewebsites.net/api",username:process.env.API_USERNAME||"0001-0002",password:process.env.API_PASSWORD||"ZHhsaXF1aWQtZGFzaGJvYXJk"},untappd:{key:process.env.UNTAPPD_KEY}};
 
 /***/ },
-/* 601 */
+/* 608 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48153,17 +48632,17 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _reactRouter = __webpack_require__(247);
 	
-	var _reactHotLoader = __webpack_require__(602);
+	var _reactHotLoader = __webpack_require__(609);
 	
-	var _reactRouterScroll = __webpack_require__(603);
+	var _reactRouterScroll = __webpack_require__(610);
 	
 	var _reactRouterScroll2 = _interopRequireDefault(_reactRouterScroll);
 	
-	var _onRouterSetup = __webpack_require__(612);
+	var _onRouterSetup = __webpack_require__(621);
 	
 	var _onRouterSetup2 = _interopRequireDefault(_onRouterSetup);
 	
-	var _checkScroll = __webpack_require__(614);
+	var _checkScroll = __webpack_require__(623);
 	
 	var _checkScroll2 = _interopRequireDefault(_checkScroll);
 	
@@ -48249,13 +48728,13 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 602 */
+/* 609 */
 /***/ function(module, exports) {
 
 	module.exports = require("react-hot-loader");
 
 /***/ },
-/* 603 */
+/* 610 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48267,7 +48746,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _ScrollBehaviorContainer = __webpack_require__(604);
+	var _ScrollBehaviorContainer = __webpack_require__(611);
 	
 	var _ScrollBehaviorContainer2 = _interopRequireDefault(_ScrollBehaviorContainer);
 	
@@ -48290,7 +48769,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 604 */
+/* 611 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48301,7 +48780,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _react2 = _interopRequireDefault(_react);
 	
-	var _ScrollBehavior = __webpack_require__(605);
+	var _ScrollBehavior = __webpack_require__(612);
 	
 	var _ScrollBehavior2 = _interopRequireDefault(_ScrollBehavior);
 	
@@ -48382,36 +48861,36 @@ require('source-map-support').install({environment: 'node'});
 
 
 /***/ },
-/* 605 */
+/* 612 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	exports.__esModule = true;
 	
-	var _off = __webpack_require__(451);
+	var _off = __webpack_require__(613);
 	
 	var _off2 = _interopRequireDefault(_off);
 	
-	var _on = __webpack_require__(450);
+	var _on = __webpack_require__(614);
 	
 	var _on2 = _interopRequireDefault(_on);
 	
-	var _scrollLeft = __webpack_require__(606);
+	var _scrollLeft = __webpack_require__(615);
 	
 	var _scrollLeft2 = _interopRequireDefault(_scrollLeft);
 	
-	var _scrollTop = __webpack_require__(608);
+	var _scrollTop = __webpack_require__(617);
 	
 	var _scrollTop2 = _interopRequireDefault(_scrollTop);
 	
-	var _requestAnimationFrame = __webpack_require__(609);
+	var _requestAnimationFrame = __webpack_require__(618);
 	
 	var _requestAnimationFrame2 = _interopRequireDefault(_requestAnimationFrame);
 	
-	var _Actions = __webpack_require__(610);
+	var _Actions = __webpack_require__(619);
 	
-	var _DOMStateStorage = __webpack_require__(611);
+	var _DOMStateStorage = __webpack_require__(620);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -48589,11 +49068,54 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = exports['default'];
 
 /***/ },
-/* 606 */
+/* 613 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var getWindow = __webpack_require__(607);
+	var canUseDOM = __webpack_require__(281);
+	var off = function off() {};
+	
+	if (canUseDOM) {
+	
+	  off = (function () {
+	
+	    if (document.addEventListener) return function (node, eventName, handler, capture) {
+	      return node.removeEventListener(eventName, handler, capture || false);
+	    };else if (document.attachEvent) return function (node, eventName, handler) {
+	      return node.detachEvent('on' + eventName, handler);
+	    };
+	  })();
+	}
+	
+	module.exports = off;
+
+/***/ },
+/* 614 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var canUseDOM = __webpack_require__(281);
+	var on = function on() {};
+	
+	if (canUseDOM) {
+	  on = (function () {
+	
+	    if (document.addEventListener) return function (node, eventName, handler, capture) {
+	      return node.addEventListener(eventName, handler, capture || false);
+	    };else if (document.attachEvent) return function (node, eventName, handler) {
+	      return node.attachEvent('on' + eventName, handler);
+	    };
+	  })();
+	}
+	
+	module.exports = on;
+
+/***/ },
+/* 615 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var getWindow = __webpack_require__(616);
 	
 	module.exports = function scrollTop(node, val) {
 	  var win = getWindow(node);
@@ -48604,7 +49126,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 607 */
+/* 616 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -48614,11 +49136,11 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 608 */
+/* 617 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-	var getWindow = __webpack_require__(607);
+	var getWindow = __webpack_require__(616);
 	
 	module.exports = function scrollTop(node, val) {
 	  var win = getWindow(node);
@@ -48629,7 +49151,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 609 */
+/* 618 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48680,7 +49202,7 @@ require('source-map-support').install({environment: 'node'});
 	module.exports = compatRaf;
 
 /***/ },
-/* 610 */
+/* 619 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -48707,7 +49229,7 @@ require('source-map-support').install({environment: 'node'});
 	var POP = exports.POP = 'POP';
 
 /***/ },
-/* 611 */
+/* 620 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48797,7 +49319,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 612 */
+/* 621 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -48811,7 +49333,7 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _isBrowser2 = _interopRequireDefault(_isBrowser);
 	
-	__webpack_require__(613);
+	__webpack_require__(622);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
@@ -48876,7 +49398,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 613 */
+/* 622 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -49103,7 +49625,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 614 */
+/* 623 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49117,11 +49639,11 @@ require('source-map-support').install({environment: 'node'});
 	
 	var _isBrowser2 = _interopRequireDefault(_isBrowser);
 	
-	var _onRouterUpdate = __webpack_require__(615);
+	var _onRouterUpdate = __webpack_require__(624);
 	
 	var _onRouterUpdate2 = _interopRequireDefault(_onRouterUpdate);
 	
-	var _ga = __webpack_require__(616);
+	var _ga = __webpack_require__(625);
 	
 	var _ga2 = _interopRequireDefault(_ga);
 	
@@ -49149,7 +49671,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 615 */
+/* 624 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49195,7 +49717,7 @@ require('source-map-support').install({environment: 'node'});
 	}
 
 /***/ },
-/* 616 */
+/* 625 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -49222,7 +49744,7 @@ require('source-map-support').install({environment: 'node'});
 	};
 
 /***/ },
-/* 617 */
+/* 626 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

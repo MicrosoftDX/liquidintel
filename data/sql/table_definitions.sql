@@ -101,7 +101,6 @@ CREATE TABLE dbo.Users(
 CREATE INDEX IX_Users_UPN
 ON dbo.Users (UserPrincipalName);
 
-
 CREATE INDEX IX_CARD02CardKeyMappingS_SAPPersonnelNbr
 ON CARD02CardKeyMappingS
 (

@@ -47,7 +47,7 @@ class SessionManager(object):
     def _endCurrentSession(self):
         if self._currentSession != None:
             self._currentSession._end()
-            self._proxReader.beepEndSession()
+            self._proxReader.endSession()
             self._pendingSessions.enqueue(self._currentSession)
             log.info('Session ended for %d:%s. Tap amounts: [%s]', 
                 self._currentSession.user.personnelId, 
@@ -83,4 +83,4 @@ class SessionManager(object):
     def startSession(self, user):
         self._endCurrentSession()
         self._currentSession = Session(user, self._kegIO, self._sessionTimeout, self._inactivityTimeout)
-
+        self._proxReader.startSession()

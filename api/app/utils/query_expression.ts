@@ -50,7 +50,7 @@ export class QueryExpression {
         return <[Operators, OperatorClass]>[value[1], value[2]];
     }));
 
-    private params: {[key:string]: Clause;} = {};
+    params: {[key:string]: Clause;} = {};
     mapping: {[key:string]: PropMapping} = null;
     ordering: string[] = null;
     limit: string;

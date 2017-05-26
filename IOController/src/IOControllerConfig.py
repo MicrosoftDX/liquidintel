@@ -10,13 +10,14 @@ class IOControllerConfig(object):
     sessionTimeout = NotifyVariable(0)
     userCacheTtl = NotifyVariable(3600)
     inactivityTimeout = NotifyVariable(10)
+    packageCheckInterval = NotifyVariable(10 * 60)
     apiBaseUri = NotifyVariable('')
     apiUser = NotifyVariable('')
     apiKey = NotifyVariable('')
     apiRequestTimeout = NotifyVariable(5)
     tapsConfig = NotifyVariable(None)
-    iotHubConnectString = NotifyVariable('')
-    installDir = NotifyVariable('')
+    installPrereleasePackages = NotifyVariable(False)
+    installPackageType = NotifyVariable('iocontroller')
 
     # Section names in the config file
     SECTION_GENERAL = 'General'
@@ -95,14 +96,15 @@ class IOControllerConfig(object):
         self.sessionTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'sessionTimeout', self.sessionTimeout.value)
         self.inactivityTimeout.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'inactivityTimeout', self.inactivityTimeout.value)
         self.userCacheTtl.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'userCacheTtl', self.userCacheTtl.value)
+        self.packageCheckInterval.value = configSource.getint(IOControllerConfig.SECTION_GENERAL, 'packageCheckInterval', self.packageCheckInterval.value)
         self.apiBaseUri.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiEndpoint', self.apiBaseUri.value)
         self.apiUser.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiUser', self.apiUser.value)
         self.apiKey.value = configSource.get(IOControllerConfig.SECTION_LIQUIDAPI, 'apiKey', self.apiKey.value)
         self.apiRequestTimeout.value = configSource.getint(IOControllerConfig.SECTION_LIQUIDAPI, 'requestTimeout', self.apiRequestTimeout.value)
         self.tapsConfig.value = [Kegerator.TapConfig(tap['id'], tap['shutoffpin'], tap['flowpin'], tap['flowcalibrationfactor']) if isinstance(tap, dict) else tap for tap 
             in configSource.getlist(IOControllerConfig.SECTION_KEGERATOR, 'taps', self.tapsConfig.value)]
-        self.iotHubConnectString.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'iotHubConnectString', self.iotHubConnectString.value)
-        self.installDir.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installDir', self.installDir.value)
+        self.installPrereleasePackages.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installPrereleasePackages', self.installPrereleasePackages.value)
+        self.installPackageType.value = configSource.get(IOControllerConfig.SECTION_GENERAL, 'installPackageType', self.installPackageType.value)
 
     def __init__(self, configFiles):
         # Read the static config from the config file
