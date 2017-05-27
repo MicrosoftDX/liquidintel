@@ -13,8 +13,9 @@ export function getCurrentKeg_Internal(tapId: number): Promise<any[]> {
                             "FROM FactKegInstall i INNER JOIN DimKeg k ON i.KegId = k.Id " +
                             "WHERE i.isCurrent = 1 ";
             if (tapId != null) {
-                sqlStatement += "AND i.TapId = @tap_id"
+                sqlStatement += "AND i.TapId = @tap_id "
             }
+            sqlStatement += "ORDER BY i.TapId";
             var stmt = tds.default.sql(sqlStatement);
             if (tapId != null) {
                 stmt.parameter('tap_id', TYPES.Int, tapId);
@@ -82,6 +83,16 @@ export async function postPreviouslyInstalledKeg(kegId: number, tapId: number, k
             .parameter("kegId", TYPES.Int, kegId)
             .parameter("installDate", TYPES.DateTime2, new Date(Date.now()))
             .parameter("kegSize", TYPES.Decimal, kegSize)
+            .execute(false);
+        // Finally, cancel any existing votes for this beer
+        sqlStatement = "UPDATE dbo.UserVotes " +
+                       "SET IsCurrent = 0 " +
+                       "WHERE UntappdId IN ( " +
+	                   "    SELECT k.UntappdId " + 
+	                   "    FROM dbo.DimKeg k " +
+	                   "    WHERE Id = @kegId)";
+        await connection.sql(sqlStatement)
+            .parameter("kegId", TYPES.Int, kegId)
             .execute(false);
     }, 
     () => getCurrentKeg(tapId, outputFunc),

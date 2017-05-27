@@ -1,0 +1,116 @@
+<div ng-form="installKegsForm" ng-submit="updateInstallKegs()">
+    <h2>Installed Kegs</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Installed Kegs</div>
+        <div class="panel-body">
+        </div>
+        <div class="row">
+            <div class="col-sm-6" ng-repeat="tapInfo in currentTaps">
+                <div class="thumbnail" ng-switch="tapInfo.TapId">
+                    <p ng-switch-when="1">Left Tap:</p>
+                    <p ng-switch-when="2">Right Tap:</p>
+                    <img ng-src="{{tapInfo.BeerInfo.image || 'https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67'}}" width="100" />
+                    <div class="caption">
+                        <div class="form-horizontal">
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">Beer Name</label>
+                                <div class="col-sm-9">
+                                    <input type="text"
+                                           class="form-control accountName"
+                                           placeholder="Beer or Brewery Name"
+                                           ng-model="tapInfo.getSetBeerInfo"
+                                           ng-model-options="{ getterSetter: true }"
+                                           uib-typeahead="beer as beer.name for beer in searchBeers($viewValue)"
+                                           typeahead-loading="loadingBeers"
+                                           typeahead-no-results="noResults"
+                                           typeahead-show-hint="true"
+                                           typeahead-append-to-body="true"
+                                           typeahead-min-length="3"
+                                           typeahead-wait-ms="100"
+                                           typeahead-input-formatter="$model.name"
+                                           typeahead-template-url="typeaheadTemplate.html" />
+                                    <i ng-show="loadingBeers" class="glyphicon glyphicon-refresh"></i>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">Keg Size (ml)</label>
+                                <div class="col-sm-4">
+                                    <input type="number"
+                                           class="form-control accountName"
+                                           placeholder="Keg Size"
+                                           ng-model="tapInfo.KegSize" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">Brewery</label>
+                                <div class="col-sm-9">
+                                    <input type="text"
+                                           class="form-control accountName"
+                                           placeholder="Brewery"
+                                           ng-model="tapInfo.BeerInfo.brewery" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">Beer Type</label>
+                                <div class="col-sm-9">
+                                    <input type="text"
+                                           class="form-control accountName"
+                                           placeholder="Beer Type"
+                                           ng-model="tapInfo.BeerInfo.beer_type" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">ABV%</label>
+                                <div class="col-sm-4">
+                                    <input type="number"
+                                           class="form-control accountName"
+                                           placeholder="ABV%"
+                                           ng-model="tapInfo.BeerInfo.abv" />
+                                </div>
+                                <label class="control-label col-sm-2">IBU</label>
+                                <div class="col-sm-3">
+                                    <input type="number"
+                                           class="form-control accountName"
+                                           placeholder="ABV%"
+                                           ng-model="tapInfo.BeerInfo.ibu" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-sm-3">Description</label>
+                                <div class="col-sm-9">
+                                    <textarea class="form-control" 
+                                              rows="10" 
+                                              ng-model="tapInfo.BeerInfo.description"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>
+<script type="text/ng-template" id="typeaheadTemplate.html">
+    <a class="autocomplete-item"> 
+        <p class="beer_logo"><img ng-src="{{match.model.image}}"></p> 
+        <p class="info"> 
+            <span class="title" ng-bind-html="match.model.name | uibTypeaheadHighlight:query"></span> 
+            <span class="sub_title" ng-bind-html="match.model.brewery | uibTypeaheadHighlight:query"></span> 
+        </p>
+    </a>
+</script>

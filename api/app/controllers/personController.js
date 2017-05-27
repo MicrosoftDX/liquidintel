@@ -7,11 +7,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
-const aad = require("../../ad");
+const aad = require("../utils/ad");
+const settings = require("../utils/settings_encoder");
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership((process.env.AuthorizedGroups || "").split(';'), token);
+var groupMembership = new aad.GraphGroupMembership(settings.decodeSettingArray(process.env.AuthorizedGroups), token);
 function getPersonByCardId(cardId, output) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -73,7 +75,7 @@ function getValidPeople(cardId, output) {
     });
 }
 exports.getValidPeople = getValidPeople;
-function getUserDetails(upn, isAdmin, tokenUpn, output) {
+function getUserDetails(upn, isAdmin, tokenUpn, output, successResponse = 200) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             if (upn && upn.toLowerCase() === 'me') {
@@ -85,39 +87,42 @@ function getUserDetails(upn, isAdmin, tokenUpn, output) {
                 }
                 upn = upn || tokenUpn;
             }
-            var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, " +
-                "    p.FullName, p.FirstName, p.LastName " +
+            var sqlStatement = "SELECT u.PersonnelNumber, u.UserPrincipalName, u.UntappdUserName, u.UntappdAccessToken, u.CheckinFacebook, u.CheckinTwitter, u.CheckinFoursquare, u.ThumbnailImageUri, " +
+                "    p.FullName, p.FirstName, p.LastName, @isAdmin AS IsAdmin " +
                 "FROM dbo.Users u INNER JOIN HC01Person p ON u.PersonnelNumber = p.PersonnelNumber ";
             if (upn) {
                 sqlStatement += "WHERE u.UserPrincipalName = @upn ";
             }
             sqlStatement += "ORDER BY p.FullName";
-            var stmt = tds.default.sql(sqlStatement);
+            var stmt = tds.default.sql(sqlStatement)
+                .parameter('isAdmin', tedious_1.TYPES.Bit, isAdmin);
             if (upn) {
                 stmt.parameter('upn', tedious_1.TYPES.NVarChar, upn);
             }
             var users = yield stmt.executeImmediate();
             if (upn && users.length == 0) {
-                sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, " +
-                    "    FullName, FirstName, LastName " +
+                sqlStatement = "SELECT PersonnelNumber, EmailName, NULL as UntappdUserName, NULL as UntappdAccessToken, 0 as CheckinFacebook, 0 as CheckinTwitter, 0 as CheckinFoursquare, NULL as ThumbnailImageUri, " +
+                    "    FullName, FirstName, LastName, @isAdmin as IsAdmin " +
                     "FROM dbo.HC01Person " +
                     "WHERE EmailName = @alias";
                 var user = yield tds.default.sql(sqlStatement)
+                    .parameter('isAdmin', tedious_1.TYPES.Bit, isAdmin)
                     .parameter('alias', tedious_1.TYPES.VarChar, upn.split('@')[0])
                     .executeImmediate();
                 if (user.length == 1) {
-                    output({ code: 200, msg: user[0] });
+                    output({ code: successResponse, msg: user[0] });
                 }
                 output({ code: 404, msg: 'User does not exist' });
             }
             else if (!upn) {
-                output({ code: 200, msg: users });
+                output({ code: successResponse, msg: users });
             }
             else {
-                output({ code: 200, msg: users[0] });
+                output({ code: successResponse, msg: users[0] });
             }
         }
         catch (ex) {
+            console.warn('Failed to retrieve user. Details: ' + ex);
             output({ code: 500, msg: 'Failed to retrieve user. Details: ' + ex });
         }
     });
@@ -140,18 +145,19 @@ function postUserDetails(upn, isAdmin, tokenUpn, userDetails, output) {
             }
             var sqlStatement = "MERGE dbo.Users " +
                 "USING (" +
-                "    VALUES(@personnelNumber, @userPrincipalName, @untappdUserName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare)" +
-                ") AS source(PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
+                "    VALUES(@personnelNumber, @userPrincipalName, @untappdUserName, @untappdAccessToken, @checkinFacebook, @checkinTwitter, @checkinFoursquare, @thumbnailImageUri)" +
+                ") AS source(PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare, ThumbnailImageUri) " +
                 "ON Users.PersonnelNumber = source.PersonnelNumber " +
                 "WHEN MATCHED THEN " +
                 "    UPDATE SET UntappdUserName = source.UntappdUserName, " +
                 "        UntappdAccessToken = source.UntappdAccessToken, " +
                 "        CheckinFacebook = source.CheckinFacebook, " +
                 "        CheckinTwitter = source.CheckinTwitter, " +
-                "        CheckinFoursquare = source.CheckinFoursquare " +
+                "        CheckinFoursquare = source.CheckinFoursquare, " +
+                "        ThumbnailImageUri = source.ThumbnailImageUri " +
                 "WHEN NOT MATCHED THEN " +
-                "    INSERT (PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare) " +
-                "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdUserName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare);";
+                "    INSERT (PersonnelNumber, UserPrincipalName, UntappdUserName, UntappdAccessToken, CheckinFacebook, CheckinTwitter, CheckinFoursquare, ThumbnailImageUri) " +
+                "    VALUES (source.PersonnelNumber, source.UserPrincipalName, source.UntappdUserName, source.UntappdAccessToken, source.CheckinFacebook, source.CheckinTwitter, source.CheckinFoursquare, source.ThumbnailImageUri);";
             var results = yield tds.default.sql(sqlStatement)
                 .parameter('personnelNumber', tedious_1.TYPES.Int, userDetails.PersonnelNumber)
                 .parameter('userPrincipalName', tedious_1.TYPES.NVarChar, upn)
@@ -160,10 +166,12 @@ function postUserDetails(upn, isAdmin, tokenUpn, userDetails, output) {
                 .parameter('checkinFacebook', tedious_1.TYPES.Bit, userDetails.CheckinFacebook)
                 .parameter('checkinTwitter', tedious_1.TYPES.Bit, userDetails.CheckinTwitter)
                 .parameter('checkinFoursquare', tedious_1.TYPES.Bit, userDetails.CheckinFoursquare)
+                .parameter('thumbnailImageUri', tedious_1.TYPES.NVarChar, userDetails.ThumbnailImageUri)
                 .executeImmediate();
-            getUserDetails(upn, false, upn, output);
+            getUserDetails(upn, false, upn, output, 201);
         }
         catch (ex) {
+            console.warn('Failed to update user. Details: ' + ex);
             output({ code: 500, msg: 'Failed to update user. Details: ' + ex });
         }
     });

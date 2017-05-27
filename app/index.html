@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title ng-bind="title">DX Liquid Intelligence</title>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="Content/style.css" />
+</head>
+<body role="document">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed"
+                        data-toggle="collapse"
+                        data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#/Home">DX Liquid Intelligence</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li ng-class="{ active: isControllerActive('/Home') }"><a href="#/Home">Home</a></li>
+                    <li ng-class="{ active: isControllerActive('/User') }"><a href="#/User">User</a></li>
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Voting <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#/VoteBeer">Cast Vote</a></li>
+                            <li><a href="#/VoteResults">View Results</a></li>
+                        </ul>
+                    </li>
+                    <li ng-class="{ active: isControllerActive('/Analytics') }"><a href="#/Analytics">Analytics</a></li>
+                    <li ng-show="isAdmin()" class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin <span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#/InstallKegs">Kegs</a></li>
+                            <li><a href="#/AuthorizedGroups">Drinker Access</a></li>
+                            <li><a href="#/IOController">IOController</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right" ng-cloak>
+                    <li><a class="btn btn-link" ng-hide="userInfo.isAuthenticated" ng-click="login()">Login</a></li>
+                    <li ng-show="userInfo.isAuthenticated" class="dropdown">
+                        <a role="button" class="dropdown-toggle" data-toggle="dropdown">{{userInfo.userName}} <b class="caret"></b></a>
+                        <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+                            <li role="presentation"><a class="btn btn-link" ng-click="logout()">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <br />
+    <div class="container" role="main">
+        <div ng-view class="panel-body"></div>
+        <div id="AngularBootError" style="display:none">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <div class="page-header">
+                        <h1>DX Liquid Intelligence</h1>
+                    </div>
+                    <p>Error Description</p>
+                </div>
+            </div>
+            <div class="alert alert-warning">
+                <h4>The DX Liquid Intelligence application failed to initialize correctly.</h4>
+                <p>This is most time due to incorrect configuration. Check the configuration and try again.</p>
+                <p>&nbsp;</p>
+                <p>Details:</p>
+                <p>&nbsp;</p>
+                <span id="BootExceptionDetails"></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-route.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-resource.min.js"></script>
+    <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!--    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.14/js/adal.min.js"></script>
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/1.0.14/js/adal-angular.min.js"></script>
+-->    
+    <script src="scripts/adal.js"></script>
+    <script src="scripts/adal-angular.js"></script>
+    <script src="node_modules/angular-environment/dist/angular-environment.js"></script>
+    <script src="userapp.js"></script>
+</body>
+</html>

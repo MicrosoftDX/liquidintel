@@ -89,6 +89,7 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
                     return { activityId: session.Session.SessionId, untappdCheckin: checkinResp.response }
                 }
                 catch (ex) {
+                    console.error('Error posting untappd checking: ' + ex.stack);
                     return null;
                 }
             });
@@ -108,26 +109,29 @@ export async function postSessionCheckin(sessions: Activity[]): Promise<any[]> {
                 .parameter('activityId', TYPES.Int, null)
                 .prepare();
 
-            await retVal.forEachAsync(async activity => {
-                var badgeName = null;
-                var imageUrl = null;
+            await retVal
+                .filter(activity => !!activity)
+                .forEachAsync(async activity => {
+                    var badgeName = null;
+                    var imageUrl = null;
 
-                if (activity.untappdCheckin.badges.count > 0) {
-                    badgeName = activity.untappdCheckin.badges.items[0].badge_name;             //limiting to only the first badge
-                    imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
-                }
+                    if (activity.untappdCheckin.badges.count > 0) {
+                        badgeName = activity.untappdCheckin.badges.items[0].badge_name;             //limiting to only the first badge
+                        imageUrl = activity.untappdCheckin.badges.items[0].badge_image.lg;
+                    }
 
-                await updateUntappdCheckin.execute(false, false, {
-                    checkinId: activity.untappdCheckin.checkin_id,
-                    badgeName: badgeName,
-                    imageUrl: imageUrl,
-                    activityId: activity.activityId
+                    await updateUntappdCheckin.execute(false, false, {
+                        checkinId: activity.untappdCheckin.checkin_id,
+                        badgeName: badgeName,
+                        imageUrl: imageUrl,
+                        activityId: activity.activityId
+                    });
                 });
-            });
             return await Promise.all(retVal);
         }
     }
     catch (ex) {
+        console.error('Failed to post untapped checkin: ' + ex.stack);
         throw ex;
     }
 }

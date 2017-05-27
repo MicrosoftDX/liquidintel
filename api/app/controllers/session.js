@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
 const queryExpression = require("../utils/query_expression");

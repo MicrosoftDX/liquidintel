@@ -1,0 +1,57 @@
+﻿<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="page-header">
+            <h1>DX Liquid Intelligence</h1>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">Currently On Tap</div>
+    <div class="panel-body">
+        <p>The <strong><a href="https://untappd.com/v/dx-bar/6050871" target="_untappd">DX Bar</a></strong> is currently serving:</p>
+        <p/>
+        <div class="row">
+            <div class="col-sm-6" ng-repeat="tapInfo in currentTaps">
+                <div class="thumbnail" ng-switch="tapInfo.TapId">
+                    <p ng-switch-when="1">Left Tap:</p>
+                    <p ng-switch-when="2">Right Tap:</p>
+                    <img ng-src="{{tapInfo.imagePath || 'https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67'}}" width="100" />
+                    <div class="caption">
+                        <h2 class="text-center">{{tapInfo.Name}}</h2>
+                        <h4 class="text-center">{{tapInfo.Brewery}}</h4>
+                        <div class="text-center">
+                            <span class="label label-default" ng-class="{ 'label-danger': tapInfo.BeerType.toLowerCase().includes('red'), 'label-info': tapInfo.BeerType.toLowerCase().includes('ipa') }">{{tapInfo.BeerType}}</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="label label-warning">{{tapInfo.ABV}}% ABV</span>
+                            <span class="label label-primary">IBU {{tapInfo.IBU}}</span>
+                        </div>
+                        <div class="text-center">
+                            <p/>
+                            <span>Level: {{tapInfo.CurrentVolume / tapInfo.KegSize * 100 | number: 0}}% full</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">Latest Activity</div>
+    <div class="panel-body" ng-repeat="activity in currentActivities track by activity.SessionId">
+        <div class="media">
+            <div class="media-left">
+                <img class="media-object" 
+                        ng-src="{{activity.BeerImagePath || 'https://camo.githubusercontent.com/edfa223e201418f8f519ea0c048c96da76dd952a/68747470733a2f2f7261772e6769746875622e636f6d2f766f6f646f6f74696b69676f642f6c6f676f2e6a732f6d61737465722f626565726a732f626565726a732e706e67'}}" 
+                        width="50" />
+            </div>
+            <div class="media-body">
+                <h4 class="media-heading">{{activity.FullName}}</h4>
+                <span class="fg-darkgrayishblue75">poured <strong>{{activity.PourAmount}} ml</strong> of <strong>{{activity.BeerName}}</strong></span>
+                <span class="label label-default" ng-class="{ 'label-danger': activity.BeerType.toLowerCase().includes('red'), 'label-info': activity.BeerType.toLowerCase().includes('ipa') }">{{activity.BeerType}}</span>
+                <br>
+                <small class="fg-darkgray40">on {{activity.PourTime | date : 'medium'}}</small>
+            </div>        
+        </div>
+    </div>
+</div>

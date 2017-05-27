@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const tedious = require("tedious");
 const _ = require("lodash");
 _.mixin(require('lodash-deep'));
@@ -27,7 +28,6 @@ class TdsPromises {
     }
 }
 ;
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.default = new TdsPromises();
 class TdsConnection {
     constructor() {

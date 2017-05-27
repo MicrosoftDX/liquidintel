@@ -1,4 +1,5 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const tedious_1 = require("tedious");
 var Operators;
 (function (Operators) {

@@ -7,6 +7,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+Object.defineProperty(exports, "__esModule", { value: true });
 const tds = require("../utils/tds-promises");
 const tedious_1 = require("tedious");
 const untappd = require("../utils/untappd");
@@ -19,8 +20,9 @@ function getCurrentKeg_Internal(tapId) {
                 "FROM FactKegInstall i INNER JOIN DimKeg k ON i.KegId = k.Id " +
                 "WHERE i.isCurrent = 1 ";
             if (tapId != null) {
-                sqlStatement += "AND i.TapId = @tap_id";
+                sqlStatement += "AND i.TapId = @tap_id ";
             }
+            sqlStatement += "ORDER BY i.TapId";
             var stmt = tds.default.sql(sqlStatement);
             if (tapId != null) {
                 stmt.parameter('tap_id', tedious_1.TYPES.Int, tapId);
@@ -88,6 +90,15 @@ function postPreviouslyInstalledKeg(kegId, tapId, kegSize, outputFunc) {
                 .parameter("kegId", tedious_1.TYPES.Int, kegId)
                 .parameter("installDate", tedious_1.TYPES.DateTime2, new Date(Date.now()))
                 .parameter("kegSize", tedious_1.TYPES.Decimal, kegSize)
+                .execute(false);
+            sqlStatement = "UPDATE dbo.UserVotes " +
+                "SET IsCurrent = 0 " +
+                "WHERE UntappdId IN ( " +
+                "    SELECT k.UntappdId " +
+                "    FROM dbo.DimKeg k " +
+                "    WHERE Id = @kegId)";
+            yield connection.sql(sqlStatement)
+                .parameter("kegId", tedious_1.TYPES.Int, kegId)
                 .execute(false);
         }), () => getCurrentKeg(tapId, outputFunc), (err) => outputFunc({ code: 500, msg: "Failed to post new keg: " + err }));
     });

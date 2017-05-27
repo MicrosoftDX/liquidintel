@@ -7,9 +7,11 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const aad = require("../../ad");
+Object.defineProperty(exports, "__esModule", { value: true });
+const aad = require("./ad");
+const settings = require("../utils/settings_encoder");
 var token = new aad.Token(process.env.Tenant, process.env.ClientId, process.env.ClientSecret);
-var groupMembership = new aad.GraphGroupMembership((process.env.AdminGroups || "").split(';'), token);
+var groupMembership = new aad.GraphGroupMembership(settings.decodeSettingArray(process.env.AdminGroups), token);
 var cache = new Map();
 function isUserAdmin(user) {
     return __awaiter(this, void 0, void 0, function* () {

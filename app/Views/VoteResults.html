@@ -1,0 +1,40 @@
+<div ng-form="userForm" ng-submit="updateUserInfo()">
+    <h2>Beer Voting Results</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <div class="panel panel-default table-responsive">
+        <div class="panel-heading">Current Beer Votes Tally</div>
+        <div class="panel-body">
+            <p>The table below lists the current beer voting results.</p>
+        </div>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Beer Name</th>
+                    <th>Brewery</th>
+                    <th>Vote Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="beerResult in votesTally">
+                    <td>{{beerResult.BeerName}}</td>
+                    <td>{{beerResult.Brewery}}</td>
+                    <td>{{beerResult.VoteCount}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>

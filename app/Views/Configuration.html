@@ -1,0 +1,181 @@
+﻿<div ng-form="configurationForm" ng-submit="updateConfiguration()">
+    <h2>Dash Configuration</h2>
+    <div class="alert alert-dismissible" ng-class="error_class" ng-hide="!error" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        {{error}}
+    </div>
+    <div ng-hide="!loadingMessage">
+        <p><i class="glyphicon glyphicon-refresh glyphicon-spin"></i> {{loadingMessage}}</p>
+    </div>
+    <tabset class="tab-container" ng-hide="configuration.loadingMessage">
+        <tab heading="Account Settings" active="true">
+            <div class="panel panel-default">
+                <div class="panel-heading">Account Settings</div>
+                <div class="panel-body">
+                    <p>These settings apply to the behavior and attributes of the DASH 'virtual' account.</p>
+                    <p>They determine the security attributes, the key 'namespace' storage account and a variety of other attributes.</p>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.specialSettings" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                </table>
+            </div>
+        </tab>
+        <tab heading="Storage Accounts">
+            <div class="panel panel-default">
+                <div class="panel-heading">Storage Accounts</div>
+                <div class="panel-body">
+                    <p>You currently have {{configuration.settings.scaleOutStorage.accounts.length}} accounts out of a possible {{configuration.settings.scaleOutStorage.maxAccounts}}.</p>
+                    <p>This is the list of storage accounts that hold the actual data blobs in the DASH virtual account.</p>
+                    <p>New accounts can be added or created (you cannot delete a data account) and account keys can be updated.</p>
+                    <p>(Coming soon)You can also 'roll over' all of your data account keys to maintain data access security or maintain expiring keys.</p>
+                    <h4><span class="warning">WARNING: </span> Ensure that any account keys you add are valid storage account keys. Entering invalid keys could cause unpredictable behavior in Dash.</h4>
+                </div>
+                <table class="table table-striped">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.scaleOutStorage.accounts" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="col-sm-10" />
+                            <td class="col-sm-2">
+                                <p>
+                                    <button type="button"
+                                            class="btn btn-primary"
+                                            ng-disabled="updateInProgress || configuration.settings.scaleOutStorage.accounts.length >= configuration.settings.scaleOutStorage.maxAccounts"
+                                            data-ng-click="addAccount()">
+                                        Add Account
+                                    </button>
+                                </p>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </tab>
+        <tab heading="General Settings">
+            <div class="panel panel-default">
+                <div class="panel-heading">General Settings</div>
+                <div class="panel-heading">Authentication</div>
+                <div class="panel-body">
+                    <p>These configuration settings enable this Management Portal and other REST API users to authenticate to the Management API.</p>
+                </div>
+                <table class="table">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.authenticationSettings" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                </table>
+                <div class="panel-heading" style="margin-top:10px;">Blob Replication</div>
+                <div class="panel-body">
+                    <p>The following settings control how and when blobs are replicated. Replicating blobs will improve read throughput, but will cost most for each copy of the blob being saved.</p>
+                </div>
+                <table class="table">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.replicationSettings" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                </table>
+                <div class="panel-heading" style="margin-top:10px;">Worker Queue</div>
+                <div class="panel-body">
+                    <p>All asynchronous operations (import accounts, blob replication, etc.) use an Azure Storage Queue to manage the list of operations.
+                    Leave configuration settings empty to use default values.</p>
+                </div>
+                <table class="table">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.workerQueueSettings" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                </table>
+                <div class="panel-heading" style="margin-top:10px;">Miscellaneious</div>
+                <div class="panel-body">
+                    <p>The following configuration settings affect a variety of behaviors and operations.</p>
+                </div>
+                <table class="table">
+                    <tbody>
+                        <tr data-ng-repeat="setting in configuration.settings.miscSettings" ng-include="'ConfigSetting.html'" />
+                    </tbody>
+                </table>
+            </div>
+        </tab>
+    </tabset>
+    <div id="buttonDiv">
+        <input ng-repeat="button in buttonBarButtons"
+               class="btn btn-primary controlButtons"
+               type="{{button.isSubmit ? 'submit' : 'button'}}"
+               ng-disabled="!button.enabled"
+               ng-click="button.doClick()"
+               value="{{button.displayText}}">
+    </div>
+</div>
+
+<script type="text/ng-template" id="ConfigSetting.html">
+    
+    <td colspan="2">
+        <div class="col-sm-12"
+             ng-if="setting.displayLabel">
+            <label class="setting_label" ng-hide="!setting.displayLabel">{{setting.displayLabel}}:</label>
+        </div>
+        <!-- Standard input edit box -->
+        <div class="{{setting.requiresActionButton() ? 'col-sm-10' : 'col-sm-12'}}"
+             ng-if="!setting.isEditorStyleStorageAccount()">
+            <input type="text"
+                   ng-model="setting.value"
+                   ng-class="{'updated': setting.value != setting.updatedValue}"
+                   class="form-control"
+                   ng-required="setting.isRequired"
+                   ng-readonly="setting.isEditorStyleGenerate() || updateInProgress" />
+        </div>
+        <div class="col-sm-2"
+             ng-if="setting.isEditorStyleGenerate()">
+            <button ng-show="setting.isEditorStyleGenerate()" type="button" class="btn btn-primary" ng-disabled="updateInProgress" data-ng-click="generateStorageKey(setting)">Generate New Key</button>
+        </div>
+        <!-- Input edit group for account name -->
+        <div class="has-feedback col-sm-12"
+             storage-validator="{accountName: 'setting.accountName', accountKey: 'setting.accountKey'}"
+             storage-validator-controls="{accountName: 'StorageAccount.AccountName', accountKey: 'StorageAccount.AccountKey'}"
+             ng-show="setting.isEditorStyleStorageAccount()"
+             ng-form="StorageAccount"
+             ng-class="{'has-error': StorageAccount.$invalid}">
+            <div class="has-feedback" ng-class="{'has-error': StorageAccount.AccountName.$invalid}">
+                <div class="form-group row">
+                    <div class="col-sm-1">
+                        <label class="form-control-label" id="{{'StorageAccount' + $index}}">Name</label>
+                    </div>
+                    <div class="{{setting.requiresActionButton() ? 'col-sm-9' : 'col-sm-11'}}">
+                        <input type="text"
+                               name="AccountName"
+                               class="form-control accountName"
+                               placeholder="Account Name"
+                               aria-describedby="{{'StorageAccount' + $index}}"
+                               ng-model="setting.accountName"
+                               ng-readonly="(setting.isEditorStyleCantChangeAccount() && setting.originalAccountName) || updateInProgress"
+                               ng-model-options="{ updateOn: 'blur' }" />
+                    </div>
+                    <div class="col-sm-2"
+                         ng-if="setting.isEditorStyleDelete() || setting.isNew">
+                        <button type="button" class="btn btn-link" ng-disabled="updateInProgress" data-ng-click="deleteAccount(setting)">Delete</button>
+                    </div>
+                </div>
+                <span class="glyphicon glyphicon-exclamation-sign form-control-feedback" ng-show="StorageAccount.AccountName.$invalid" title="The entered Account Name is not valid or already used" aria-hidden="true"></span>
+            </div>
+            <!-- Input edit group for account key -->
+            <div class="has-feedback" ng-class="{ 'has-error': StorageAccount.AccountKey.$invalid}">
+                <div class="form-group row">
+                    <div class="col-sm-1">
+                        <label for="AccountKey" class="col-sm-1 form-control-label" id="{{'StorageKey' + $index}}">Key</label>
+                    </div>
+                    <div class="{{setting.requiresActionButton() ? 'col-sm-9' : 'col-sm-11'}}">
+                        <input type="text"
+                                name="AccountKey"
+                                class="form-control"
+                                placeholder="Account Key (Leave blank to have Dash make a new account)"
+                                aria-describedby="{{'StorageKey' + $index}}"
+                                ng-model="setting.accountKey"
+                                ng-readonly="updateInProgress"
+                                ng-model-options="{ updateOn: 'blur' }" />
+                    </div>
+                </div>
+                <span class="glyphicon glyphicon-exclamation-sign form-control-feedback" ng-show="StorageAccount.AccountKey.$invalid" title="The entered Account Key is not valid" aria-hidden="true"></span>
+            </div>
+        </div>
+    </td>
+</script>
