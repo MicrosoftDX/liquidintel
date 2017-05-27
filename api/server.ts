@@ -13,6 +13,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs'); //For SSL
 var env = require('dotenv').load();
 var moment = require('moment');
+var tz = require('moment-timezone');
 import kegController = require('./app/controllers/kegController');
 import personController = require('./app/controllers/personController');
 import sessionController = require('./app/controllers/session');

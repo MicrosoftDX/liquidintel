@@ -8,7 +8,9 @@ var server = require('../server').app;
 
 var adminBearerToken: String;
 var nonAdminBearerToken: string;
-var newKegId: number;
+var newKegIdTapOne: number;
+var newKegIdTapTwo: number;
+var activityIds: number[] = [];
 
 function getAccessToken(refreshToken: string, next: (err: Error, errorResponse: any, token: string) => void) {
     // Fetch bearer token using refresh token specified in env vars
@@ -35,7 +37,7 @@ function getAccessToken(refreshToken: string, next: (err: Error, errorResponse: 
     });
 }
 
-describe('testing api', function() {
+describe('testing api', function () {
     this.timeout(7000);
 
     before(done => {
@@ -59,323 +61,484 @@ describe('testing api', function() {
         })
     });
 
-    it('should return 404 on / GET', function(done) {
+    it('should return 404 on / GET', function (done) {
         chai.request(server)
-        .get('/')
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(404);
-            done();
-        })
+            .get('/')
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(404);
+                done();
+            })
     });
 
-    it('should respond with welcome to /api on /api GET', function(done) {
+    it('should respond with welcome to /api on /api GET', function (done) {
         chai.request(server)
-        .get('/api')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.body.should.have.property('message');
-            res.body.message.should.equal('Welcome to DX Liquid Intelligence api!');
-            done();
-        })
+            .get('/api')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.body.should.have.property('message');
+                res.body.message.should.equal('Welcome to DX Liquid Intelligence api!');
+                done();
+            })
     });
 
-    it('should list kegs on /api/kegs GET', function(done) {
+    it('should list kegs on /api/kegs GET', function (done) {
         chai.request(server)
-        .get('/api/kegs')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.be.a('array');
-            res.body[0].should.have.property('KegId');
-            res.body[0].should.have.property('Name');
-            res.body[0].should.have.property('Brewery');
-            res.body[0].should.have.property('BeerType');
-            res.body[0].should.have.property('ABV');
-            res.body[0].should.have.property('IBU');
-            res.body[0].should.have.property('BeerDescription');
-            res.body[0].should.have.property('UntappdId');
-            res.body[0].should.have.property('imagePath');
-            done();
-        })
+            .get('/api/kegs')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                res.body[0].should.have.property('KegId');
+                res.body[0].should.have.property('Name');
+                res.body[0].should.have.property('Brewery');
+                res.body[0].should.have.property('BeerType');
+                res.body[0].should.have.property('ABV');
+                res.body[0].should.have.property('IBU');
+                res.body[0].should.have.property('BeerDescription');
+                res.body[0].should.have.property('UntappdId');
+                res.body[0].should.have.property('imagePath');
+                done();
+            })
     });
 
-    it('should list kegs with bearer token on /api/kegs GET', function(done) {
+    it('should list kegs with bearer token on /api/kegs GET', function (done) {
         chai.request(server)
-        .get('/api/kegs')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.be.a('array');
-            done();
-        })
+            .get('/api/kegs')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.a('array');
+                done();
+            })
     });
 
     describe('Install new keg, mount it on a tap, run activity & validate that the keg volume has dropped', () => {
         describe('Step 1: Install new keg', () => {
-            it('should require bearer token authentication on /api/kegs POST', function(done) {
+            it('should require bearer token authentication on /api/kegs POST', function (done) {
                 chai.request(server)
-                .post('/api/kegs')
-                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                .end((err: any, res: ChaiHttp.Response) => {
-                    res.should.have.status(401);
-                    done();
-                })
-            });
-
-            it('should require admin bearer token authentication on /api/kegs POST', function(done) {
-                chai.request(server)
-                .post('/api/kegs')
-                .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                .end((err: any, res: ChaiHttp.Response) => {
-                    res.should.have.status(401);
-                    done();
-                })
-            });
-
-            it('should add new keg with all attributes explicitly specified on /api/kegs POST', function(done) {
-                chai.request(server)
-                .post('/api/kegs')
-                .set('Authorization', 'Bearer ' + adminBearerToken)
-                .send({
-                    Name: 'test beer',
-                    Brewery: 'test brewery',
-                    BeerType: 'IPA',
-                    ABV: 10.5,
-                    IBU: 89,
-                    BeerDescription: 'This is a really nice, hoppy beer!',
-                    UntappdId: 12645
-                })
-                .end((err: any, res: ChaiHttp.Response) => {
-                    res.should.have.status(200);
-                    res.body.should.be.a('object');
-                    res.body.Name.should.equal('test beer');
-                    res.body.Brewery.should.equal('test brewery');
-                    res.body.BeerType.should.equal('IPA');
-                    res.body.ABV.should.equal(10.5);
-                    res.body.IBU.should.equal(89);
-                    res.body.BeerDescription.should.not.be.empty;
-                    // Save for later
-                    newKegId = res.body.KegId;
-                    done();
-                })
-            });
-
-            it('should list current kegs on /api/CurrentKeg GET', function(done) {
-                chai.request(server)
-                .get('/api/CurrentKeg')
-                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                .end((err: any, res: ChaiHttp.Response) => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.should.be.a('array');
-                    res.body[0].should.have.property('KegId');
-                    res.body[0].should.have.property('Name');
-                    res.body[0].should.have.property('Brewery');
-                    res.body[0].should.have.property('BeerType');
-                    res.body[0].should.have.property('ABV');
-                    res.body[0].should.have.property('IBU');
-                    res.body[0].should.have.property('BeerDescription');
-                    res.body[0].should.have.property('UntappdId');
-                    res.body[0].should.have.property('imagePath');
-                    done();
-                })
-            });
-
-            it('should get first current keg on /api/CurrentKeg/<id> GET', function(done) {
-                chai.request(server)
-                .get('/api/CurrentKeg/1')
-                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                .end((err: any, res: ChaiHttp.Response) => {
-                    res.should.have.status(200);
-                    res.should.be.json;
-                    res.body.should.have.property('KegId');
-                    res.body.should.have.property('Name');
-                    res.body.should.have.property('Brewery');
-                    res.body.should.have.property('BeerType');
-                    res.body.should.have.property('ABV');
-                    res.body.should.have.property('IBU');
-                    res.body.should.have.property('BeerDescription');
-                    res.body.should.have.property('UntappdId');
-                    res.body.should.have.property('imagePath');
-                    done();
-                })
-            });
-
-            describe('Step 2: Mount keg on tap', () => {
-                it('should require bearer token authentication on /api/CurrentKeg/<id> PUT', function(done) {
-                    chai.request(server)
-                    .put('/api/CurrentKeg/1')
+                    .post('/api/kegs')
                     .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                    .send({KegId: 6, KegSize: 17000})
                     .end((err: any, res: ChaiHttp.Response) => {
                         res.should.have.status(401);
                         done();
                     })
-                });
+            });
 
-                it('should require admin bearer token authentication on /api/CurrentKeg/<id> PUT', function(done) {
-                    chai.request(server)
-                    .put('/api/CurrentKeg/1')
+            it('should require admin bearer token authentication on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
                     .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-                    .send({KegId: 6, KegSize: 17000})
                     .end((err: any, res: ChaiHttp.Response) => {
                         res.should.have.status(401);
                         done();
                     })
-                });
+            });
 
-                it('should make previously installed keg current /api/CurrentKeg/<id> PUT', function(done) {
-                    chai.request(server)
-                    .put('/api/CurrentKeg/1')
+            it('should add new keg with all attributes explicitly specified on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
                     .set('Authorization', 'Bearer ' + adminBearerToken)
                     .send({
-                        KegId: newKegId, 
-                        KegSize: 17000
+                        Name: 'test beer',
+                        Brewery: 'test brewery',
+                        BeerType: 'IPA',
+                        ABV: 10.5,
+                        IBU: 89,
+                        BeerDescription: 'This is a really nice, hoppy beer!'
                     })
                     .end((err: any, res: ChaiHttp.Response) => {
                         res.should.have.status(200);
                         res.body.should.be.a('object');
-                        res.body.TapId.should.equal(1);
-                        res.body.KegId.should.equal(newKegId);
-                        res.body.KegSize.should.equal(17000);
-                        res.body.CurrentVolume.should.equal(17000);
-                        // We specified these attribute values when we posted the keg
                         res.body.Name.should.equal('test beer');
                         res.body.Brewery.should.equal('test brewery');
                         res.body.BeerType.should.equal('IPA');
                         res.body.ABV.should.equal(10.5);
                         res.body.IBU.should.equal(89);
                         res.body.BeerDescription.should.not.be.empty;
+                        // Save for later
+                        newKegIdTapOne = res.body.KegId;
                         done();
                     })
+            });
+
+            it('should add new keg with all attributes from Untappd regardless of what you pass into the body on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
+                    .set('Authorization', 'Bearer ' + adminBearerToken)
+                    .send({
+                        Name: 'test beer',
+                        Brewery: 'test brewery',
+                        BeerType: 'IPA',
+                        ABV: 10.5,
+                        IBU: 89,
+                        BeerDescription: 'This is a really nice, hoppy beer!',
+                        UntappdId: 12645
+                    })
+                    .end((err: any, res: ChaiHttp.Response) => {
+                        res.should.have.status(200);
+                        res.body.should.be.a('object');
+                        res.body.Name.should.equal('Trickster');
+                        res.body.Brewery.should.equal('Black Raven Brewing Company');
+                        res.body.BeerType.should.equal('IPA - American');
+                        res.body.ABV.should.equal(6.9);
+                        res.body.IBU.should.equal(70);
+                        res.body.BeerDescription.should.not.be.empty;
+                        // Save for later
+                        newKegIdTapTwo = res.body.KegId;
+                        done();
+                    })
+            });
+
+            it('should return a 400 error on invalid UntappdId on /api/kegs POST', function (done) {
+                chai.request(server)
+                    .post('/api/kegs')
+                    .set('Authorization', 'Bearer ' + adminBearerToken)
+                    .send({
+                        UntappdId: 126131245
+                    })
+                    .end((err: any, res: ChaiHttp.Response) => {
+                        res.should.have.status(400);
+                        done();
+                    })
+            });
+
+            it('should list current kegs on /api/CurrentKeg GET', function (done) {
+                chai.request(server)
+                    .get('/api/CurrentKeg')
+                    .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                    .end((err: any, res: ChaiHttp.Response) => {
+                        res.should.have.status(200);
+                        res.should.be.json;
+                        res.body.should.be.a('array');
+                        res.body[0].should.have.property('KegId');
+                        res.body[0].should.have.property('Name');
+                        res.body[0].should.have.property('Brewery');
+                        res.body[0].should.have.property('BeerType');
+                        res.body[0].should.have.property('ABV');
+                        res.body[0].should.have.property('IBU');
+                        res.body[0].should.have.property('BeerDescription');
+                        res.body[0].should.have.property('UntappdId');
+                        res.body[0].should.have.property('imagePath');
+                        done();
+                    })
+            });
+
+            it('should get first current keg on /api/CurrentKeg/<id> GET', function (done) {
+                chai.request(server)
+                    .get('/api/CurrentKeg/1')
+                    .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                    .end((err: any, res: ChaiHttp.Response) => {
+                        res.should.have.status(200);
+                        res.should.be.json;
+                        res.body.should.have.property('KegId');
+                        res.body.should.have.property('Name');
+                        res.body.should.have.property('Brewery');
+                        res.body.should.have.property('BeerType');
+                        res.body.should.have.property('ABV');
+                        res.body.should.have.property('IBU');
+                        res.body.should.have.property('BeerDescription');
+                        res.body.should.have.property('UntappdId');
+                        res.body.should.have.property('imagePath');
+                        done();
+                    })
+            });
+
+            describe('Step 2: Mount keg on tap', () => {
+                it('should require bearer token authentication on /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                        .send({ KegId: 6, KegSize: 17000 })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(401);
+                            done();
+                        })
+                });
+
+                it('should require admin bearer token authentication on /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+                        .send({ KegId: 6, KegSize: 17000 })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(401);
+                            done();
+                        })
+                });
+
+                it('should require adding kegSize when making previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                            KegId: newKegIdTapOne
+                        })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(500);
+                            done();
+                        })
+                });
+
+                it('should require kegId in the body when making previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                            kegSize: 17000
+                        })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(500);
+                            done();
+                        })
+                });
+
+                it('should make previously installed keg current /api/CurrentKeg/<id> PUT', function (done) {
+                    chai.request(server)
+                        .put('/api/CurrentKeg/1')
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                            KegId: newKegIdTapOne,
+                            KegSize: 17000
+                        })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            res.body.TapId.should.equal(1);
+                            res.body.KegId.should.equal(newKegIdTapOne);
+                            res.body.KegSize.should.equal(17000);
+                            res.body.CurrentVolume.should.equal(17000);
+                            // We specified these attribute values when we posted the keg
+                            res.body.Name.should.equal('test beer');
+                            res.body.Brewery.should.equal('test brewery');
+                            res.body.BeerType.should.equal('IPA');
+                            res.body.ABV.should.equal(10.5);
+                            res.body.IBU.should.equal(89);
+                            res.body.BeerDescription.should.not.be.empty;
+                            done();
+                        })
+                });
+
+                //Adding beer to Tap2. Tap1 beer has already been added.
+                it('should make previously installed keg current for tap #2 /api/CurrentKeg/<id> PUT', function (done) {
+                    var tapId = 2;
+
+                    chai.request(server)
+                        .put('/api/CurrentKeg/' + tapId)
+                        .set('Authorization', 'Bearer ' + adminBearerToken)
+                        .send({
+                            KegId: newKegIdTapTwo,
+                            KegSize: 17000
+                        })
+                        .end((err: any, res: ChaiHttp.Response) => {
+                            res.should.have.status(200);
+                            res.body.should.be.a('object');
+                            res.body.TapId.should.equal(tapId);
+                            res.body.KegId.should.equal(newKegIdTapTwo);
+                            res.body.KegSize.should.equal(17000);
+                            res.body.CurrentVolume.should.equal(17000);
+                            // These values must be pulled down from Untappd
+                            res.body.Name.should.equal('Trickster');
+                            res.body.Brewery.should.equal('Black Raven Brewing Company');
+                            res.body.BeerType.should.equal('IPA - American');
+                            res.body.ABV.should.equal(6.9);
+                            res.body.IBU.should.equal(70);
+                            res.body.BeerDescription.should.not.be.empty;
+                            done();
+                        })
                 });
 
                 describe('Step 3: Generate activity on new keg', () => {
-                    it('should get all activities on /api/activity GET', function(done) {
+                    it('should get all activities on /api/activity GET', function (done) {
                         chai.request(server)
-                        .get('/api/activity')
-                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                        .end((err: any, res: ChaiHttp.Response) => {
-                            res.should.have.status(200);
-                            res.should.be.json;
-                            res.body.should.be.a('array');
-                            res.body[0].should.have.property('SessionId');
-                            res.body[0].should.have.property('PourTime');
-                            res.body[0].should.have.property('PourAmount');
-                            res.body[0].should.have.property('BeerName');
-                            res.body[0].should.have.property('Brewery');
-                            res.body[0].should.have.property('BeerType');
-                            res.body[0].should.have.property('ABV');
-                            res.body[0].should.have.property('IBU');
-                            res.body[0].should.have.property('BeerDescription');
-                            res.body[0].should.have.property('UntappdId');
-                            res.body[0].should.have.property('BeerImagePath');
-                            res.body[0].should.have.property('PersonnelNumber');
-                            res.body[0].should.have.property('Alias');
-                            res.body[0].should.have.property('FullName');
-                            //todo: check that first pour time is equal to or earlier than second (descending)
-                            done();
-                        })
-                    });
-
-                    it('should get specific activity on /api/activity/<id> GET', function(done) {
-                        chai.request(server)
-                        .get('/api/activity/1')
-                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                        .end((err: any, res: ChaiHttp.Response) => {
-                            res.should.have.status(200);
-                            res.should.be.json;
-                            res.body.should.have.property('SessionId');
-                            res.body.should.have.property('PourTime');
-                            res.body.should.have.property('PourAmount');
-                            res.body.should.have.property('BeerName');
-                            res.body.should.have.property('Brewery');
-                            res.body.should.have.property('BeerType');
-                            res.body.should.have.property('ABV');
-                            res.body.should.have.property('IBU');
-                            res.body.should.have.property('BeerDescription');
-                            res.body.should.have.property('UntappdId');
-                            res.body.should.have.property('BeerImagePath');
-                            res.body.should.have.property('PersonnelNumber');
-                            res.body.should.have.property('Alias');
-                            res.body.should.have.property('FullName');
-                            done();
-                        })
-                    });
-
-                    it('should add new activity on /api/activity POST', function(done) {
-                        chai.request(server)
-                        .post('/api/activity')
-                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                        .send({
-                            sessionTime: new Date().toISOString(),
-                            personnelNumber: Number(process.env.NonAdminPersonnelNumber),
-                            Taps: {
-                                "1": {
-                                    amount: 155
-                                },
-                                "2": {
-                                    amount: 210
-                                }
-                            }
-                        })
-                        .end((err: any, res: ChaiHttp.Response) => {
-                            res.should.have.status(200);
-                            res.should.be.json;
-                            res.body.should.be.an('array');
-                            res.body.length.should.equal(2);
-                            var tapOne = (<Array<any>>res.body).find(activity => activity.TapId == 1);
-                            var tapTwo = (<Array<any>>res.body).find(activity => activity.TapId == 2);
-                            should.not.equal(tapOne, null);
-                            tapOne.should.have.property('ActivityId');
-                            tapOne.should.have.property('KegId');
-                            tapOne.amount.should.equal(155);
-                            should.not.equal(tapTwo, null);
-                            tapTwo.amount.should.equal(210);
-                            done();
-                        })
-                    });
-
-                    it('should add new activity but not for empty taps on /api/activity POST', function(done) {
-                        chai.request(server)
-                        .post('/api/activity')
-                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-                        .send({
-                            sessionTime: new Date().toISOString(),
-                            personnelNumber: Number(process.env.NonAdminPersonnelNumber),
-                            Taps: {
-                                "1": {
-                                    amount: 0
-                                },
-                                "2": {
-                                    amount: 210
-                                }
-                            }
-                        })
-                        .end((err: any, res: ChaiHttp.Response) => {
-                            res.should.have.status(200);
-                            res.should.be.json;
-                            res.body.should.be.an('array');
-                            res.body.length.should.equal(1);
-                            res.body[0].amount.should.equal(210);
-                            done();
-                        })
-                    });
-
-                    describe('Step 4: Validate that activity has reduced volume in keg', () => {
-                        it('should have reduced keg volumne after activity /api/CurrentKeg GET', function(done) {
-                            chai.request(server)
-                            .get('/api/CurrentKeg/1')
+                            .get('/api/activity')
                             .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
                             .end((err: any, res: ChaiHttp.Response) => {
                                 res.should.have.status(200);
-                                res.body.KegSize.should.equal(17000);
-                                res.body.CurrentVolume.should.equal(17000 - 155);
+                                res.should.be.json;
+                                res.body.should.be.a('array');
+                                res.body[0].should.have.property('SessionId');
+                                res.body[0].should.have.property('PourTime');
+                                res.body[0].should.have.property('PourAmount');
+                                res.body[0].should.have.property('BeerName');
+                                res.body[0].should.have.property('Brewery');
+                                res.body[0].should.have.property('BeerType');
+                                res.body[0].should.have.property('ABV');
+                                res.body[0].should.have.property('IBU');
+                                res.body[0].should.have.property('BeerDescription');
+                                res.body[0].should.have.property('UntappdId');
+                                res.body[0].should.have.property('BeerImagePath');
+                                res.body[0].should.have.property('PersonnelNumber');
+                                res.body[0].should.have.property('Alias');
+                                res.body[0].should.have.property('FullName');
+                                res.body[0].should.have.property('UntappdCheckinId'),
+                                    res.body[0].should.have.property('UntappdBadgeName'),
+                                    res.body[0].should.have.property('UntappdBadgeImageURL')
+                                //todo: check that first pour time is equal to or earlier than second (descending)
                                 done();
                             })
+                    });
+
+                    it('should get specific activity on /api/activity/<id> GET', function (done) {
+                        chai.request(server)
+                            .get('/api/activity/1')
+                            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                            .end((err: any, res: ChaiHttp.Response) => {
+                                res.should.have.status(200);
+                                res.should.be.json;
+                                res.body.should.have.property('SessionId');
+                                res.body.should.have.property('PourTime');
+                                res.body.should.have.property('PourAmount');
+                                res.body.should.have.property('BeerName');
+                                res.body.should.have.property('Brewery');
+                                res.body.should.have.property('BeerType');
+                                res.body.should.have.property('ABV');
+                                res.body.should.have.property('IBU');
+                                res.body.should.have.property('BeerDescription');
+                                res.body.should.have.property('UntappdId');
+                                res.body.should.have.property('BeerImagePath');
+                                res.body.should.have.property('PersonnelNumber');
+                                res.body.should.have.property('Alias');
+                                res.body.should.have.property('FullName');
+                                res.body.should.have.property('UntappdCheckinId'),
+                                    res.body.should.have.property('UntappdBadgeName'),
+                                    res.body.should.have.property('UntappdBadgeImageURL')
+                                done();
+                            })
+                    });
+
+                    it('should add new activity on /api/activity POST', function (done) {
+                        chai.request(server)
+                            .post('/api/activity')
+                            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                            .send({
+                                sessionTime: new Date().toISOString(),
+                                personnelNumber: Number(process.env.AdminPersonnelNumber),
+                                Taps: {
+                                    "1": {
+                                        amount: 155
+                                    },
+                                    "2": {
+                                        amount: 210
+                                    }
+                                }
+                            })
+                            .end((err: any, res: ChaiHttp.Response) => {
+                                res.should.have.status(200);
+                                res.should.be.json;
+                                res.body.should.be.an('array');
+                                res.body.length.should.equal(2);
+                                var tapOne = (<Array<any>>res.body).find(activity => activity.TapId == 1);
+                                var tapTwo = (<Array<any>>res.body).find(activity => activity.TapId == 2);
+                                should.not.equal(tapOne, null);
+                                tapOne.should.have.property('ActivityId');
+                                tapOne.should.have.property('KegId');
+                                tapOne.amount.should.equal(155);
+                                should.not.equal(tapTwo, null);
+                                tapTwo.amount.should.equal(210);
+                                //Save for later
+                                activityIds.push(tapOne.ActivityId);
+                                activityIds.push(tapTwo.ActivityId);
+                                done();
+                            })
+                    });
+
+                    it('should add new activity but not for empty taps on /api/activity POST', function (done) {
+                        chai.request(server)
+                            .post('/api/activity')
+                            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                            .send({
+                                sessionTime: new Date().toISOString(),
+                                personnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                                Taps: {
+                                    "1": {
+                                        amount: 200
+                                    },
+                                    "2": {
+                                        amount: 0
+                                    }
+                                }
+                            })
+                            .end((err: any, res: ChaiHttp.Response) => {
+                                res.should.have.status(200);
+                                res.should.be.json;
+                                res.body.should.be.an('array');
+                                res.body.length.should.equal(1);
+                                res.body[0].amount.should.equal(200);
+                                done();
+                            })
+                    });
+
+                    describe('Step 4: Validate that activity has reduced volume in keg', () => {
+                        it('should have reduced keg volumne after activity /api/CurrentKeg GET', function (done) {
+                            chai.request(server)
+                                .get('/api/CurrentKeg/2')
+                                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                .end((err: any, res: ChaiHttp.Response) => {
+                                    res.should.have.status(200);
+                                    res.body.KegSize.should.equal(17000);
+                                    res.body.CurrentVolume.should.equal(17000 - 210);
+                                    done();
+                                })
+                        });
+                    });
+
+                    describe('Step 5: Validate Untappd Checkin for both taps', () => {
+                        //Testing for when there is only 1 beer on tap and it does not have an UntappdId. In this case, only Beer on tap 1 has an untappd ID
+                        it('should only checkin with the beer that has an untappd id on /api/activity', function (done) {
+                            this.timeout(10000);
+                            var counter = 0;
+                            setTimeout(() => {
+                                for (var activityId of activityIds) {
+                                    chai.request(server)
+                                        .get('/api/activity/' + activityId)
+                                        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                        .end((err: any, res: ChaiHttp.Response) => {
+                                            res.should.have.status(200);
+                                            res.should.be.json;
+                                            res.body.should.have.property('UntappdId');
+                                            res.body.should.have.property('UntappdCheckinId');
+
+                                            if (!!res.body.UntappdId) {
+                                                should.not.equal(res.body.UntappdCheckinId, null);
+                                            }
+                                            else {
+                                                should.equal(res.body.UntappdCheckinId, null);
+                                            }
+                                            if (++counter >= activityIds.length) {
+                                                done();
+                                            }
+                                        })
+                                }
+                            }, 5000);
+
+                        });
+
+                        it('should not checkin with untappd when the consumption is 0 ml on /api/activity', function (done) {
+                            chai.request(server)
+                                .post('/api/activity/')
+                                .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+                                .send({
+                                    sessionTime: new Date().toISOString(),
+                                    personnelNumber: Number(process.env.AdminPersonnelNumber),
+                                    Taps: {
+                                        "1": {
+                                            amount: 0
+                                        },
+                                        "2": {
+                                            amount: 0
+                                        }
+                                    }
+                                })
+                                .end((err: any, res: ChaiHttp.Response) => {
+                                    res.should.have.status(200);
+                                    res.should.be.json;
+                                    res.body.should.be.an('array');
+                                    res.body.length.should.equal(0);
+                                    done();
+                                })
                         });
                     });
                 });
@@ -383,256 +546,258 @@ describe('testing api', function() {
         });
     });
 
-    it('should get valid specific person on /api/isPersonValid/<id> GET', function(done) {
+    it('should get valid specific person on /api/isPersonValid/<id> GET', function (done) {
         chai.request(server)
-        .get('/api/isPersonValid/1801958')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.should.have.property('Valid');
-            res.body.should.have.property('FullName');
-            res.body.Valid.should.equals(true);
-            done();
-        })
+            .get('/api/isPersonValid/1801958')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.should.have.property('Valid');
+                res.body.should.have.property('FullName');
+                res.body.Valid.should.equals(true);
+                done();
+            })
     });
 
-    it('should get not valid specific person on /api/isPersonValid/<id> GET', function(done) {
+    it('should get not valid specific person on /api/isPersonValid/<id> GET', function (done) {
         chai.request(server)
-        .get('/api/isPersonValid/1958144')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.should.have.property('Valid');
-            res.body.should.have.property('FullName');
-            res.body.Valid.should.equals(false);
-            done();
-        })
+            .get('/api/isPersonValid/1958144')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.should.have.property('Valid');
+                res.body.should.have.property('FullName');
+                res.body.Valid.should.equals(false);
+                done();
+            })
     });
 
-    it('should 404 on invalid person on /api/isPersonValid/<id> GET', function(done) {
+    it('should 404 on invalid person on /api/isPersonValid/<id> GET', function (done) {
         chai.request(server)
-        .get('/api/isPersonValid/0000000')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(404);
-            done();
-        })
+            .get('/api/isPersonValid/0000000')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(404);
+                done();
+            })
     });
 
-    it('should return an array of valid users on /api/validpeople GET', function(done) {
+    it('should return an array of valid users on /api/validpeople GET', function (done) {
         // This is a LONG operation...
         this.timeout(60000);
         chai.request(server)
-        .get('/api/validpeople')
-        .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.be.an('array');
-            res.body.should.not.be.empty;
-            res.body[0].should.have.property('PersonnelNumber');
-            res.body[0].should.have.property('Valid');
-            res.body[0].should.have.property('FullName');
-            res.body[0].should.have.property('CardId');
-            res.body[0].Valid.should.equal(true);
-            done();
-        })
+            .get('/api/validpeople')
+            .auth(process.env.BasicAuthUsername, process.env.BasicAuthPassword)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.an('array');
+                res.body.should.not.be.empty;
+                res.body[0].should.have.property('PersonnelNumber');
+                res.body[0].should.have.property('Valid');
+                res.body[0].should.have.property('FullName');
+                res.body[0].should.have.property('CardId');
+                res.body[0].Valid.should.equal(true);
+                done();
+            })
     });
 
-    it('should 401 on invalid bearer token on /api/users GET', function(done) {
+    it('should 401 on invalid bearer token on /api/users GET', function (done) {
         chai.request(server)
-        .get('/api/users')
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(401);
-            done();
-        })
+            .get('/api/users')
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(401);
+                done();
+            })
     });
 
-    it('should return all users for admin request to /api/users GET', function(done) {
+    it('should return all users for admin request to /api/users GET', function (done) {
         chai.request(server)
-        .get('/api/users')
-        .set('Authorization', 'Bearer ' + adminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.be.an('array');
-            res.body.should.not.be.empty;
-            res.body[0].should.have.property('PersonnelNumber');
-            done();
-        })
+            .get('/api/users')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.be.an('array');
+                res.body.should.not.be.empty;
+                res.body[0].should.have.property('PersonnelNumber');
+                done();
+            })
     });
 
-    it('should return user info for bearer token user to /api/users/me GET', function(done) {
+    it('should return user info for bearer token user to /api/users/me GET', function (done) {
         chai.request(server)
-        .get('/api/users/me')
-        .set('Authorization', 'Bearer ' + adminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.PersonnelNumber.should.be.equal(Number(process.env.AdminPersonnelNumber));
-            done();
-        })
+            .get('/api/users/me')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.PersonnelNumber.should.be.equal(Number(process.env.AdminPersonnelNumber));
+                done();
+            })
     });
 
-    it('should return user info for non-admin bearer token user to /api/users/me GET', function(done) {
+    it('should return user info for non-admin bearer token user to /api/users/me GET', function (done) {
         chai.request(server)
-        .get('/api/users/me')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.PersonnelNumber.should.be.equal(Number(process.env.NonAdminPersonnelNumber));
-            done();
-        })
+            .get('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.PersonnelNumber.should.be.equal(Number(process.env.NonAdminPersonnelNumber));
+                done();
+            })
     });
 
-    it('should not find specific invalid user for admin request to /api/users/:user_id GET', function(done) {
+    it('should not find specific invalid user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
-        .get('/api/users/blah@microsoft.com')
-        .set('Authorization', 'Bearer ' + adminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(404);
-            done();
-        })
+            .get('/api/users/blah@microsoft.com')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(404);
+                done();
+            })
     });
 
-    it('should return specific person that is a user for admin request to /api/users/:user_id GET', function(done) {
+    it('should return specific person that is a user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
-        .get('/api/users/jamesbak@microsoft.com')
-        .set('Authorization', 'Bearer ' + adminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.PersonnelNumber.should.be.within(420000, 430000);
-            should.not.equal(res.body.UntappdAccessToken, null);
-            done();
-        })
+            .get('/api/users/jamesbak@microsoft.com')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.PersonnelNumber.should.be.within(420000, 430000);
+                should.not.equal(res.body.UntappdAccessToken, null);
+                done();
+            })
     });
 
-    it('should return specific person that is not a user for admin request to /api/users/:user_id GET', function(done) {
+    it('should return specific person that is not a user for admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
-        .get('/api/users/OLIVERH@microsoft.com')
-        .set('Authorization', 'Bearer ' + adminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.PersonnelNumber.should.equal(52);
-            should.equal(res.body.UntappdAccessToken, null);
-            done();
-        })
+            .get('/api/users/OLIVERH@microsoft.com')
+            .set('Authorization', 'Bearer ' + adminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.PersonnelNumber.should.equal(52);
+                should.equal(res.body.UntappdAccessToken, null);
+                done();
+            })
     });
 
-    it('should return 400 Bad Request for non-admin request to /api/users/:user_id GET', function(done) {
+    it('should return 400 Bad Request for non-admin request to /api/users/:user_id GET', function (done) {
         chai.request(server)
-        .get('/api/users/OLIVERH@microsoft.com')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(400);
-            done();
-        })
+            .get('/api/users/OLIVERH@microsoft.com')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(400);
+                done();
+            })
     });
 
-    it('should return user identified by access token for non-admin request to /api/users GET', function(done) {
+    it('should return user identified by access token for non-admin request to /api/users GET', function (done) {
         chai.request(server)
-        .get('/api/users')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(200);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
-            done();
-        })
+            .get('/api/users')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(200);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+                done();
+            })
     });
 
-    it('should update own user information /api/users/me PUT', function(done) {
+    it('should update own user information /api/users/me PUT', function (done) {
         chai.request(server)
-        .put('/api/users/me')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .send({
-            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
-            UntappdUserName: 'test_user',
-            UntappdAccessToken: '123456',
-            CheckinFacebook: true,
-            CheckinTwitter: false,
-            CheckinFoursquare: true
-        })
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(201);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
-            res.body.UntappdUserName.should.equal('test_user');
-            res.body.CheckinFacebook.should.equal(true);
-            res.body.CheckinTwitter.should.equal(false);
-            res.body.CheckinFoursquare.should.equal(true);
-            done();
-        })
+            .put('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+                PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                UntappdUserName: 'test_user',
+                UntappdAccessToken: '123456',
+                CheckinFacebook: true,
+                CheckinTwitter: false,
+                CheckinFoursquare: true
+            })
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(201);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+                res.body.UntappdUserName.should.equal('test_user');
+                res.body.CheckinFacebook.should.equal(true);
+                res.body.CheckinTwitter.should.equal(false);
+                res.body.CheckinFoursquare.should.equal(true);
+                done();
+            })
     });
 
-    it('should update own user information /api/users PUT', function(done) {
+    //TODO: Need a test on getting Untappd Access Token
+
+    it('should update own user information /api/users PUT', function (done) {
         chai.request(server)
-        .put('/api/users')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .send({
-            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
-            UntappdUserName: 'test_user',
-            UntappdAccessToken: '123456',
-            CheckinFacebook: true,
-            CheckinTwitter: false,
-            CheckinFoursquare: true
-        })
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(201);
-            res.should.be.json;
-            res.body.should.have.property('PersonnelNumber');
-            res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
-            res.body.UntappdUserName.should.equal('test_user');
-            done();
-        })
+            .put('/api/users')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+                PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                UntappdUserName: process.env.NonAdminAlias,
+                UntappdAccessToken: process.env.NonAdminUntappdAccessToken,
+                CheckinFacebook: true,
+                CheckinTwitter: false,
+                CheckinFoursquare: true
+            })
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(201);
+                res.should.be.json;
+                res.body.should.have.property('PersonnelNumber');
+                res.body.PersonnelNumber.should.equal(Number(process.env.NonAdminPersonnelNumber));
+                res.body.UntappdUserName.should.equal(process.env.NonAdminAlias);
+                done();
+            })
     });
 
-    it('should return 400 Bad Request when update different user information for non-admin call /api/users/user_id PUT', function(done) {
+    it('should return 400 Bad Request when update different user information for non-admin call /api/users/user_id PUT', function (done) {
         chai.request(server)
-        .put('/api/users/blah@microsoft.com')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .send({
-            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
-            UntappdUserName: 'test_user',
-            UntappdAccessToken: '123456',
-            CheckinFacebook: true,
-            CheckinTwitter: false,
-            CheckinFoursquare: true
-        })
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(400);
-            done();
-        })
+            .put('/api/users/blah@microsoft.com')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+                PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                UntappdUserName: 'test_user',
+                UntappdAccessToken: '123456',
+                CheckinFacebook: true,
+                CheckinTwitter: false,
+                CheckinFoursquare: true
+            })
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(400);
+                done();
+            })
     });
 
-    it('should return 400 Bad Request when UserPrincipalName in body doesnt match resource in path /api/users/user_id PUT', function(done) {
+    it('should return 400 Bad Request when UserPrincipalName in body doesnt match resource in path /api/users/user_id PUT', function (done) {
         chai.request(server)
-        .put('/api/users/me')
-        .set('Authorization', 'Bearer ' + nonAdminBearerToken)
-        .send({
-            PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
-            UserPrincipalName: 'blah@microsoft.com',
-            UntappdUserName: 'test_user',
-            UntappdAccessToken: '123456',
-            CheckinFacebook: true,
-            CheckinTwitter: false,
-            CheckinFoursquare: true
-        })
-        .end((err: any, res: ChaiHttp.Response) => {
-            res.should.have.status(400);
-            done();
-        })
+            .put('/api/users/me')
+            .set('Authorization', 'Bearer ' + nonAdminBearerToken)
+            .send({
+                PersonnelNumber: Number(process.env.NonAdminPersonnelNumber),
+                UserPrincipalName: 'blah@microsoft.com',
+                UntappdUserName: 'test_user',
+                UntappdAccessToken: '123456',
+                CheckinFacebook: true,
+                CheckinTwitter: false,
+                CheckinFoursquare: true
+            })
+            .end((err: any, res: ChaiHttp.Response) => {
+                res.should.have.status(400);
+                done();
+            })
     });
 
     it('should require bearer token authentication on /api/appConfiguration GET', (done) => {
