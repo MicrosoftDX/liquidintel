@@ -79,6 +79,7 @@ function postSessionCheckin(sessions) {
                     return { activityId: session.Session.SessionId, untappdCheckin: checkinResp.response };
                 }
                 catch (ex) {
+                    console.error('Error posting untappd checking: ' + ex.stack);
                     return null;
                 }
             }));
@@ -95,7 +96,9 @@ function postSessionCheckin(sessions) {
                     .parameter('imageUrl', tedious_1.TYPES.NVarChar, null, { length: 1000 })
                     .parameter('activityId', tedious_1.TYPES.Int, null)
                     .prepare();
-                yield retVal.forEachAsync((activity) => __awaiter(this, void 0, void 0, function* () {
+                yield retVal
+                    .filter(activity => !!activity)
+                    .forEachAsync((activity) => __awaiter(this, void 0, void 0, function* () {
                     var badgeName = null;
                     var imageUrl = null;
                     if (activity.untappdCheckin.badges.count > 0) {
@@ -113,6 +116,7 @@ function postSessionCheckin(sessions) {
             }
         }
         catch (ex) {
+            console.error('Failed to post untapped checkin: ' + ex.stack);
             throw ex;
         }
     });
