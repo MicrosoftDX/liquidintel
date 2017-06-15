@@ -4,6 +4,8 @@
 A project to control and report on kegerators including an IO Controller, API, Data Layer, and Web App. 
 
 ## Getting Started
+You can find the list of hardware we used while creating this project in the [BOM](bom.md) file.
+
 TODO: Guide users through getting your code up and running on their own system. In this section you can talk about:
 1.	Installation process
 2.	Software dependencies
