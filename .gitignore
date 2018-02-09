@@ -145,3 +145,8 @@ jspm_packages
 webapp/tmp
 webapp/src/config/default.js
 
+#xamarin gitignore
+**/mobile/xamarin/**/obj
+**/mobile/xamarin/**/bin
+**/mobile/xamarin/**/packages
+.DS_Store

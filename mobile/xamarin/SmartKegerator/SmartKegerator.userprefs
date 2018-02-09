@@ -1,0 +1,33 @@
+﻿<Properties StartupConfiguration="{06975B4B-46E7-40AA-95F2-A4AA8A824D9F}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="iOS/AppDelegate.cs">
+    <Files>
+      <File FileName="Droid/Helpers/Authentication.cs" Line="11" Column="36" />
+      <File FileName="SmartKegerator/Views/AvailableBeersPage.xaml" Line="30" Column="15" />
+      <File FileName="SmartKegerator/ViewModels/AvailableBeersViewModel.cs" Line="32" Column="18" />
+      <File FileName="SmartKegerator/Models/KegInfo.cs" Line="22" Column="52" />
+      <File FileName="SmartKegerator/Views/ActivitiesPage.xaml" Line="37" Column="15" />
+      <File FileName="SmartKegerator/ViewModels/ActivitiesViewModel.cs" Line="29" Column="17" />
+      <File FileName="SmartKegerator/ViewModels/VotesViewModel.cs" Line="29" Column="30" />
+      <File FileName="iOS/Main.cs" Line="16" Column="15" />
+      <File FileName="SmartKegerator/Models/Vote.cs" Line="1" Column="1" />
+      <File FileName="Droid/MainActivity.cs" Line="1" Column="1" />
+      <File FileName="SmartKegerator/App.xaml" Line="44" Column="1" />
+      <File FileName="SmartKegerator/App.xaml.cs" Line="1" Column="1" />
+      <File FileName="iOS/AppDelegate.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.SmartKegerator HideGettingStarted="True" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhoneSimulator" />
+  <MonoDevelop.Ide.ItemProperties.SmartKegerator.iOS PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneSimulatorTarget.0977103E-57FC-48BC-8A3A-4E7BFB40012C" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/etienne/wks/liquidintel/mobile/xamarin/SmartKegerator/SmartKegerator/Services/Authentication.cs" relfile="SmartKegerator/Services/Authentication.cs" line="21" column="1" />
+      <Breakpoint file="/Users/etienne/wks/liquidintel/mobile/xamarin/SmartKegerator/SmartKegerator/Services/Authentication.cs" relfile="SmartKegerator/Services/Authentication.cs" line="28" column="1" />
+      <Breakpoint file="/Users/etienne/wks/liquidintel/mobile/xamarin/SmartKegerator/SmartKegerator/Services/Authentication.cs" relfile="SmartKegerator/Services/Authentication.cs" line="20" column="1" />
+      <Breakpoint file="/Users/etienne/wks/liquidintel/mobile/xamarin/SmartKegerator/SmartKegerator/Services/Authentication.cs" relfile="SmartKegerator/Services/Authentication.cs" line="26" column="27" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.SmartKegerator.Droid PreferredExecutionTarget="Android.Android_Accelerated_x86" />
+</Properties>

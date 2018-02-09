@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:vm="clr-namespace:SmartKegerator.ViewModels;" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="SmartKegerator.Views.AvailableBeersPage">
+    <ContentPage.BindingContext>
+        <vm:AvailableBeersViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Frame Grid.Row="0" BindingContext="{Binding LeftKeg}" Margin="8" Padding="5" HasShadow="true" CornerRadius="0.5">
+                <StackLayout>
+                    <Label Text="Left tap" />
+                    <Image Source="{Binding imagePath}" />
+                    <Label Text="{Binding Name}" />
+                    <Label Text="{Binding Level}" />
+                </StackLayout>
+            </Frame>
+            <Frame Grid.Row="1" BindingContext="{Binding RightKeg}" Margin="8" Padding="5" HasShadow="true" CornerRadius="0.5">
+                <StackLayout>
+                    <Label Text="Right tap" />
+                    <Image Source="{Binding imagePath}" />
+                    <Label Text="{Binding Name}" />
+                    <Label Text="{Binding Level}" />
+                </StackLayout>
+            </Frame>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:vm="clr-namespace:SmartKegerator.ViewModels;" x:Class="SmartKegerator.Views.ActivitiesPage">
+    <ContentPage.BindingContext>
+        <vm:ActivitiesViewModel />
+    </ContentPage.BindingContext>
+    <ContentPage.Content>
+        <ListView x:Name="ActivitiesListview" ItemsSource="{Binding Activities}" Style="{StaticResource ActivityListView}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <ViewCell.View>
+                            <Frame Margin="8" Padding="5" HasShadow="true" CornerRadius="0.5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Image Grid.Column="0" Source="{Binding BeerImagePath}" Style="{StaticResource SmallImage}" />
+                                    <Grid Grid.Column="1" Margin="5">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <Label Grid.Row="0" Text="{Binding FullName}" Style="{StaticResource BigLabel}" />
+                                        <Label Grid.Row="1" Text="{Binding HowMuchFullText}" Style="{StaticResource SmallLabelNoMargin}" />
+                                        <Label Grid.Row="2" Text="{Binding TimeFullText}" Style="{StaticResource SmallLabel}" />
+                                    </Grid>
+                                </Grid>
+                            </Frame>
+                        </ViewCell.View>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </ContentPage.Content>
+</ContentPage>
